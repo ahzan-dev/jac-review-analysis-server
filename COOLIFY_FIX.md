@@ -64,9 +64,54 @@ git push origin main
 3. Click **Redeploy** or trigger a new deployment
 4. Coolify will pull the updated `docker-compose.yml` and rebuild
 
-### Step 3: Verify the Fix
+### Step 3: Set Environment Variables in Coolify
 
-Once deployed, test the API:
+**IMPORTANT**: When using Coolify, environment variables must be set in Coolify's dashboard, not just in the `.env` file.
+
+1. **Go to your Coolify dashboard**
+2. **Find your review-analyzer service**
+3. **Navigate to "Environment" or "Environment Variables" tab**
+4. **Add these variables:**
+
+```
+OPENAI_API_KEY=sk-proj-your-actual-key-here
+SERPAPI_KEY=your-actual-serpapi-key-here
+LLM_MODEL=gpt-4o-mini
+DEBUG=false
+PORT=8000
+```
+
+5. **Save and redeploy**
+
+### Step 4: Verify Environment Variables
+
+Test the new diagnostics endpoint to verify env vars are loaded:
+
+```bash
+curl -X POST https://review-analysis-server.trynewways.com/walker/diagnostics \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Expected response:
+```json
+{
+  "environment": {
+    "LLM_MODEL": "gpt-4o-mini",
+    "DEBUG": "false",
+    "PORT": "8000",
+    "OPENAI_API_KEY": "**************...",
+    "SERPAPI_KEY": "************************..."
+  },
+  "system_info": {...}
+}
+```
+
+If any show "NOT_SET", they're missing from Coolify's environment configuration.
+
+### Step 5: Test the Analysis
+
+Once env vars are confirmed, test the API:
 
 ```bash
 curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \

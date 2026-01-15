@@ -40,7 +40,48 @@ curl -X POST http://localhost:8000/walker/health_check \
 
 ---
 
-## 2. Analyze URL (Full Pipeline)
+## 2. Diagnostics
+
+**Endpoint:** `/walker/diagnostics`
+**Description:** Check environment variables and system configuration (useful for troubleshooting)
+
+### Request
+```bash
+curl -X POST http://localhost:8000/walker/diagnostics \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+### Response
+```json
+{
+  "ok": true,
+  "type": "response",
+  "data": {
+    "reports": [
+      {
+        "environment": {
+          "LLM_MODEL": "gpt-4o-mini",
+          "DEBUG": "false",
+          "PORT": "8000",
+          "OPENAI_API_KEY": "****************...",
+          "SERPAPI_KEY": "****************..."
+        },
+        "system_info": {
+          "python_version": "3.12.x",
+          "cwd": "/app"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Use Case:** Verify that environment variables are properly loaded in the container. If any show "NOT_SET", they need to be configured in your deployment environment (Coolify, Docker, etc.).
+
+---
+
+## 3. Analyze URL (Full Pipeline)
 
 **Endpoint:** `/walker/AnalyzeUrl`
 **Description:** Run complete analysis pipeline - fetch reviews, analyze sentiment, find patterns, generate report

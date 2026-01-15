@@ -210,3 +210,27 @@ walker health_check {
         };
     }
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DIAGNOSTICS ENDPOINT - Check Environment Variables
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker diagnostics {
+    can check with `root entry {
+        import os;
+
+        report {
+            "environment": {
+                "LLM_MODEL": os.getenv('LLM_MODEL', 'NOT_SET'),
+                "DEBUG": os.getenv('DEBUG', 'NOT_SET'),
+                "PORT": os.getenv('PORT', 'NOT_SET'),
+                "OPENAI_API_KEY": os.getenv('OPENAI_API_KEY', 'NOT_SET')[:20] + "..." if os.getenv('OPENAI_API_KEY') else "NOT_SET",
+                "SERPAPI_KEY": os.getenv('SERPAPI_KEY', 'NOT_SET')[:20] + "..." if os.getenv('SERPAPI_KEY') else "NOT_SET"
+            },
+            "system_info": {
+                "python_version": os.sys.version,
+                "cwd": os.getcwd()
+            }
+        };
+    }
+}

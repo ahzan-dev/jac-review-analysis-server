@@ -21,7 +21,7 @@
 
 ### Health Check
 ```bash
-curl -X POST http://localhost:8000/walker/health_check \
+curl -X POST https://review-analysis-server.trynewways.com/walker/health_check \
   -H "Content-Type: application/json" -d '{}'
 ```
 **Result**: ✅ Returns `{"status": "healthy", "service": "review-analyzer", "version": "2.0"}`
@@ -69,7 +69,7 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 
 ### Test with Real Data (Requires Valid API Keys)
 ```bash
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d @test_request.json
 ```

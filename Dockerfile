@@ -29,7 +29,7 @@ EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:$PORT/walker/health_check -X POST -H "Content-Type: application/json" -d '{}' || exit 1
+    CMD curl -f https://review-analysis-server.trynewways.com/walker/health_check -X POST -H "Content-Type: application/json" -d '{}' || exit 1
 
 # Run the JAC API server
 CMD jac start main.jac --port $PORT

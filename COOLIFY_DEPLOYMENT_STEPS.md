@@ -18,9 +18,14 @@ The `.env` file is only for local development. When deploying with Coolify, you 
 
 ### 1. Commit and Push Updated Code
 
+**IMPORTANT:** This update includes TWO critical fixes:
+1. **Environment variable caching fix** - Removed .jac cache persistence
+2. **API walkers fix** - Included api_walkers.jac to expose all 10 endpoints
+
 ```bash
-git add main.jac docker-compose.yml API_CURL_COMMANDS.md COOLIFY_FIX.md COOLIFY_DEPLOYMENT_STEPS.md
-git commit -m "Add diagnostics endpoint and fix cache persistence"
+git add main.jac api_walkers.jac docker-compose.yml API_CURL_COMMANDS.md \
+        COOLIFY_FIX.md COOLIFY_DEPLOYMENT_STEPS.md API_WALKERS_FIX.md
+git commit -m "Fix: Include api_walkers and remove cache persistence for proper deployment"
 git push origin main
 ```
 
@@ -87,6 +92,36 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
 ```
 
 **Expected:** Should complete full analysis without "Provider List" error.
+
+### 6. Verify All API Endpoints Are Available
+
+List all available walkers to confirm the api_walkers fix worked:
+
+```bash
+curl https://review-analysis-server.trynewways.com/walkers
+```
+
+**Expected:** Should see 10 walkers:
+- AnalyzeUrl
+- health_check
+- diagnostics
+- GetBusinesses
+- GetReport
+- GetAnalysis
+- GetReviews
+- Reanalyze
+- DeleteBusiness
+- GetStats
+
+**Test a new endpoint** (previously unavailable):
+
+```bash
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetStats \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Should return system statistics instead of 404.
 
 ## Troubleshooting
 

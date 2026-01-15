@@ -13,6 +13,7 @@ import json;
 
 include models;
 include walkers;
+include api_walkers;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API WALKER: AnalyzeUrl
@@ -45,8 +46,11 @@ walker AnalyzeUrl {
         
         if pipeline.status == "completed" {
             self.success = True;
-            self.data_source = pipeline.data_source;
             self.output = pipeline.output;
+            self.business_id = pipeline.business_id;
+            self.stages_completed = pipeline.stages_completed;
+            self.data_source = pipeline.data_source;
+            
             
             # Report for API response
             report self.output;

@@ -12,65 +12,11 @@ include models;
 include walkers;
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 1: AnalyzeUrl - Full Pipeline from URL
-# POST /walker/AnalyzeUrl
+# NOTE: AnalyzeUrl walker is defined in main.jac
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker AnalyzeUrl {
-    has url: str;
-    has max_reviews: int = 100;
-    has report_type: str = "executive";
-    has api_key: str = "";
-    has force_mock: bool = False;  # Force mock data for testing
-    
-    # Results stored on walker for direct access
-    has success: bool = False;
-    has business_id: str = "";
-    has stages_completed: list = [];
-    has final_report: dict = {};
-    has error: str = "";
-    has data_source: str = "";  # "serpapi" or "mock"
-    
-    can start with `root entry {
-        # Run the full pipeline
-        pipeline = here spawn FullPipelineAgent(
-            url=self.url,
-            max_reviews=self.max_reviews,
-            report_type=self.report_type,
-            serp_api_key=self.api_key,
-            force_mock=self.force_mock
-        );
-        
-        if pipeline.status == "completed" {
-            # Store results on walker for direct access
-            self.success = True;
-            self.business_id = pipeline.business_id;
-            self.stages_completed = pipeline.stages_completed;
-            self.final_report = pipeline.final_report;
-            self.data_source = pipeline.data_source;
-            
-            report {
-                "success": True,
-                "business_id": pipeline.business_id,
-                "stages_completed": pipeline.stages_completed,
-                "data_source": pipeline.data_source,
-                "report": pipeline.final_report
-            };
-        } else {
-            self.success = False;
-            self.error = pipeline.error;
-            
-            report {
-                "success": False,
-                "error": pipeline.error,
-                "status": pipeline.status
-            };
-        }
-    }
-}
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 2: GetBusinesses - List All Analyzed Businesses
+# API 1: GetBusinesses - List All Analyzed Businesses
 # POST /walker/GetBusinesses
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -125,7 +71,7 @@ walker GetBusinesses {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 3: GetReport - Get Report by Business ID
+# API 2: GetReport - Get Report by Business ID
 # POST /walker/GetReport
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -191,7 +137,7 @@ walker GetReport {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 4: GetAnalysis - Get Detailed Analysis by Business ID
+# API 3: GetAnalysis - Get Detailed Analysis by Business ID
 # POST /walker/GetAnalysis
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -289,7 +235,7 @@ walker GetAnalysis {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 5: GetReviews - Get Reviews with Filtering
+# API 4: GetReviews - Get Reviews with Filtering
 # POST /walker/GetReviews
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -390,7 +336,7 @@ walker GetReviews {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 6: Reanalyze - Re-run Analysis on Existing Data
+# API 5: Reanalyze - Re-run Analysis on Existing Data
 # POST /walker/Reanalyze
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -468,7 +414,7 @@ walker Reanalyze {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 7: DeleteBusiness - Remove a Business and All Related Data
+# API 6: DeleteBusiness - Remove a Business and All Related Data
 # POST /walker/DeleteBusiness
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -521,7 +467,7 @@ walker DeleteBusiness {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 8: GetStats - Get Overall System Statistics
+# API 7: GetStats - Get Overall System Statistics
 # POST /walker/GetStats
 # ═══════════════════════════════════════════════════════════════════════════════
 

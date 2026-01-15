@@ -4,7 +4,7 @@ Complete reference for all API endpoints with example curl commands.
 
 ## Base URL
 ```
-http://localhost:8000
+https://review-analysis-server.trynewways.com
 ```
 
 ---
@@ -16,7 +16,7 @@ http://localhost:8000
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/walker/health_check \
+curl -X POST https://review-analysis-server.trynewways.com/walker/health_check \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -47,7 +47,7 @@ curl -X POST http://localhost:8000/walker/health_check \
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/walker/diagnostics \
+curl -X POST https://review-analysis-server.trynewways.com/walker/diagnostics \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -88,7 +88,7 @@ curl -X POST http://localhost:8000/walker/diagnostics \
 
 ### Request (Mock Data - No API Keys Required)
 ```bash
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/Stumptown+Coffee/@40.7457399,-73.9882272,17z/data=!4m5!3m4!1s0x89c259a61c75684f:0x79d31adb123348d2!8m2!3d40.7457399!4d-73.9882272",
@@ -99,7 +99,7 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 
 ### Request (Real Data - Requires API Keys)
 ```bash
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/Dear+burger+cafe+and+stay/@6.0598092,80.1769212,1140m/data=!3m1!1e3!4m18!1m7!2m6!1sVacation+rentals!5m3!5m1!1s2026-02-05!11e1!6e3!3m9!1s0x3ae1751065385ca5:0x932afec32ba992e7!5m3!1s2026-02-05!4m1!1i2!8m2!3d6.059021!4d80.1798299!16s%2Fg%2F11sv7f9pwq?entry=ttu&g_ep=EgoyMDI2MDExMS4wIKXMDSoASAFQAw%3D%3D",
@@ -110,7 +110,7 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 
 ### Request (Deep Analysis with Custom API Key)
 ```bash
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/The+Golden+Ridge+Hotel/data=!4m5!3m4!1s0x3ae381ea9eabe63d:0x22a0957d93cbbcb1!8m2!3d6.9817275!4d80.7544131",
@@ -180,14 +180,14 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 
 ### Request (All Businesses)
 ```bash
-curl -X POST http://localhost:8000/walker/GetBusinesses \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
 
 ### Request (Limit Results)
 ```bash
-curl -X POST http://localhost:8000/walker/GetBusinesses \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses \
   -H "Content-Type: application/json" \
   -d '{
     "limit": 10
@@ -196,7 +196,7 @@ curl -X POST http://localhost:8000/walker/GetBusinesses \
 
 ### Request (Filter by Status)
 ```bash
-curl -X POST http://localhost:8000/walker/GetBusinesses \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses \
   -H "Content-Type: application/json" \
   -d '{
     "limit": 20,
@@ -246,7 +246,7 @@ curl -X POST http://localhost:8000/walker/GetBusinesses \
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/walker/GetReport \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReport \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
@@ -298,7 +298,7 @@ curl -X POST http://localhost:8000/walker/GetReport \
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/walker/GetAnalysis \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetAnalysis \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
@@ -372,7 +372,7 @@ curl -X POST http://localhost:8000/walker/GetAnalysis \
 
 ### Request (All Reviews)
 ```bash
-curl -X POST http://localhost:8000/walker/GetReviews \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
@@ -381,7 +381,7 @@ curl -X POST http://localhost:8000/walker/GetReviews \
 
 ### Request (Filter by Sentiment)
 ```bash
-curl -X POST http://localhost:8000/walker/GetReviews \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
@@ -392,7 +392,7 @@ curl -X POST http://localhost:8000/walker/GetReviews \
 
 ### Request (Filter by Rating)
 ```bash
-curl -X POST http://localhost:8000/walker/GetReviews \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
@@ -404,7 +404,7 @@ curl -X POST http://localhost:8000/walker/GetReviews \
 
 ### Request (Complex Filtering)
 ```bash
-curl -X POST http://localhost:8000/walker/GetReviews \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
@@ -464,7 +464,7 @@ curl -X POST http://localhost:8000/walker/GetReviews \
 
 ### Request (Basic Reanalysis)
 ```bash
-curl -X POST http://localhost:8000/walker/Reanalyze \
+curl -X POST https://review-analysis-server.trynewways.com/walker/Reanalyze \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
@@ -473,7 +473,7 @@ curl -X POST http://localhost:8000/walker/Reanalyze \
 
 ### Request (Force Sentiment Re-analysis)
 ```bash
-curl -X POST http://localhost:8000/walker/Reanalyze \
+curl -X POST https://review-analysis-server.trynewways.com/walker/Reanalyze \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
@@ -516,7 +516,7 @@ curl -X POST http://localhost:8000/walker/Reanalyze \
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/walker/DeleteBusiness \
+curl -X POST https://review-analysis-server.trynewways.com/walker/DeleteBusiness \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
@@ -557,7 +557,7 @@ curl -X POST http://localhost:8000/walker/DeleteBusiness \
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/walker/GetStats \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetStats \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -654,25 +654,25 @@ All endpoints return responses in this format:
 
 ```bash
 # Step 1: Analyze a business
-BUSINESS_ID=$(curl -s -X POST http://localhost:8000/walker/AnalyzeUrl \
+BUSINESS_ID=$(curl -s -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d '{"url": "https://www.google.com/maps/place/...", "max_reviews": 50}' \
   | jq -r '.data.reports[0].business.place_id')
 
 # Step 2: Get detailed analysis
-curl -X POST http://localhost:8000/walker/GetAnalysis \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetAnalysis \
   -H "Content-Type: application/json" \
   -d "{\"business_id\": \"$BUSINESS_ID\"}" \
   | jq '.data.reports[0].analysis.health_score'
 
 # Step 3: Get negative reviews
-curl -X POST http://localhost:8000/walker/GetReviews \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d "{\"business_id\": \"$BUSINESS_ID\", \"sentiment_filter\": \"negative\"}" \
   | jq '.data.reports[0].reviews[] | {author, rating, text}'
 
 # Step 4: Get recommendations
-curl -X POST http://localhost:8000/walker/GetReport \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReport \
   -H "Content-Type: application/json" \
   -d "{\"business_id\": \"$BUSINESS_ID\"}" \
   | jq '.data.reports[0].report.recommendations.immediate'
@@ -683,14 +683,14 @@ curl -X POST http://localhost:8000/walker/GetReport \
 ```bash
 # Analyze multiple businesses
 for url in "url1" "url2" "url3"; do
-  curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+  curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
     -H "Content-Type: application/json" \
     -d "{\"url\": \"$url\", \"max_reviews\": 100}" &
 done
 wait
 
 # Get summary of all
-curl -X POST http://localhost:8000/walker/GetStats \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetStats \
   -H "Content-Type: application/json" \
   -d '{}' | jq '.'
 ```
@@ -699,7 +699,7 @@ curl -X POST http://localhost:8000/walker/GetStats \
 
 ```bash
 # Analyze and save full output
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/...",
@@ -735,7 +735,7 @@ For testing/development without SERP API or OpenAI keys:
 
 ```bash
 # Test with mock data (20 sample reviews built-in)
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/test/@0,0",

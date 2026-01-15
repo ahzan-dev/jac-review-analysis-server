@@ -6,7 +6,11 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
     curl \
+    ca-certificates \
+    python3-gdbm \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
@@ -24,12 +28,16 @@ ENV PORT=8000
 ENV DEBUG=false
 ENV LLM_MODEL=gpt-4o-mini
 
-# Expose port
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
+USER appuser
+
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f https://review-analysis-server.trynewways.com/walker/health_check -X POST -H "Content-Type: application/json" -d '{}' || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/ || exit 1
 
 # Run the JAC API server
 CMD jac start main.jac --port $PORT

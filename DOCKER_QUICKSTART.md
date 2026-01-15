@@ -48,7 +48,6 @@ docker build -t review-analyzer:latest .
 docker run -p 8000:8000 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
-  -v $(pwd)/.jac:/app/.jac \
   review-analyzer:latest
 
 # Stop the container
@@ -97,14 +96,15 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 
 ## Data Persistence
 
-Your data is persisted in two directories:
+Your data is persisted in the following directory:
 
 - **`./data/`** - Database files (main.session.db)
-- **`./.jac/`** - LLM response cache
+
+**Note:** The `.jac/` cache directory is NOT mounted as a volume. This ensures fresh bytecode compilation on each deployment and prevents environment variable caching issues. LLM response caching is handled internally by the database.
 
 To backup your data:
 ```bash
-tar -czf backup-$(date +%Y%m%d).tar.gz data .jac
+tar -czf backup-$(date +%Y%m%d).tar.gz data
 ```
 
 To restore:
@@ -144,7 +144,7 @@ docker-compose up -d --build
 ### Remove all data and start fresh
 ```bash
 docker-compose down -v
-rm -rf data .jac
+rm -rf data
 docker-compose up -d
 ```
 

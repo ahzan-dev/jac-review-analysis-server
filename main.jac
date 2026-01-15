@@ -24,7 +24,7 @@ walker AnalyzeUrl {
     has url: str;
     has max_reviews: int = 100;
     has analysis_depth: str = "deep";  # "basic", "standard", "deep"
-    has api_key: str = "";
+    has api_key: str = SERPAPI_KEY;
     has force_mock: bool = False;
     
     # Output

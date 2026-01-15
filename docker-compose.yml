@@ -13,7 +13,8 @@ services:
       - PORT=8000
     volumes:
       - ./data:/app/data
-      - ./.jac:/app/.jac
+      # Cache not mounted - allows fresh bytecode compilation on each deploy
+      # - ./.jac:/app/.jac
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/walker/health_check", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{}"]

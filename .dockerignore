@@ -1,0 +1,34 @@
+# Database files
+*.session.db
+*.session.users.json
+main.session.db
+main.session.users.json
+
+# Cache
+.jac/
+__pycache__/
+*.pyc
+*.pyo
+
+# Output files
+*_Deep_Analysis.json
+*.json
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+docs/
+
+# Sample files
+place_sample.json

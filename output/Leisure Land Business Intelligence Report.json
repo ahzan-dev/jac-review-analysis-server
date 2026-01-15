@@ -1,0 +1,38 @@
+{
+    "success": true,
+    "business_id": "0x3ae1727a465c94b7:0xb8c2d326369bbbc7",
+    "stages_completed": [
+        "fetch",
+        "sentiment",
+        "patterns",
+        "report"
+    ],
+    "data_source": "serpapi",
+    "report": {
+        "report_id": "08a2f579-b79f-4213-80e7-0499aa2a5b98",
+        "title": "Leisure Land Business Intelligence Report",
+        "executive_summary": "This report provides a comprehensive analysis of customer reviews and feedback for Leisure Land, highlighting strengths, weaknesses, and opportunities for improvement. With an overall positive sentiment score of 0.65, customers appreciate the excellent customer service, clean facilities, and great value for money. However, issues with pool cleanliness and the check-in experience have been noted as areas needing attention.\n\nKey findings indicate that while the ambiance and activities are well-received, specific pain points such as dirty pool water and a poor check-in process detract from the overall experience. This report outlines actionable recommendations to enhance customer satisfaction and operational efficiency, positioning Leisure Land for continued success in the competitive leisure market.",
+        "key_findings": [
+            "Overall positive sentiment score of 0.65, indicating favorable customer perceptions.",
+            "Strengths include excellent customer service and well-maintained facilities.",
+            "Key weaknesses identified are pool cleanliness issues and inconsistencies during check-in.",
+            "Customers praised the value for money, particularly regarding activities offered.",
+            "Delighters include friendly staff and clean accommodations."
+        ],
+        "recommendations": [
+            "Implement a rigorous pool maintenance schedule to address cleanliness issues.",
+            "Train staff on consistent check-in procedures to enhance the guest experience.",
+            "Increase staff presence around the pool to ensure cleanliness and guest satisfaction.",
+            "Promote the strengths of customer service and cleanliness in marketing materials.",
+            "Gather ongoing customer feedback to continuously identify areas for improvement."
+        ],
+        "action_items": [
+            "Review and enhance pool cleaning protocols within the next month.",
+            "Conduct staff training sessions on check-in procedures within two months.",
+            "Schedule regular maintenance checks for all facilities, starting immediately.",
+            "Develop a customer feedback system to collect insights monthly.",
+            "Create promotional materials highlighting strengths, ready within three months."
+        ]
+    },
+    "generated_at": "2026-01-08T23:51:01.587209"
+}

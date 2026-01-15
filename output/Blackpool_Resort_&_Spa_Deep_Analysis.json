@@ -1,0 +1,363 @@
+{
+  "success": true,
+  "data_source": "serpapi",
+  "generated_at": "2026-01-11T19:57:59.575690",
+  "business": {
+    "name": "Blackpool Resort & Spa",
+    "type": "Resort hotel, Bar, Conference center, Restaurant, Spa, Wedding venue",
+    "type_normalized": "RESTAURANT",
+    "address": "Mahagastota, Hill Climb, Nuwara Eliya, Sri Lanka",
+    "phone": "+94 527 634 634",
+    "website": "http://www.blackpool.lk/",
+    "google_rating": 4.5,
+    "total_reviews": 1303,
+    "reviews_analyzed": 50,
+    "price_level": "",
+    "coordinates": {
+      "lat": 6.9422413,
+      "lng": 80.7790278
+    },
+    "opening_hours": {},
+    "photos_count": 10
+  },
+  "health_score": {
+    "overall": 84,
+    "grade": "B",
+    "confidence": "high",
+    "breakdown": {
+      "Service": 81,
+      "Ambiance": 74,
+      "Food Quality": 81,
+      "Location": 88,
+      "Hygiene": 20,
+      "Value": 100
+    },
+    "trend": "stable"
+  },
+  "sentiment": {
+    "distribution": {
+      "positive": {
+        "count": 34,
+        "percentage": 68.0
+      },
+      "negative": {
+        "count": 5,
+        "percentage": 10.0
+      },
+      "neutral": {
+        "count": 11,
+        "percentage": 22.0
+      }
+    },
+    "average_score": 0.535,
+    "sample_size_adequacy": "sufficient"
+  },
+  "themes": [
+    {
+      "name": "Service",
+      "mention_count": 34,
+      "sentiment_score": 0.72,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Staff Friendliness",
+          "mentions": 33,
+          "sentiment": 0.77,
+          "positive_pct": 91,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Attentiveness",
+          "mentions": 16,
+          "sentiment": 0.9,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Professionalism",
+          "mentions": 9,
+          "sentiment": 0.52,
+          "positive_pct": 78,
+          "verdict": "good"
+        },
+        {
+          "name": "Speed/Wait Time",
+          "mentions": 3,
+          "sentiment": 0.25,
+          "positive_pct": 67,
+          "verdict": "needs_attention"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Enjoyed  lot",
+          "We stayed for two nights at the Blackpool Hotel, which is beautifully located on a hillside overlooking the valley.\nThe hotel has a heated swimming po",
+          "All is good",
+          "Best place to vist, this my 5th time, and it feels like home.\nBest staff, perfect management, perfect location.\nHighly recommend.",
+          "We stayed in the hotel for Chistmas eve & morning. The food is delicious and the people are very kind. We maked pictures with the staff, it was funny,"
+        ],
+        "negative": [
+          "Very bad experience... Very rude singer (Mr Laasa... As his name told by other restaurant staff)... He needs to have some manners... Average singer wi",
+          "The staff was un cooperative .. my 11 year old son wanted something and he's a good singer and just wanted to sing a song on live music where other pe",
+          "One of the worst hotel I have experienced in whole Sri Lanka trip, poor service, poor food, poor maintenance....\nNo hot water in bathroom in such a co"
+        ]
+      }
+    },
+    {
+      "name": "Ambiance",
+      "mention_count": 24,
+      "sentiment_score": 0.74,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Atmosphere",
+          "mentions": 21,
+          "sentiment": 0.73,
+          "positive_pct": 86,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Cleanliness",
+          "mentions": 7,
+          "sentiment": 0.86,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Decor",
+          "mentions": 7,
+          "sentiment": 0.91,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "The hotel is beautiful with large rooms and great food. Its a little away from the main city / Gregory Lake (4kms) but the calmness nearby makes it an",
+          "We stayed for two nights at the Blackpool Hotel, which is beautifully located on a hillside overlooking the valley.\nThe hotel has a heated swimming po",
+          "We stayed in the hotel for Chistmas eve & morning. The food is delicious and the people are very kind. We maked pictures with the staff, it was funny,",
+          "Beautiful experience special thanks to Christmas treat.|Want to spend more time next time.|Service good,Room good|Thank you",
+          "Hill station hotel with big hall in II floor for guests to play indoor games.\nIt was raining the day we checked in..so we utilised this indoor facilit"
+        ],
+        "negative": [
+          "It feels as if it was haunted",
+          "Ich kann dem Hotel maximal 2 Sterne geben. Die Mauern sind in vielen Teilen des Hotels feucht bzw. nass. Leider auch in unserem Zimmer, teilweise Schi"
+        ]
+      }
+    },
+    {
+      "name": "Food Quality",
+      "mention_count": 17,
+      "sentiment_score": 0.81,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Taste",
+          "mentions": 16,
+          "sentiment": 0.82,
+          "positive_pct": 94,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Menu Variety",
+          "mentions": 5,
+          "sentiment": 0.87,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Presentation",
+          "mentions": 4,
+          "sentiment": 0.94,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "The hotel is beautiful with large rooms and great food. Its a little away from the main city / Gregory Lake (4kms) but the calmness nearby makes it an",
+          "We stayed for two nights at the Blackpool Hotel, which is beautifully located on a hillside overlooking the valley.\nThe hotel has a heated swimming po",
+          "We stayed in the hotel for Chistmas eve & morning. The food is delicious and the people are very kind. We maked pictures with the staff, it was funny,",
+          "Definitely 5-star service, great location and good food served with love! The hotel itself is a bit dated but well maintained. CEO is at the top of he",
+          "Hill station hotel with big hall in II floor for guests to play indoor games.\nIt was raining the day we checked in..so we utilised this indoor facilit"
+        ],
+        "negative": [
+          "One of the worst hotel I have experienced in whole Sri Lanka trip, poor service, poor food, poor maintenance....\nNo hot water in bathroom in such a co"
+        ]
+      }
+    },
+    {
+      "name": "Location",
+      "mention_count": 9,
+      "sentiment_score": 0.88,
+      "sentiment_label": "positive",
+      "confidence": "medium",
+      "sub_themes": [
+        {
+          "name": "Accessibility",
+          "mentions": 9,
+          "sentiment": 0.88,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "The hotel is beautiful with large rooms and great food. Its a little away from the main city / Gregory Lake (4kms) but the calmness nearby makes it an",
+          "Best place to vist, this my 5th time, and it feels like home.\nBest staff, perfect management, perfect location.\nHighly recommend.",
+          "Definitely 5-star service, great location and good food served with love! The hotel itself is a bit dated but well maintained. CEO is at the top of he",
+          "Very nice location and view. Its worth a stay. The staffs are very nice and prompt. We came as a family and my kids enjoyed alot.",
+          "Excellent accomodation.Nice staff.Good hospitality.Enjoyed good food and every thing.Thanks hotel black pool.If we get chance definitely we will like "
+        ],
+        "negative": []
+      }
+    }
+  ],
+  "trends": {
+    "period_analyzed": "0 months",
+    "overall_trend": {
+      "direction": "stable",
+      "change": "0%"
+    },
+    "monthly_breakdown": []
+  },
+  "critical_issues": [
+    {
+      "issue": "Poor hygiene in certain areas of the hotel",
+      "severity": "high",
+      "mention_count": 1,
+      "suggested_action": "Conduct a thorough cleaning and inspection of all rooms and facilities."
+    },
+    {
+      "issue": "Inconsistent professionalism among staff",
+      "severity": "medium",
+      "mention_count": 9,
+      "suggested_action": "Implement regular staff training and performance reviews."
+    }
+  ],
+  "swot": {
+    "strengths": [
+      {
+        "point": "Excellent service and staff friendliness",
+        "evidence_count": 30
+      },
+      {
+        "point": "High food quality and taste",
+        "evidence_count": 16
+      },
+      {
+        "point": "Beautiful and serene location",
+        "evidence_count": 9
+      }
+    ],
+    "weaknesses": [
+      {
+        "point": "Hygiene issues reported in some rooms",
+        "evidence_count": 1
+      },
+      {
+        "point": "Inconsistent service professionalism",
+        "evidence_count": 9
+      }
+    ],
+    "opportunities": [
+      {
+        "point": "Potential to improve hygiene standards",
+        "evidence_count": 1
+      },
+      {
+        "point": "Enhance staff training for better professionalism",
+        "evidence_count": 9
+      }
+    ],
+    "threats": [
+      {
+        "point": "Negative reviews about service quality can affect reputation",
+        "evidence_count": 5
+      }
+    ]
+  },
+  "recommendations": {
+    "immediate": [
+      {
+        "action": "Conduct a thorough cleaning and inspection of all rooms and facilities.",
+        "reason": "To address reported hygiene issues and improve guest comfort.",
+        "expected_impact": "Increased health score and guest satisfaction.",
+        "effort": "medium",
+        "priority_score": 90
+      },
+      {
+        "action": "Implement regular staff training sessions focusing on professionalism.",
+        "reason": "To address inconsistencies in service and improve overall guest experience.",
+        "expected_impact": "Higher ratings in service professionalism and guest retention.",
+        "effort": "medium",
+        "priority_score": 85
+      }
+    ],
+    "short_term": [
+      {
+        "action": "Develop a detailed hygiene protocol and checklist for staff.",
+        "reason": "To ensure consistent cleanliness and address the hygiene complaints effectively.",
+        "expected_impact": "Improved guest perceptions of hygiene and safety.",
+        "effort": "medium",
+        "priority_score": 80
+      },
+      {
+        "action": "Increase staff engagement and feedback channels to monitor service quality.",
+        "reason": "To proactively identify and address issues before they escalate.",
+        "expected_impact": "Enhanced service quality and staff morale.",
+        "effort": "medium",
+        "priority_score": 75
+      }
+    ],
+    "long_term": [
+      {
+        "action": "Invest in staff professional development programs.",
+        "reason": "To foster a culture of excellence in service delivery and professionalism.",
+        "expected_impact": "Sustained improvement in guest experience and loyalty.",
+        "effort": "high",
+        "priority_score": 70
+      },
+      {
+        "action": "Regularly review and update the menu based on guest feedback.",
+        "reason": "To maintain interest and satisfaction among returning guests.",
+        "expected_impact": "Increased guest satisfaction and repeat visits.",
+        "effort": "medium",
+        "priority_score": 65
+      }
+    ]
+  },
+  "executive_summary": {
+    "headline": "Enhancing Guest Experience at Blackpool Resort",
+    "one_liner": "Focus on hygiene and staff professionalism for better ratings.",
+    "key_metric": "Health Score Improvement",
+    "full_summary": "Blackpool Resort & Spa, a popular restaurant with a rating of 4.5 based on 1303 reviews, has been recognized for its excellent service and food quality. However, recent reviews highlight significant concerns regarding hygiene in certain rooms and inconsistent service professionalism, which can impact guest satisfaction. Addressing these critical issues will not only enhance the health score but also foster a better overall experience for guests, ensuring repeat visits and positive word-of-mouth.\n\nThe analysis of the reviews shows a healthy sentiment score of 0.535 with 68% positive feedback. Guests particularly appreciate the staff friendliness, high food quality, and the serene location of the resort. To capitalize on these strengths, the resort must prioritize addressing the identified weaknesses and seize the opportunities for improvement, especially in hygiene and staff training."
+  },
+  "key_findings": [
+    "Excellent service and staff friendliness reported by 60% of analyzed reviews.",
+    "High food quality and taste noted in 32% of reviews.",
+    "Beautiful and serene location highlighted by 18% of guests.",
+    "Hygiene issues reported in 2% of reviews, specifically regarding rooms.",
+    "Inconsistent service professionalism mentioned in 18% of reviews."
+  ],
+  "statistics": {
+    "reviews_analyzed": 50,
+    "date_range": {
+      "from": "",
+      "to": ""
+    },
+    "rating_distribution": {
+      "1": 3,
+      "2": 2,
+      "3": 3,
+      "4": 6,
+      "5": 36
+    },
+    "avg_review_length": 28,
+    "reviews_with_photos": 0,
+    "response_rate": "0.0%"
+  }
+}

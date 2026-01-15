@@ -1,0 +1,328 @@
+{
+  "success": true,
+  "data_source": "serpapi",
+  "generated_at": "2026-01-11T17:07:24.708859",
+  "business": {
+    "name": "citizenM Paris La Defense",
+    "type": "",
+    "type_normalized": "RESTAURANT",
+    "address": "",
+    "phone": "",
+    "website": "",
+    "google_rating": 0.0,
+    "total_reviews": 0,
+    "reviews_analyzed": 20,
+    "price_level": "",
+    "coordinates": {
+      "lat": 0.0,
+      "lng": 0.0
+    },
+    "opening_hours": {},
+    "photos_count": 0
+  },
+  "health_score": {
+    "overall": 75,
+    "grade": "B",
+    "confidence": "medium",
+    "breakdown": {
+      "Service": 68,
+      "Ambiance": 56,
+      "Location": 62,
+      "Value": 38
+    },
+    "trend": "stable"
+  },
+  "sentiment": {
+    "distribution": {
+      "positive": {
+        "count": 14,
+        "percentage": 70.0
+      },
+      "negative": {
+        "count": 3,
+        "percentage": 15.0
+      },
+      "neutral": {
+        "count": 3,
+        "percentage": 15.0
+      }
+    },
+    "average_score": 0.528,
+    "sample_size_adequacy": "limited"
+  },
+  "themes": [
+    {
+      "name": "Service",
+      "mention_count": 18,
+      "sentiment_score": 0.59,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Staff Friendliness",
+          "mentions": 13,
+          "sentiment": 0.82,
+          "positive_pct": 92,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Attentiveness",
+          "mentions": 7,
+          "sentiment": 0.36,
+          "positive_pct": 57,
+          "verdict": "good"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Chic hotel! CitizenM is a mixture of business and leisure hotel. All decorations are great (we wanted to buy some for our house LOL) and their working",
+          "This hotel is exceptional |The best people working there made my stay so good. It was a long trip - my colleague and I were there for 4 weeks in Augus",
+          "Really nice hotel! Excellent location in La Defense, right beside La Defense Arena and a short walk to the shopping district nearby. |I arrived at the",
+          "I had a really good stay! The hotel is clean, safe, nice and close to the arena. I felt really good and did not have to worry about safety. The staff ",
+          "Had a great stay at citizenM La D\u00e9fense\ud83d\ude0aModern design, super comfortable bed, and a very clean room. The staff were friendly, check-in was easy, and t"
+        ],
+        "negative": [
+          "This is the second time I have stayed at this hotel due to its convenient access to the business area in La D\u00e9fense. This time, however, I noticed a f",
+          "This used to be such a great hotel. I\u2019ve stayed at citizenM Paris La D\u00e9fense several times over the years. I like the location - away from the crowds "
+        ]
+      }
+    },
+    {
+      "name": "Ambiance",
+      "mention_count": 15,
+      "sentiment_score": 0.56,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Atmosphere",
+          "mentions": 7,
+          "sentiment": 0.84,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Cleanliness",
+          "mentions": 7,
+          "sentiment": 0.58,
+          "positive_pct": 71,
+          "verdict": "good"
+        },
+        {
+          "name": "Noise Level",
+          "mentions": 3,
+          "sentiment": 0.15,
+          "positive_pct": 33,
+          "verdict": "needs_attention"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "This hotel is exceptional |The best people working there made my stay so good. It was a long trip - my colleague and I were there for 4 weeks in Augus",
+          "I had a really good stay! The hotel is clean, safe, nice and close to the arena. I felt really good and did not have to worry about safety. The staff ",
+          "Had a great stay at citizenM La D\u00e9fense\ud83d\ude0aModern design, super comfortable bed, and a very clean room. The staff were friendly, check-in was easy, and t",
+          "I have stayed in this hotel twice due the good proximity of the business area of La Defense. I'm already planning that on my next business trip I will",
+          "A pleasant travel experience is shaped by many factors, and the hotel is definitely one of the most important. Our trip to Paris and the decision to s"
+        ],
+        "negative": [
+          "Very weird hotel for hipsters. The rooms are extremely small and lack even the most basic amenities like a wardrobe. The sink is outside the bathroom,",
+          "This is the second time I have stayed at this hotel due to its convenient access to the business area in La D\u00e9fense. This time, however, I noticed a f"
+        ]
+      }
+    },
+    {
+      "name": "Location",
+      "mention_count": 8,
+      "sentiment_score": 0.62,
+      "sentiment_label": "positive",
+      "confidence": "medium",
+      "sub_themes": [
+        {
+          "name": "Accessibility",
+          "mentions": 8,
+          "sentiment": 0.62,
+          "positive_pct": 75,
+          "verdict": "good"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Really nice hotel! Excellent location in La Defense, right beside La Defense Arena and a short walk to the shopping district nearby. |I arrived at the",
+          "I had a really good stay! The hotel is clean, safe, nice and close to the arena. I felt really good and did not have to worry about safety. The staff ",
+          "Had a great stay at citizenM La D\u00e9fense\ud83d\ude0aModern design, super comfortable bed, and a very clean room. The staff were friendly, check-in was easy, and t",
+          "I have stayed in this hotel twice due the good proximity of the business area of La Defense. I'm already planning that on my next business trip I will",
+          "A pleasant travel experience is shaped by many factors, and the hotel is definitely one of the most important. Our trip to Paris and the decision to s"
+        ],
+        "negative": [
+          "This used to be such a great hotel. I\u2019ve stayed at citizenM Paris La D\u00e9fense several times over the years. I like the location - away from the crowds "
+        ]
+      }
+    },
+    {
+      "name": "Value",
+      "mention_count": 5,
+      "sentiment_score": 0.38,
+      "sentiment_label": "positive",
+      "confidence": "medium",
+      "sub_themes": [],
+      "sample_quotes": {
+        "positive": [
+          "The only downside to the hotel is that relatively long walk to the nearest public transport (about 10min). Otherwise the value for price, room comfort",
+          "citizenM is always a great experience the  hotels are all pretty much the same really nice stylish the rooms always good even though this time it wasn",
+          "THE BEST hotel I've stayed in, anywhere. The staff members were all young, friendly, helpful, and unpretentious.\n\nThe room looks small, and it is, but"
+        ],
+        "negative": [
+          "This is the second time I have stayed at this hotel due to its convenient access to the business area in La D\u00e9fense. This time, however, I noticed a f"
+        ]
+      }
+    }
+  ],
+  "trends": {
+    "period_analyzed": "0 months",
+    "overall_trend": {
+      "direction": "stable",
+      "change": "0%"
+    },
+    "monthly_breakdown": []
+  },
+  "critical_issues": [
+    {
+      "issue": "Noise levels affecting guest experience",
+      "severity": "medium",
+      "mention_count": 3,
+      "suggested_action": "Implement soundproofing measures in rooms."
+    },
+    {
+      "issue": "Room size dissatisfaction",
+      "severity": "high",
+      "mention_count": 2,
+      "suggested_action": "Consider renovations or re-designs to improve room layout."
+    }
+  ],
+  "swot": {
+    "strengths": [
+      {
+        "point": "Friendly and helpful staff",
+        "evidence_count": 13
+      },
+      {
+        "point": "Good location near La Defense Arena",
+        "evidence_count": 6
+      },
+      {
+        "point": "Modern design and cleanliness",
+        "evidence_count": 11
+      }
+    ],
+    "weaknesses": [
+      {
+        "point": "Small room sizes and lack of basic amenities",
+        "evidence_count": 2
+      },
+      {
+        "point": "Noise levels can be disruptive",
+        "evidence_count": 3
+      }
+    ],
+    "opportunities": [
+      {
+        "point": "Enhance the attentiveness of staff",
+        "evidence_count": 7
+      },
+      {
+        "point": "Improve noise insulation in rooms",
+        "evidence_count": 3
+      }
+    ],
+    "threats": [
+      {
+        "point": "Competition from other hotels with better amenities",
+        "evidence_count": 4
+      },
+      {
+        "point": "Negative perception from previous guests about room size",
+        "evidence_count": 3
+      }
+    ]
+  },
+  "recommendations": {
+    "immediate": [
+      {
+        "action": "Implement soundproofing measures in rooms",
+        "reason": "Noise levels are affecting guest experience significantly",
+        "expected_impact": "Reduced complaints regarding noise, leading to higher guest satisfaction",
+        "effort": "medium",
+        "priority_score": 85
+      },
+      {
+        "action": "Enhance staff attentiveness through training",
+        "reason": "Improving attentiveness can lead to better service ratings",
+        "expected_impact": "Increased positive sentiment regarding service",
+        "effort": "medium",
+        "priority_score": 75
+      }
+    ],
+    "short_term": [
+      {
+        "action": "Consider renovations to improve room layout",
+        "reason": "Room size dissatisfaction is a high concern among guests",
+        "expected_impact": "Better guest satisfaction and potentially higher ratings",
+        "effort": "high",
+        "priority_score": 90
+      },
+      {
+        "action": "Increase marketing efforts highlighting location and cleanliness",
+        "reason": "To leverage strengths while addressing weaknesses",
+        "expected_impact": "Attract more guests who appreciate these aspects",
+        "effort": "medium",
+        "priority_score": 70
+      }
+    ],
+    "long_term": [
+      {
+        "action": "Conduct a comprehensive review of room amenities",
+        "reason": "Guests seek more basic amenities for a better stay",
+        "expected_impact": "Improved guest satisfaction and repeat customers",
+        "effort": "high",
+        "priority_score": 80
+      },
+      {
+        "action": "Regularly monitor noise levels and guest feedback",
+        "reason": "To continuously improve the guest experience based on real-time data",
+        "expected_impact": "Proactive resolution of issues leading to better ratings",
+        "effort": "low",
+        "priority_score": 65
+      }
+    ]
+  },
+  "executive_summary": {
+    "headline": "Improve Guest Experience at citizenM Paris",
+    "one_liner": "Focus on addressing noise and room size issues to enhance customer satisfaction.",
+    "key_metric": "Customer Satisfaction Rating",
+    "full_summary": "citizenM Paris La Defense has a solid health score of 75 (Grade B), indicating a generally positive reception from guests. However, the restaurant currently holds a low rating of 0.0 due to a total of 20 reviews analyzed, revealing a mixed sentiment score of 0.528. While the establishment showcases strengths such as friendly staff and cleanliness, significant weaknesses related to room size and noise levels need to be addressed urgently to improve overall guest experience.\n\nThe current sentiment analysis indicates a positive percentage of 70% with concerns predominantly surrounding noise levels and room space. The restaurant's potential for improvement lies in enhancing staff attentiveness and implementing soundproofing measures. Immediate actions are necessary to mitigate critical issues while leveraging strengths to maintain a competitive advantage in the restaurant industry."
+  },
+  "key_findings": [
+    "Friendly and helpful staff received 13 mentions (65% positive sentiment).",
+    "Good location near La Defense Arena noted in 6 reviews (60% positive sentiment).",
+    "Modern design and cleanliness appreciated in 11 reviews (70% positive sentiment).",
+    "Noise levels cited in 3 reviews as disruptive (15% positive sentiment).",
+    "Small room sizes criticized in 2 reviews (0% positive sentiment)."
+  ],
+  "statistics": {
+    "reviews_analyzed": 20,
+    "date_range": {
+      "from": "",
+      "to": ""
+    },
+    "rating_distribution": {
+      "1": 0,
+      "2": 0,
+      "3": 5,
+      "4": 3,
+      "5": 12
+    },
+    "avg_review_length": 111,
+    "reviews_with_photos": 0,
+    "response_rate": "40.0%"
+  }
+}

@@ -1,0 +1,449 @@
+{
+  "success": true,
+  "data_source": "serpapi",
+  "generated_at": "2026-01-11T17:51:12.819825",
+  "business": {
+    "name": "The Golden Ridge Hotel",
+    "type": "",
+    "type_normalized": "RESTAURANT",
+    "address": "",
+    "phone": "",
+    "website": "",
+    "google_rating": 0.0,
+    "total_reviews": 0,
+    "reviews_analyzed": 100,
+    "price_level": "",
+    "coordinates": {
+      "lat": 0.0,
+      "lng": 0.0
+    },
+    "opening_hours": {},
+    "photos_count": 0
+  },
+  "health_score": {
+    "overall": 68,
+    "grade": "B",
+    "confidence": "high",
+    "breakdown": {
+      "Service": 55,
+      "Ambiance": 89,
+      "Location": 74,
+      "Hygiene": 0,
+      "Value": 37,
+      "Food Quality": 100
+    },
+    "trend": "stable"
+  },
+  "sentiment": {
+    "distribution": {
+      "positive": {
+        "count": 67,
+        "percentage": 67.0
+      },
+      "negative": {
+        "count": 14,
+        "percentage": 14.0
+      },
+      "neutral": {
+        "count": 17,
+        "percentage": 17.0
+      }
+    },
+    "average_score": 0.515,
+    "sample_size_adequacy": "sufficient"
+  },
+  "themes": [
+    {
+      "name": "Service",
+      "mention_count": 68,
+      "sentiment_score": 0.55,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Staff Friendliness",
+          "mentions": 58,
+          "sentiment": 0.64,
+          "positive_pct": 81,
+          "verdict": "good"
+        },
+        {
+          "name": "Attentiveness",
+          "mentions": 21,
+          "sentiment": 0.66,
+          "positive_pct": 81,
+          "verdict": "good"
+        },
+        {
+          "name": "Professionalism",
+          "mentions": 11,
+          "sentiment": 0.51,
+          "positive_pct": 73,
+          "verdict": "good"
+        },
+        {
+          "name": "Speed/Wait Time",
+          "mentions": 10,
+          "sentiment": 0.14,
+          "positive_pct": 50,
+          "verdict": "needs_attention"
+        },
+        {
+          "name": "Knowledge",
+          "mentions": 5,
+          "sentiment": -0.42,
+          "positive_pct": 20,
+          "verdict": "poor"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Un h\u00f4tel atypique, moderne, propre, et convivial\nLes lits sont vraiment confortables et les chambres tr\u00e8s bien optimis\u00e9es\nLa commande des installation",
+          "Chic hotel! CitizenM is a mixture of business and leisure hotel. All decorations are great (we wanted to buy some for our house LOL) and their working",
+          "Amazing stay! The staff were friendly and attentive, making us feel welcome from check-in. The room was spotless, spacious, and comfortable, with beau",
+          "Amazing service, Ella was especially kind and welcoming, would definitely come again!",
+          ""
+        ],
+        "negative": [
+          "I was mistakenly charged for my room at check-in, even though it had already been fully paid through Booking.com.\n\nThe double payment was refunded the",
+          "Le check in est ultra compliqu\u00e9 avec une file d'attente interminable.\n\u00c7a fait trois fois que j'essaye en me disant que c'\u00e9tait peut \u00eatre le mauvais mo",
+          "S\u00e9jour extr\u00eamement d\u00e9cevant au citizenM Paris La D\u00e9fense.\nD\u00e8s l\u2019arriv\u00e9e, aucun accueil : l\u2019enregistrement se fait soi-m\u00eame sur une tablette. Vive l\u2019em",
+          "Scandaleux\u2026 a part la propret\u00e9 rien ne vaut 4 \u00e9toiles ni le prix!\nAucun service ! Le personnel parle \u00e0 peine fran\u00e7ais, j\u2019ai du demander en anglais pou",
+          "Il m a de bien que l emplacement en face de la d\u00e9fense! Pas de place pour manger le petit d\u00e9jeuner , petit d\u00e9jeuner il n y a presque rien! Personne ne"
+        ]
+      }
+    },
+    {
+      "name": "Ambiance",
+      "mention_count": 44,
+      "sentiment_score": 0.89,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Atmosphere",
+          "mentions": 34,
+          "sentiment": 0.9,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Cleanliness",
+          "mentions": 15,
+          "sentiment": 0.93,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Decor",
+          "mentions": 12,
+          "sentiment": 0.88,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Seating Comfort",
+          "mentions": 5,
+          "sentiment": 0.89,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Un h\u00f4tel atypique, moderne, propre, et convivial\nLes lits sont vraiment confortables et les chambres tr\u00e8s bien optimis\u00e9es\nLa commande des installation",
+          "Chic hotel! CitizenM is a mixture of business and leisure hotel. All decorations are great (we wanted to buy some for our house LOL) and their working",
+          "Amazing stay! The staff were friendly and attentive, making us feel welcome from check-in. The room was spotless, spacious, and comfortable, with beau",
+          "Pour aller voir un concert \u00e0 la d\u00e9fense h\u00f4tel tr\u00e8s bien plac\u00e9 \u00e0 100m de l'entr\u00e9e apr\u00e8s la chambre est petite tout se fait par tablette sans doute une ",
+          "Endroit calme et magnifique"
+        ],
+        "negative": []
+      }
+    },
+    {
+      "name": "Location",
+      "mention_count": 34,
+      "sentiment_score": 0.74,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Accessibility",
+          "mentions": 32,
+          "sentiment": 0.78,
+          "positive_pct": 88,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Visibility",
+          "mentions": 4,
+          "sentiment": 0.43,
+          "positive_pct": 75,
+          "verdict": "good"
+        },
+        {
+          "name": "Parking",
+          "mentions": 3,
+          "sentiment": 1.0,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Recensione solo per il parcheggio: ottimi prezzi per lasciare l'auto in un posto sicuro che si pu\u00f2 raggiungere facilmente e che ha una metro a pochi m",
+          "A 3 minutes de la D\u00e9fense Arena pratique apr\u00e8s un concert et a 5 minutes de RER et du centre commercial",
+          "Amazing stay! The staff were friendly and attentive, making us feel welcome from check-in. The room was spotless, spacious, and comfortable, with beau",
+          "",
+          ""
+        ],
+        "negative": [
+          "S\u00e9jour extr\u00eamement d\u00e9cevant au citizenM Paris La D\u00e9fense.\nD\u00e8s l\u2019arriv\u00e9e, aucun accueil : l\u2019enregistrement se fait soi-m\u00eame sur une tablette. Vive l\u2019em",
+          "Il m a de bien que l emplacement en face de la d\u00e9fense! Pas de place pour manger le petit d\u00e9jeuner , petit d\u00e9jeuner il n y a presque rien! Personne ne",
+          "Cet h\u00f4tel est une blague? Hormis l'emplacement y'a rien de valable pour 200euor la nuit.\nPas une bouteille d'eau dans la chambre, pas de caf\u00e9...\nUne s"
+        ]
+      }
+    },
+    {
+      "name": "Hygiene",
+      "mention_count": 16,
+      "sentiment_score": 0.0,
+      "sentiment_label": "mixed",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Cleanliness",
+          "mentions": 16,
+          "sentiment": 0.0,
+          "positive_pct": 38,
+          "verdict": "needs_attention"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Hotel tres propre, tresefficace, vraiement pratique pour un mini sejour a la defense",
+          "\u0393\u03b9\u03b1 \u03ba\u03ac\u03c0\u03bf\u03b9\u03bf\u03bd \u03c0\u03bf\u03c5 \u03c8\u03ac\u03c7\u03bd\u03b5\u03b9 \u03ad\u03bd\u03b1 cozy \u03ba\u03b1\u03b9 \u03cc\u03bc\u03bf\u03c1\u03c6\u03bf \u03b4\u03c9\u03bc\u03ac\u03c4\u03b9\u03bf \u03c3\u03c7\u03b5\u03c4\u03b9\u03ba\u03ac \u03ba\u03bf\u03bd\u03c4\u03ac \u03c3\u03c4\u03bf \u03ba\u03ad\u03bd\u03c4\u03c1\u03bf \u03c4\u03bf\u03c5 \u03a0\u03b1\u03c1\u03b9\u03c3\u03b9\u03bf\u03cd \u03b5\u03af\u03bd\u03b1\u03b9 \u03b1\u03c0\u03cc \u03c4\u03b9\u03c2 \u03ba\u03b1\u03bb\u03cd\u03c4\u03b5\u03c1\u03b5\u03c2 \u03b5\u03c0\u03b9\u03bb\u03bf\u03b3\u03ad\u03c2.\n\u039a\u03b1\u03b8\u03b1\u03c1\u03b1 \u03b4\u03c9\u03bc\u03ac\u03c4\u03b9\u03b1 \u03ba\u03b1\u03b9 \u03bc\u03b5 \u03c0\u03c1\u03bf\u03c3\u03c9",
+          "Hotel davanti L arena con molti ristoranti nelle vicinanze.    Cortesia dello staf e hotel molto pulito",
+          "I had a really good stay! The hotel is clean, safe, nice and close to the arena. I felt really good and did not have to worry about safety. The staff ",
+          "\uae54\ub054\ud558\uace0 \uc88b\uc2b5\ub2c8\ub2e4. \uccad\uc18c\ub3c4 \uae54\ub054\ud558\uac8c \ud574\uc8fc\ub124\uc694"
+        ],
+        "negative": [
+          "S\u00e9jour extr\u00eamement d\u00e9cevant au citizenM Paris La D\u00e9fense.\nD\u00e8s l\u2019arriv\u00e9e, aucun accueil : l\u2019enregistrement se fait soi-m\u00eame sur une tablette. Vive l\u2019em",
+          "Scandaleux\u2026 a part la propret\u00e9 rien ne vaut 4 \u00e9toiles ni le prix!\nAucun service ! Le personnel parle \u00e0 peine fran\u00e7ais, j\u2019ai du demander en anglais pou",
+          "Very weird hotel for hipsters. The rooms are extremely small and lack even the most basic amenities like a wardrobe. The sink is outside the bathroom,",
+          "Attention il y a des vols dans cet h\u00f4tel\u2026entreprise de m\u00e9nage peut-\u00eatre ? Personne ne semble savoir \u2026",
+          "hotel pas mal mais pour r\u00e9cuperer la facture j'ai du les contacter une dizaine de fois..et je ne l'ai toujours pas!!! Inadmissible"
+        ]
+      }
+    },
+    {
+      "name": "Value",
+      "mention_count": 14,
+      "sentiment_score": 0.37,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Worth the Money",
+          "mentions": 7,
+          "sentiment": 0.5,
+          "positive_pct": 71,
+          "verdict": "good"
+        },
+        {
+          "name": "Price vs Quality",
+          "mentions": 6,
+          "sentiment": 0.36,
+          "positive_pct": 67,
+          "verdict": "good"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Un h\u00f4tel atypique, moderne, propre, et convivial\nLes lits sont vraiment confortables et les chambres tr\u00e8s bien optimis\u00e9es\nLa commande des installation",
+          "Hotel tres propre, tresefficace, vraiement pratique pour un mini sejour a la defense",
+          "Recensione solo per il parcheggio: ottimi prezzi per lasciare l'auto in un posto sicuro che si pu\u00f2 raggiungere facilmente e che ha una metro a pochi m",
+          "Amazing stay! The staff were friendly and attentive, making us feel welcome from check-in. The room was spotless, spacious, and comfortable, with beau",
+          "Pour aller voir un concert \u00e0 la d\u00e9fense h\u00f4tel tr\u00e8s bien plac\u00e9 \u00e0 100m de l'entr\u00e9e apr\u00e8s la chambre est petite tout se fait par tablette sans doute une "
+        ],
+        "negative": [
+          "I was mistakenly charged for my room at check-in, even though it had already been fully paid through Booking.com.\n\nThe double payment was refunded the",
+          "Scandaleux\u2026 a part la propret\u00e9 rien ne vaut 4 \u00e9toiles ni le prix!\nAucun service ! Le personnel parle \u00e0 peine fran\u00e7ais, j\u2019ai du demander en anglais pou",
+          "Il m a de bien que l emplacement en face de la d\u00e9fense! Pas de place pour manger le petit d\u00e9jeuner , petit d\u00e9jeuner il n y a presque rien! Personne ne",
+          "Cher pour ce que c\u2019est, casi tout les salari\u00e9s parle anglais, fuite d\u2019eau de la chambre au dessus aucun geste commercial, petit d\u00e9jeuner m\u00e9diocre, l\u2019e",
+          "H\u00f4tel sympa et connect\u00e9 mais personnel parfois pas du tout aimable et le petit dej pas du tout de choix et la qualit\u00e9 parfois n\u2019est pas au rdv. Pas as"
+        ]
+      }
+    }
+  ],
+  "trends": {
+    "period_analyzed": "0 months",
+    "overall_trend": {
+      "direction": "stable",
+      "change": "0%"
+    },
+    "monthly_breakdown": []
+  },
+  "critical_issues": [
+    {
+      "issue": "Hygiene concerns reported in multiple reviews",
+      "severity": "high",
+      "mention_count": 8,
+      "suggested_action": "Implement stricter cleaning protocols and regular inspections."
+    },
+    {
+      "issue": "Staff knowledge and professionalism issues noted",
+      "severity": "medium",
+      "mention_count": 5,
+      "suggested_action": "Provide additional training for staff on service and product knowledge."
+    },
+    {
+      "issue": "Value for money complaints regarding pricing",
+      "severity": "medium",
+      "mention_count": 5,
+      "suggested_action": "Review pricing strategy and improve perceived value with better services or amenities."
+    }
+  ],
+  "swot": {
+    "strengths": [
+      {
+        "point": "Excellent ambiance and atmosphere",
+        "evidence_count": 44
+      },
+      {
+        "point": "Good service from staff friendliness",
+        "evidence_count": 51
+      },
+      {
+        "point": "Great location near attractions",
+        "evidence_count": 29
+      },
+      {
+        "point": "High food quality at the restaurant",
+        "evidence_count": 1
+      }
+    ],
+    "weaknesses": [
+      {
+        "point": "Hygiene issues reported in reviews",
+        "evidence_count": 8
+      },
+      {
+        "point": "Service knowledge and professionalism lacking",
+        "evidence_count": 5
+      },
+      {
+        "point": "Value for money concerns",
+        "evidence_count": 5
+      }
+    ],
+    "opportunities": [
+      {
+        "point": "Enhance staff training for better service knowledge",
+        "evidence_count": 5
+      },
+      {
+        "point": "Improve cleanliness and hygiene standards",
+        "evidence_count": 8
+      },
+      {
+        "point": "Optimize value offerings for guests",
+        "evidence_count": 5
+      }
+    ],
+    "threats": [
+      {
+        "point": "Negative reviews impacting reputation",
+        "evidence_count": 14
+      },
+      {
+        "point": "High competition in the area affecting bookings",
+        "evidence_count": 0
+      },
+      {
+        "point": "Potential for negative social media impact due to hygiene issues",
+        "evidence_count": 8
+      }
+    ]
+  },
+  "recommendations": {
+    "immediate": [
+      {
+        "action": "Implement stricter cleaning protocols and regular inspections.",
+        "reason": "Hygiene concerns reported in multiple reviews affect guest perceptions.",
+        "expected_impact": "Improved hygiene can restore guest trust and reduce negative reviews.",
+        "effort": "medium",
+        "priority_score": 90
+      },
+      {
+        "action": "Provide additional training for staff on service and product knowledge.",
+        "reason": "Staff knowledge and professionalism issues noted can lead to better service.",
+        "expected_impact": "Enhanced guest experience and satisfaction through improved service quality.",
+        "effort": "medium",
+        "priority_score": 85
+      }
+    ],
+    "short_term": [
+      {
+        "action": "Optimize pricing strategy and improve perceived value with better services.",
+        "reason": "Value for money complaints can deter potential guests.",
+        "expected_impact": "Increased bookings and positive reviews if perceived value improves.",
+        "effort": "medium",
+        "priority_score": 80
+      },
+      {
+        "action": "Enhance staff training programs focusing on service knowledge.",
+        "reason": "Staff friendliness is a strength; enhancing knowledge can leverage this.",
+        "expected_impact": "Better informed staff can lead to improved guest interactions and satisfaction.",
+        "effort": "high",
+        "priority_score": 75
+      }
+    ],
+    "long_term": [
+      {
+        "action": "Regularly review and update cleaning protocols based on guest feedback.",
+        "reason": "Consistency in cleanliness will help maintain higher standards.",
+        "expected_impact": "Long-term guest trust and a better reputation in hygiene practices.",
+        "effort": "medium",
+        "priority_score": 70
+      },
+      {
+        "action": "Conduct quarterly training sessions for all staff on customer service excellence.",
+        "reason": "Continual improvement in customer service can differentiate the hotel from competitors.",
+        "expected_impact": "Sustained high satisfaction rates and increased repeat business.",
+        "effort": "high",
+        "priority_score": 65
+      }
+    ]
+  },
+  "executive_summary": {
+    "headline": "Enhancing The Golden Ridge Hotel Experience",
+    "one_liner": "Improving hygiene and staff training can boost guest satisfaction.",
+    "key_metric": "Health Score Improvement",
+    "full_summary": "The Golden Ridge Hotel has received a mixed response in its recent reviews, with an overall health score of 68 and a B grade. The positive sentiment stands at 67%, indicating strengths such as excellent ambiance and staff friendliness. However, significant concerns regarding hygiene and staff professionalism have been highlighted, necessitating immediate attention. This report outlines critical issues, key findings, and actionable recommendations to enhance service quality and guest satisfaction in the coming months.\n\nKey strengths include the hotel's fantastic location and the quality of food, but hygiene issues have been a recurring theme that needs addressing. By focusing on enhancing staff training and improving cleanliness, the hotel can not only mitigate current negative sentiments but also leverage its strengths to attract more positive reviews and repeat customers."
+  },
+  "key_findings": [
+    "67% positive sentiment indicates overall guest satisfaction.",
+    "Hygiene concerns noted in 8 reviews suggest immediate action is required.",
+    "Service friendliness scored positively with a 81% positive rate from 51 mentions.",
+    "High food quality is noted but lacks sufficient evidence from reviews.",
+    "Ambiance is rated excellent with a sentiment score of 0.89."
+  ],
+  "statistics": {
+    "reviews_analyzed": 100,
+    "date_range": {
+      "from": "",
+      "to": ""
+    },
+    "rating_distribution": {
+      "1": 8,
+      "2": 1,
+      "3": 9,
+      "4": 18,
+      "5": 64
+    },
+    "avg_review_length": 28,
+    "reviews_with_photos": 0,
+    "response_rate": "9.0%"
+  }
+}

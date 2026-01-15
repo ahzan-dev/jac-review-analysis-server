@@ -1,0 +1,450 @@
+{
+  "success": true,
+  "data_source": "serpapi",
+  "generated_at": "2026-01-11T18:15:36.430949",
+  "business": {
+    "name": "The GOOD Kitchen",
+    "type": "",
+    "type_normalized": "RESTAURANT",
+    "address": "",
+    "phone": "",
+    "website": "",
+    "google_rating": 0.0,
+    "total_reviews": 0,
+    "reviews_analyzed": 100,
+    "price_level": "",
+    "coordinates": {
+      "lat": 0.0,
+      "lng": 0.0
+    },
+    "opening_hours": {},
+    "photos_count": 0
+  },
+  "health_score": {
+    "overall": 76,
+    "grade": "B",
+    "confidence": "high",
+    "breakdown": {
+      "Ambiance": 76,
+      "Service": 75,
+      "Location": 67,
+      "Food Quality": 76,
+      "Hygiene": 20,
+      "Value": 25
+    },
+    "trend": "stable"
+  },
+  "sentiment": {
+    "distribution": {
+      "positive": {
+        "count": 66,
+        "percentage": 66.0
+      },
+      "negative": {
+        "count": 10,
+        "percentage": 10.0
+      },
+      "neutral": {
+        "count": 21,
+        "percentage": 21.0
+      }
+    },
+    "average_score": 0.525,
+    "sample_size_adequacy": "sufficient"
+  },
+  "themes": [
+    {
+      "name": "Ambiance",
+      "mention_count": 67,
+      "sentiment_score": 0.76,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Atmosphere",
+          "mentions": 55,
+          "sentiment": 0.89,
+          "positive_pct": 98,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Cleanliness",
+          "mentions": 19,
+          "sentiment": 0.93,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Decor",
+          "mentions": 17,
+          "sentiment": 0.89,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Noise Level",
+          "mentions": 7,
+          "sentiment": -0.43,
+          "positive_pct": 14,
+          "verdict": "poor"
+        },
+        {
+          "name": "Seating Comfort",
+          "mentions": 3,
+          "sentiment": 0.92,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Un lieu original,  des chambres tr\u00e8s spacieuses,  confortables et au calme, on y mange bien et l'\u00e9quipe est aux petits soins.  On est loin des tourist",
+          "Tr\u00e8s heureux d'\u00eatre les premiers clients de l'ann\u00e9e 2026 et depuis les terribles intemp\u00e9ries du 27 novembre. Un h\u00f4tel incroyable et insolite,  confort",
+          "Tr\u00e8s bel endroit",
+          "Great Stay, Extremely nice place and the  surrounding. Staff was amazingly friendly. Peaceful place to relax.",
+          "Our time in Mandaram Nuwara felt like stepping into another world \u2014 a place where time slows down, the mist dances over the hills, and every breath fe"
+        ],
+        "negative": [
+          "Our family visited Tea and Experimce on August in school holiday time . Rooms are not worth for sure . Next room group were drinking inside and singin",
+          "We visited last month . They don\u2019t provide road condition during reservation. Road is very bad . And rooms are not sound proof . I can\u2019t recommend.",
+          "Staying at this hotel is a disaster, as the rooms are not soundproof. You have to endure all the bathroom noises, continuous coughing, snoring, hummin",
+          "I booked this hotel for a peaceful retreat in the middle of busy week. Rooms are just separated by metal sheets which we expected but what we didn\u2019t e",
+          "We stayed at Tea and experience factory few months back for our honeymoon. You can hear the sound from next room . When we asked from them , they said"
+        ]
+      }
+    },
+    {
+      "name": "Service",
+      "mention_count": 60,
+      "sentiment_score": 0.75,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Staff Friendliness",
+          "mentions": 51,
+          "sentiment": 0.85,
+          "positive_pct": 94,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Attentiveness",
+          "mentions": 21,
+          "sentiment": 0.61,
+          "positive_pct": 81,
+          "verdict": "good"
+        },
+        {
+          "name": "Professionalism",
+          "mentions": 7,
+          "sentiment": 0.7,
+          "positive_pct": 86,
+          "verdict": "good"
+        },
+        {
+          "name": "Knowledge",
+          "mentions": 7,
+          "sentiment": 0.91,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Speed/Wait Time",
+          "mentions": 4,
+          "sentiment": 0.55,
+          "positive_pct": 75,
+          "verdict": "good"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Un lieu original,  des chambres tr\u00e8s spacieuses,  confortables et au calme, on y mange bien et l'\u00e9quipe est aux petits soins.  On est loin des tourist",
+          "Tr\u00e8s heureux d'\u00eatre les premiers clients de l'ann\u00e9e 2026 et depuis les terribles intemp\u00e9ries du 27 novembre. Un h\u00f4tel incroyable et insolite,  confort",
+          "Great Stay, Extremely nice place and the  surrounding. Staff was amazingly friendly. Peaceful place to relax.",
+          "Our time in Mandaram Nuwara felt like stepping into another world \u2014 a place where time slows down, the mist dances over the hills, and every breath fe",
+          "Mandaram Nuwara \u201cYou can't beat the location of [Tea & experience Hotel]it was so easy to get to all the main attractions. Beyond that, the breakfast "
+        ],
+        "negative": [
+          "Booking 2 nights 2 rooms  ( confirmed and paid for ) via Agoda was not available. One room only. Still waiting for the refund as agreed.  2 weeks now ",
+          "Staying at this hotel is a disaster, as the rooms are not soundproof. You have to endure all the bathroom noises, continuous coughing, snoring, hummin",
+          "The road to the hotel was a mess... specially you cannot go on a low ground clearance vehicle and there were too many safari jeeps on that road...and ",
+          "I booked this hotel for a peaceful retreat in the middle of busy week. Rooms are just separated by metal sheets which we expected but what we didn\u2019t e",
+          "We stayed at Tea and experience factory few months back for our honeymoon. You can hear the sound from next room . When we asked from them , they said"
+        ]
+      }
+    },
+    {
+      "name": "Location",
+      "mention_count": 34,
+      "sentiment_score": 0.67,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Accessibility",
+          "mentions": 30,
+          "sentiment": 0.64,
+          "positive_pct": 80,
+          "verdict": "good"
+        },
+        {
+          "name": "Visibility",
+          "mentions": 4,
+          "sentiment": 0.92,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Neighborhood",
+          "mentions": 3,
+          "sentiment": 0.95,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Our time in Mandaram Nuwara felt like stepping into another world \u2014 a place where time slows down, the mist dances over the hills, and every breath fe",
+          "Mandaram Nuwara \u201cYou can't beat the location of [Tea & experience Hotel]it was so easy to get to all the main attractions. Beyond that, the breakfast ",
+          "If you want to experience how a traditional Singalese tea factory work and visit and astonishing tea plantation sourranded by the tallest mountains in",
+          "Tea and experience Factory, Mandaramnuwara\n\nNestled snug amidst quaint tea hills and a majestic mountainscape, the Tea & Experience Factory \u2013 a premie",
+          "Just five stars does not do the justice. It deserves even more. Maybe the route to get to the location is a bit rural and difficult. But it's really w"
+        ],
+        "negative": [
+          "I strongly disagree with the previous review.\nMy stay was a disaster from start to finish. The bedroom had cockroaches, the location is actually a 2-h",
+          "We visited last month . They don\u2019t provide road condition during reservation. Road is very bad . And rooms are not sound proof . I can\u2019t recommend.",
+          "Very isolated,definitely not worth the drive.Tea factory hotel will give you the best Tea Factory experience.",
+          "The road to the hotel was a mess... specially you cannot go on a low ground clearance vehicle and there were too many safari jeeps on that road...and "
+        ]
+      }
+    },
+    {
+      "name": "Food Quality",
+      "mention_count": 29,
+      "sentiment_score": 0.76,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Taste",
+          "mentions": 24,
+          "sentiment": 0.79,
+          "positive_pct": 92,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Presentation",
+          "mentions": 10,
+          "sentiment": 0.95,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Menu Variety",
+          "mentions": 5,
+          "sentiment": 0.79,
+          "positive_pct": 80,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "We booked the entire property for our annual team outing. The team was incredibly flexible and friendly, maintaining proactive communication to ensure",
+          "Despu\u00e9s de visitar Kandy necesit\u00e1bamos un poco de relax y desconexi\u00f3n. Sin duda, este hotel super\u00f3 nuestras expectativas.\n\nInstalaciones perfectas, pe",
+          "Experiencia \u00fanica, el tour vale mucho la pena, mejor que otras fabricas grandes que te lo ense\u00f1an de lejos, te lo explican paso a paso y te dejan hace",
+          "I had the privilege of staying here for two nights, and it truly exceeded all my expectations. I am honestly at a loss for words\u2014what an incredible pr",
+          "Hotel powsta\u0142 z rewitalizacji budynku w kt\u00f3rym by\u0142a fabryka herbaty.  Zrobione z pomyslem i ciekawym design. Obs\u0142uga bardzo mi\u0142a i uczynna. Na miejscu"
+        ],
+        "negative": [
+          "Our family visited Tea and Experimce on August in school holiday time . Rooms are not worth for sure . Next room group were drinking inside and singin",
+          "I strongly disagree with the previous review.\nMy stay was a disaster from start to finish. The bedroom had cockroaches, the location is actually a 2-h"
+        ]
+      }
+    },
+    {
+      "name": "Hygiene",
+      "mention_count": 5,
+      "sentiment_score": -0.28,
+      "sentiment_label": "mixed",
+      "confidence": "medium",
+      "sub_themes": [
+        {
+          "name": "Cleanliness",
+          "mentions": 5,
+          "sentiment": -0.28,
+          "positive_pct": 20,
+          "verdict": "needs_attention"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Superb service and the Friendly staff members,\nRooms r  very clean and have more than enough  space for a family stay,\nHad a nice experience,\nHighly R"
+        ],
+        "negative": [
+          "I strongly disagree with the previous review.\nMy stay was a disaster from start to finish. The bedroom had cockroaches, the location is actually a 2-h",
+          "It is a disaster and wasting money . No sound proof.  You can hear next room sound . Never recommend",
+          "The road to the hotel was a mess... specially you cannot go on a low ground clearance vehicle and there were too many safari jeeps on that road...and "
+        ]
+      }
+    }
+  ],
+  "trends": {
+    "period_analyzed": "0 months",
+    "overall_trend": {
+      "direction": "stable",
+      "change": "0%"
+    },
+    "monthly_breakdown": []
+  },
+  "critical_issues": [
+    {
+      "issue": "Hygiene issues leading to complaints about cleanliness",
+      "severity": "high",
+      "mention_count": 3,
+      "suggested_action": "Implement a strict cleaning protocol and staff training to maintain cleanliness standards."
+    },
+    {
+      "issue": "Noise disturbances affecting guest comfort",
+      "severity": "medium",
+      "mention_count": 5,
+      "suggested_action": "Invest in soundproofing solutions for rooms."
+    },
+    {
+      "issue": "Delayed booking confirmations causing customer dissatisfaction",
+      "severity": "medium",
+      "mention_count": 2,
+      "suggested_action": "Streamline booking processes and improve communication with customers."
+    }
+  ],
+  "swot": {
+    "strengths": [
+      {
+        "point": "Excellent ambiance and atmosphere with high cleanliness ratings",
+        "evidence_count": 60
+      },
+      {
+        "point": "Friendly and attentive staff providing good service",
+        "evidence_count": 53
+      },
+      {
+        "point": "High food quality and presentation",
+        "evidence_count": 25
+      }
+    ],
+    "weaknesses": [
+      {
+        "point": "Noise issues due to lack of soundproofing in rooms",
+        "evidence_count": 5
+      },
+      {
+        "point": "Hygiene concerns with cleanliness leading to negative experiences",
+        "evidence_count": 3
+      },
+      {
+        "point": "Value for money is perceived as low",
+        "evidence_count": 2
+      }
+    ],
+    "opportunities": [
+      {
+        "point": "Enhancing soundproofing to improve guest experience",
+        "evidence_count": 5
+      },
+      {
+        "point": "Promotion of unique aspects of the location and food quality",
+        "evidence_count": 25
+      }
+    ],
+    "threats": [
+      {
+        "point": "Negative reviews about hygiene could deter potential customers",
+        "evidence_count": 3
+      },
+      {
+        "point": "High competition in the restaurant sector with similar offerings",
+        "evidence_count": 10
+      }
+    ]
+  },
+  "recommendations": {
+    "immediate": [
+      {
+        "action": "Implement a strict cleaning protocol and staff training to maintain cleanliness standards.",
+        "reason": "Hygiene issues negatively impact customer satisfaction and lead to complaints.",
+        "expected_impact": "Improved customer perceptions of cleanliness and reduced complaints.",
+        "effort": "medium",
+        "priority_score": 90
+      },
+      {
+        "action": "Invest in soundproofing solutions for rooms.",
+        "reason": "Noise disturbances are affecting guest comfort and satisfaction.",
+        "expected_impact": "Enhanced guest experience and comfort leading to better reviews.",
+        "effort": "high",
+        "priority_score": 85
+      }
+    ],
+    "short_term": [
+      {
+        "action": "Promote unique aspects of location and food quality through targeted marketing campaigns.",
+        "reason": "Increased visibility can attract more customers and enhance the restaurant's reputation.",
+        "expected_impact": "Higher customer turnout and improved ratings based on positive experiences.",
+        "effort": "medium",
+        "priority_score": 75
+      },
+      {
+        "action": "Streamline booking processes and improve communication with customers.",
+        "reason": "Delayed booking confirmations lead to dissatisfaction among guests.",
+        "expected_impact": "Reduced customer frustration and increased likelihood of repeat visits.",
+        "effort": "low",
+        "priority_score": 70
+      }
+    ],
+    "long_term": [
+      {
+        "action": "Enhance soundproofing and overall ambiance to create a more inviting atmosphere.",
+        "reason": "Addressing noise issues will improve guest comfort and satisfaction.",
+        "expected_impact": "Increased positive feedback and higher ratings over time.",
+        "effort": "high",
+        "priority_score": 80
+      },
+      {
+        "action": "Regularly assess and maintain hygiene standards to ensure long-term cleanliness.",
+        "reason": "Sustained hygiene practices will enhance customer trust and loyalty.",
+        "expected_impact": "Consistent positive reviews and improved health scores over time.",
+        "effort": "medium",
+        "priority_score": 85
+      }
+    ]
+  },
+  "executive_summary": {
+    "headline": "Enhancing Guest Experience at The GOOD Kitchen",
+    "one_liner": "Improve cleanliness and soundproofing to boost ratings.",
+    "key_metric": "Health Score of 76",
+    "full_summary": "The GOOD Kitchen has received mixed feedback from its patrons, with a health score of 76 and a sentiment score of 0.525 indicating a generally positive reception. The restaurant excels in ambiance and service, reflecting an excellent atmosphere and friendly staff. However, critical issues regarding hygiene and noise disturbances require urgent attention to enhance guest satisfaction and improve overall ratings. Immediate actions are necessary to address these concerns and capitalize on the restaurant's strengths."
+  },
+  "key_findings": [
+    "Excellent ambiance with high cleanliness ratings (60 mentions)",
+    "Friendly and attentive staff (53 mentions)",
+    "High food quality and presentation (25 mentions)",
+    "Noise issues due to lack of soundproofing (5 mentions)",
+    "Hygiene concerns leading to negative experiences (3 mentions)",
+    "Value for money perceived as low (2 mentions)"
+  ],
+  "statistics": {
+    "reviews_analyzed": 100,
+    "date_range": {
+      "from": "",
+      "to": ""
+    },
+    "rating_distribution": {
+      "1": 8,
+      "2": 2,
+      "3": 3,
+      "4": 12,
+      "5": 75
+    },
+    "avg_review_length": 77,
+    "reviews_with_photos": 0,
+    "response_rate": "73.0%"
+  }
+}

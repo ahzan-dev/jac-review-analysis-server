@@ -1,0 +1,15 @@
+/.env
+
+/.jac
+main.session.db
+__pycache__/
+.vscode/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

@@ -1,0 +1,38 @@
+{
+    "success": true,
+    "business_id": "0x3ae11350b1451589:0x2e95e26211c34621",
+    "stages_completed": [
+        "fetch",
+        "sentiment",
+        "patterns",
+        "report"
+    ],
+    "data_source": "serpapi",
+    "report": {
+        "report_id": "97238531-40f6-4fd5-991e-5ce4ed68cc19",
+        "title": "Insight Resort Business Intelligence Report",
+        "executive_summary": "This report provides an in-depth analysis of Insight Resort's performance based on customer reviews and feedback. With an overall positive sentiment score of 0.76, the resort has received high praise for its excellent customer service, beautiful location, and clean, comfortable rooms. Despite the high ratings, there are several areas for improvement, particularly in Wi-Fi connectivity and the need for renovations in some areas, which have been highlighted by guests as pain points.\n\nThe analysis reveals significant strengths that can be leveraged for marketing and guest experience enhancement, such as the warm hospitality from staff and the stunning beachfront access. However, addressing the weaknesses, especially the inconsistent food quality and poor Wi-Fi service, will be crucial in maintaining high standards and ensuring guest satisfaction. With targeted improvements, Insight Resort has the potential to enhance its overall guest experience and foster loyalty among its clientele.",
+        "key_findings": [
+            "Overall positive sentiment score of 0.76 indicates strong customer satisfaction.",
+            "Key strengths include excellent customer service and beautiful location.",
+            "Guests appreciate the cleanliness and comfort of the rooms.",
+            "Inconsistent food quality and poor Wi-Fi are primary areas needing improvement.",
+            "Delighters include warm hospitality and welcome amenities upon arrival."
+        ],
+        "recommendations": [
+            "Enhance the food variety and quality to meet diverse guest preferences.",
+            "Upgrade Wi-Fi infrastructure to ensure reliable connectivity for all guests.",
+            "Plan renovations for older facilities to improve overall guest experience.",
+            "Continue to emphasize and promote the resort's strengths in marketing materials.",
+            "Implement training for staff to maintain service consistency and address pain points."
+        ],
+        "action_items": [
+            "Conduct a food quality assessment and implement changes within 3 months.",
+            "Initiate a Wi-Fi upgrade plan and complete within 6 months.",
+            "Develop a renovation strategy for older facilities, aiming for implementation in the next year.",
+            "Create a staff training program focused on service consistency, to be rolled out within 4 months.",
+            "Launch a marketing campaign capitalizing on strengths and delighters within 2 months."
+        ]
+    },
+    "generated_at": "2026-01-08T23:40:13.699261"
+}

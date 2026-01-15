@@ -1,0 +1,38 @@
+{
+    "success": true,
+    "business_id": "0x3ae173a700c1272d:0x9bfd00c2ec0a2fd5",
+    "stages_completed": [
+        "fetch",
+        "sentiment",
+        "patterns",
+        "report"
+    ],
+    "data_source": "serpapi",
+    "report": {
+        "report_id": "9e64b85d-9849-42b4-9bf7-1fa57f18ef9d",
+        "title": "Cafe 82 - Homemade Ice-Cream Business Intelligence Report",
+        "executive_summary": "Cafe 82 stands out as an exemplary establishment in Galle Fort, distinguished by its exceptional food quality, outstanding customer service, and cozy ambiance. With a strong positive sentiment reflected in customer reviews, this caf\u00e9 has cultivated a loyal customer base appreciative of its rich, homemade ice cream flavors. Notably, the caf\u00e9's strengths lie in its food quality and customer service, both receiving high praise from customers. However, there are areas for improvement, particularly regarding coffee preparation, which has been flagged as inconsistent. The caf\u00e9 has great opportunities to expand its menu and enhance marketing efforts to attract a broader audience, especially tourists. Overall, the atmosphere and family-run ethos contribute significantly to the cafe's charm, making it a beloved spot for both locals and visitors alike.",
+        "key_findings": [
+            "Exceptional food quality with a sentiment score of 0.96",
+            "Outstanding customer service consistently praised in reviews",
+            "A cozy and welcoming ambiance that enhances customer experience",
+            "Strength in homemade ice cream with rich flavors, particularly noted by customers",
+            "Inconsistent coffee preparation identified as a pain point"
+        ],
+        "recommendations": [
+            "Address the coffee preparation inconsistencies through staff training",
+            "Expand the menu to include more diverse options, potentially seasonal flavors",
+            "Increase marketing efforts targeting tourists and local events",
+            "Leverage social media to showcase unique ice cream flavors and customer testimonials",
+            "Consider collaborations with local businesses for cross-promotions"
+        ],
+        "action_items": [
+            "Implement a training program for staff on coffee preparation within the next month",
+            "Develop a new seasonal menu by the next quarter",
+            "Launch a targeted marketing campaign within the next two months",
+            "Create a social media strategy to highlight customer experiences by the end of the month",
+            "Explore partnership opportunities with local tourist attractions in the next three months"
+        ]
+    },
+    "generated_at": "2026-01-09T00:02:16.207015"
+}

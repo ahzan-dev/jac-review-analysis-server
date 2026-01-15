@@ -16,10 +16,12 @@ import re, json, os, requests;
 
 # LLM Setup
 import from byllm.lib { Model }
+glob OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY', '');
 
 glob llm = Model(
     model_name=os.environ.get("LLM_MODEL", "gpt-4o-mini"),
-    config={"verbose": False}
+    config={"verbose": False},
+    api_key=OPENAI_API_KEY
 );
 
 include models;

@@ -7,7 +7,7 @@
 #   API Server:   jac serve main.jac
 #
 # ══════════════════════════════════════════════════════════════════════════════
-
+import os;
 import from datetime { datetime }
 import json;
 
@@ -18,7 +18,7 @@ include walkers;
 # API WALKER: AnalyzeUrl
 # Main entry point for analysis - called by external services
 # ═══════════════════════════════════════════════════════════════════════════════
-
+glob SERPAPI_KEY: str = os.getenv('SERPAPI_KEY', '');
 walker AnalyzeUrl {
     # Input parameters
     has url: str;

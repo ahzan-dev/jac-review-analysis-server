@@ -220,7 +220,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses 
         "count": 3,
         "businesses": [
           {
-            "place_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
+            "place_id": "0x3ae1751065385ca5:0x932afec32ba992e7",
             "name": "citizenM Paris La Defense",
             "business_type": "Hotel",
             "rating": 4.5,
@@ -249,7 +249,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses 
 curl -X POST https://review-analysis-server.trynewways.com/walker/GetReport \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7"
   }'
 ```
 
@@ -266,22 +266,33 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetReport \
     "reports": [
       {
         "success": true,
-        "business_name": "citizenM Paris La Defense",
+        "business": {
+          "place_id": "0x3ae1751065385ca5:0x932afec32ba992e7",
+          "name": "citizenM Paris La Defense",
+          "rating": 4.5
+        },
         "report": {
+          "report_id": "uuid-here",
+          "report_type": "deep",
+          "created_at": "2026-01-15T18:37:11",
           "headline": "citizenM Paris La Defense - Excellent Service, Minor Noise Issues",
           "one_liner": "High guest satisfaction with premium service but needs soundproofing",
           "key_metric": "Health Score: 85 (B+)",
-          "executive_summary": "...",
+          "executive_summary": "Comprehensive analysis shows...",
           "key_findings": [
             "Outstanding staff professionalism (92% positive)",
             "Excellent cleanliness standards",
             "Noise complaints in 15% of reviews"
           ],
-          "recommendations": {
-            "immediate": [...],
-            "short_term": [...],
-            "long_term": [...]
-          }
+          "recommendations_immediate": [
+            {"action": "Address soundproofing", "impact": "high", "effort": "medium"}
+          ],
+          "recommendations_short_term": [
+            {"action": "Upgrade HVAC system", "impact": "medium", "effort": "high"}
+          ],
+          "recommendations_long_term": [
+            {"action": "Renovate rooms", "impact": "high", "effort": "high"}
+          ]
         }
       }
     ]
@@ -301,7 +312,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetReport \
 curl -X POST https://review-analysis-server.trynewways.com/walker/GetAnalysis \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7"
   }'
 ```
 
@@ -318,8 +329,19 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetAnalysis \
     "reports": [
       {
         "success": true,
-        "business_name": "citizenM Paris La Defense",
+        "business": {
+          "place_id": "0x3ae1751065385ca5:0x932afec32ba992e7",
+          "name": "citizenM Paris La Defense",
+          "rating": 4.5,
+          "total_reviews": 1245
+        },
         "analysis": {
+          "analysis_id": "uuid-here",
+          "created_at": "2026-01-15T18:37:11",
+          "model_used": "gpt-4o-mini",
+          "reviews_analyzed": 100,
+          "date_range_start": "2024-01-15",
+          "date_range_end": "2026-01-15",
           "health_score": 85,
           "health_grade": "B+",
           "health_breakdown": {
@@ -331,32 +353,69 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetAnalysis \
           },
           "overall_sentiment": "positive",
           "sentiment_score": 0.65,
-          "positive_count": 72,
-          "negative_count": 18,
-          "confidence_level": "high"
+          "confidence_level": "high",
+          "confidence_details": {
+            "sample_size": 100,
+            "rating_variance": 0.5
+          },
+          "sentiment_breakdown": {
+            "positive": 72.0,
+            "negative": 18.0,
+            "neutral": 8.0,
+            "mixed": 2
+          },
+          "rating_distribution": {
+            "5": 50,
+            "4": 30,
+            "3": 10,
+            "2": 5,
+            "1": 5
+          },
+          "strengths": [
+            {"theme": "Service", "evidence": "92% positive", "priority": "maintain"}
+          ],
+          "weaknesses": [
+            {"theme": "Noise", "evidence": "15% complaints", "priority": "high"}
+          ],
+          "opportunities": [
+            {"area": "Soundproofing", "potential": "Reduce complaints by 50%"}
+          ],
+          "threats": [
+            {"issue": "Competition", "impact": "medium"}
+          ],
+          "critical_issues": [
+            {"issue": "Noise complaints", "severity": "high", "frequency": 15}
+          ],
+          "pain_points": ["Noise", "Parking"],
+          "delighters": ["Staff", "Cleanliness", "Location"]
         },
         "themes": [
           {
             "name": "Service",
+            "category": "Quality",
             "mention_count": 85,
-            "sentiment_score": 0.78,
+            "positive_count": 78,
+            "negative_count": 5,
+            "neutral_count": 2,
+            "mixed_count": 0,
+            "avg_sentiment": 0.78,
+            "keywords": ["staff", "friendly", "helpful"],
+            "sample_quotes_positive": [
+              "Staff was incredibly helpful",
+              "Best service I've experienced"
+            ],
+            "sample_quotes_negative": [
+              "Checkout was slow"
+            ],
             "sub_themes": [
               {
                 "name": "Staff Friendliness",
                 "mentions": 65,
-                "sentiment": 0.85,
-                "verdict": "excellent"
+                "sentiment": 0.85
               }
             ]
           }
-        ],
-        "swot": {
-          "strengths": [...],
-          "weaknesses": [...],
-          "opportunities": [...],
-          "threats": [...]
-        },
-        "critical_issues": [...]
+        ]
       }
     ]
   }
@@ -375,7 +434,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetAnalysis \
 curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7"
   }'
 ```
 
@@ -384,7 +443,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
 curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7",
     "sentiment_filter": "negative",
     "limit": 20
   }'
@@ -395,7 +454,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
 curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7",
     "min_rating": 1,
     "max_rating": 3,
     "sort_by": "date_desc"
@@ -407,7 +466,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
 curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7",
     "sentiment_filter": "positive",
     "min_rating": 4,
     "max_rating": 5,
@@ -467,7 +526,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
 curl -X POST https://review-analysis-server.trynewways.com/walker/Reanalyze \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7"
   }'
 ```
 
@@ -476,7 +535,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/Reanalyze \
 curl -X POST https://review-analysis-server.trynewways.com/walker/Reanalyze \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k",
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7",
     "force_sentiment": true,
     "analysis_depth": "deep"
   }'
@@ -519,7 +578,7 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/Reanalyze \
 curl -X POST https://review-analysis-server.trynewways.com/walker/DeleteBusiness \
   -H "Content-Type: application/json" \
   -d '{
-    "business_id": "ChIJT2h1HKZZwokR0kgzEtsa03k"
+    "business_id": "0x3ae1751065385ca5:0x932afec32ba992e7"
   }'
 ```
 

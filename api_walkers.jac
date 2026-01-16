@@ -122,15 +122,14 @@ walker GetReport {
                 "report_id": r.report_id,
                 "report_type": r.report_type,
                 "created_at": r.created_at,
-                "target_audience": r.target_audience,
-                "title": r.title,
+                "headline": r.headline,
+                "one_liner": r.one_liner,
+                "key_metric": r.key_metric,
                 "executive_summary": r.executive_summary,
                 "key_findings": r.key_findings,
-                "recommendations": r.recommendations,
-                "action_items": r.action_items,
-                "sections": r.sections,
-                "word_count": r.word_count,
-                "reading_time_minutes": r.reading_time_minutes
+                "recommendations_immediate": r.recommendations_immediate,
+                "recommendations_short_term": r.recommendations_short_term,
+                "recommendations_long_term": r.recommendations_long_term
             }
         };
     }
@@ -188,8 +187,12 @@ walker GetAnalysis {
                 "positive_count": t.positive_count,
                 "negative_count": t.negative_count,
                 "neutral_count": t.neutral_count,
+                "mixed_count": t.mixed_count,
                 "avg_sentiment": t.avg_sentiment,
-                "sample_quotes": t.sample_quotes
+                "keywords": t.keywords,
+                "sample_quotes_positive": t.sample_quotes_positive,
+                "sample_quotes_negative": t.sample_quotes_negative,
+                "sub_themes": t.sub_themes
             });
         }
         
@@ -215,17 +218,29 @@ walker GetAnalysis {
             "analysis": {
                 "analysis_id": a.analysis_id,
                 "created_at": a.created_at,
+                "model_used": a.model_used,
+                "reviews_analyzed": a.reviews_analyzed,
+                "date_range_start": a.date_range_start,
+                "date_range_end": a.date_range_end,
+                "health_score": a.health_score,
+                "health_grade": a.health_grade,
+                "health_breakdown": a.health_breakdown,
                 "overall_sentiment": a.overall_sentiment,
                 "sentiment_score": a.sentiment_score,
-                "confidence": a.confidence,
+                "confidence_level": a.confidence_level,
+                "confidence_details": a.confidence_details,
                 "sentiment_breakdown": {
                     "positive": a.positive_percentage,
                     "negative": a.negative_percentage,
-                    "neutral": a.neutral_percentage
+                    "neutral": a.neutral_percentage,
+                    "mixed": a.mixed_count
                 },
+                "rating_distribution": a.rating_distribution,
                 "strengths": a.strengths,
                 "weaknesses": a.weaknesses,
                 "opportunities": a.opportunities,
+                "threats": a.threats,
+                "critical_issues": a.critical_issues,
                 "pain_points": a.pain_points,
                 "delighters": a.delighters
             },

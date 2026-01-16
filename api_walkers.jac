@@ -23,28 +23,49 @@ include walkers;
 walker GetBusinesses {
     has limit: int = 20;
     has status_filter: str = "";  # "pending", "fetched", "analyzed", "completed"
-    
+    has username: str = "";  # NEW: Required for user isolation
+
+    obj __specs__ {
+        static has auth: bool = True;  # NEW: Require authentication
+    }
+
     can start with `root entry {
+        # NEW: Verify user
+        if not self.username {
+            report {"error": "Username required"};
+            return;
+        }
+
+        # NEW: Check if user is admin
+        profiles = [-->(`?UserProfile)](?username == self.username);
+        is_admin = profiles and profiles[0].role == UserRole.ADMIN;
+
         businesses = [here -->(`?Business)];
-        
+
+        # NEW: Filter by owner (unless admin)
+        if not is_admin {
+            # Regular users only see their own businesses
+            businesses = [b for b in businesses if b.owner == self.username];
+        }
+
         results = [];
         count = 0;
-        
+
         for biz in businesses {
             # Apply status filter if provided
             if self.status_filter != "" and biz.status != self.status_filter {
                 continue;
             }
-            
+
             if count >= self.limit {
                 break;
             }
-            
+
             # Get counts
             review_count = len([biz -->(`?Review)]);
             has_analysis = len([biz -->(`?Analysis)]) > 0;
             has_report = len([biz -->(`?Report)]) > 0;
-            
+
             results.append({
                 "place_id": biz.place_id,
                 "name": biz.name,
@@ -56,16 +77,20 @@ walker GetBusinesses {
                 "status": biz.status,
                 "has_analysis": has_analysis,
                 "has_report": has_report,
-                "fetched_at": biz.fetched_at
+                "fetched_at": biz.fetched_at,
+                "owner": biz.owner,  # NEW: Include owner
+                "created_at": biz.created_at  # NEW: Include timestamp
             });
             count += 1;
         }
-        
+
         report {
             "success": True,
             "count": len(results),
             "total_in_graph": len(businesses),
-            "businesses": results
+            "businesses": results,
+            "viewing_as": "admin" if is_admin else "user",  # NEW
+            "owner_filter": "all" if is_admin else self.username  # NEW
         };
     }
 }
@@ -77,19 +102,34 @@ walker GetBusinesses {
 
 walker GetReport {
     has business_id: str;
-    
+    has username: str = "";  # NEW: Required for permission check
+
+    obj __specs__ {
+        static has auth: bool = True;  # NEW: Require authentication
+    }
+
     can start with `root entry {
+        # NEW: Verify user
+        if not self.username {
+            report {"error": "Username required"};
+            return;
+        }
+
+        # NEW: Check if user is admin
+        profiles = [-->(`?UserProfile)](?username == self.username);
+        is_admin = profiles and profiles[0].role == UserRole.ADMIN;
+
         # Find the business
         businesses = [here -->(`?Business)];
         target_biz = None;
-        
+
         for biz in businesses {
             if biz.place_id == self.business_id {
                 target_biz = biz;
                 break;
             }
         }
-        
+
         if target_biz is None {
             report {
                 "success": False,
@@ -97,10 +137,19 @@ walker GetReport {
             };
             disengage;
         }
-        
+
+        # NEW: Permission check - user must own business or be admin
+        if not is_admin and target_biz.owner != self.username {
+            report {
+                "error": "Access denied",
+                "message": "You don't have permission to access this business"
+            };
+            return;
+        }
+
         # Get the report
         reports = [target_biz -->(`?Report)];
-        
+
         if not reports {
             report {
                 "success": False,
@@ -108,15 +157,16 @@ walker GetReport {
             };
             disengage;
         }
-        
+
         r = reports[0];
-        
+
         report {
             "success": True,
             "business": {
                 "place_id": target_biz.place_id,
                 "name": target_biz.name,
-                "rating": target_biz.rating
+                "rating": target_biz.rating,
+                "owner": target_biz.owner  # NEW: Include owner info
             },
             "report": {
                 "report_id": r.report_id,

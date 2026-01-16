@@ -831,3 +831,39 @@ curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
    ```bash
    docker logs -f review-analyzer
    ```
+
+
+## Login
+
+### Request
+```bash
+curl -X POST https://review-analysis-server.trynewways.com/user/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "sample123",
+    "password": "sample123"
+  }'
+```
+
+## Register
+
+### Request
+```bash
+curl -X POST https://review-analysis-server.trynewways.com/user/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "sample123",
+    "password": "sample123"
+  }'
+```
+
+## Create_User_Profile
+
+```bash
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_user_profile \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "ahzan",
+    "subscription_tier": "free"
+  }'
+```

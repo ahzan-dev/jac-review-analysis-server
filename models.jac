@@ -220,6 +220,11 @@ node Business {
     has opening_hours: dict = {};
     has photos_count: int = 0;
     has popular_times: dict = {};
+
+    # Authentication & Audit
+    has owner: str = "";  # Username of who created this business
+    has created_at: str = "";  # When business was added
+    has last_analyzed_at: str = "";  # Track analysis frequency
 }
 
 node Review {
@@ -335,6 +340,41 @@ node Report {
     has recommendations_immediate: list[dict] = [];
     has recommendations_short_term: list[dict] = [];
     has recommendations_long_term: list[dict] = [];
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# USER MANAGEMENT & AUTHENTICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+enum SubscriptionTier {
+    FREE = "free",
+    PRO = "pro",
+    ENTERPRISE = "enterprise"
+}
+
+enum UserRole {
+    USER = "user",
+    ADMIN = "admin"
+}
+
+node UserProfile {
+    has username: str;  # Primary key - matches JAC user registration
+    has role: UserRole = UserRole.USER;
+    has subscription_tier: SubscriptionTier = SubscriptionTier.FREE;
+    has created_at: str = "";
+
+    # Subscription Limits
+    has max_businesses: int = 5;  # Free: 5, Pro: 50, Enterprise: unlimited (-1)
+    has daily_analysis_limit: int = 10;  # Free: 10, Pro: 100, Enterprise: unlimited (-1)
+
+    # Usage Tracking
+    has current_business_count: int = 0;
+    has analyses_today: int = 0;
+    has last_reset_date: str = "";  # For daily limit reset
+
+    # Audit
+    has last_login: str = "";
+    has is_active: bool = True;
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════

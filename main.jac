@@ -14,6 +14,7 @@ import json;
 include models;
 include walkers;
 include api_walkers;
+include auth_walkers;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API WALKER: AnalyzeUrl
@@ -27,37 +28,105 @@ walker AnalyzeUrl {
     has analysis_depth: str = "deep";  # "basic", "standard", "deep"
     has api_key: str = SERPAPI_KEY;
     has force_mock: bool = False;
-    
+    has owner: str = "";  # NEW: User who owns this business
+
     # Output
     has success: bool = False;
     has data_source: str = "";
     has output: dict = {};
     has error: str = "";
-    
+
+    obj __specs__ {
+        static has auth: bool = True;  # NEW: Require authentication
+    }
+
     can start with `root entry {
+        # NEW: Verify user profile exists
+        if not self.owner {
+            report {"error": "Owner username required"};
+            return;
+        }
+
+        profiles = [-->(`?UserProfile)](?username == self.owner);
+        if not profiles {
+            report {"error": "User profile not found. Create profile first using create_user_profile walker"};
+            return;
+        }
+
+        profile = profiles[0];
+
+        # NEW: Check if user is active
+        if not profile.is_active {
+            report {"error": "User account is inactive"};
+            return;
+        }
+
+        # NEW: Reset daily limit if needed
+        today = str(datetime.now().date());
+        if profile.last_reset_date != today {
+            profile.analyses_today = 0;
+            profile.last_reset_date = today;
+        }
+
+        # NEW: Check daily analysis limit
+        if profile.daily_analysis_limit != -1 {  # -1 means unlimited
+            if profile.analyses_today >= profile.daily_analysis_limit {
+                report {
+                    "error": "Daily analysis limit reached",
+                    "limit": profile.daily_analysis_limit,
+                    "used": profile.analyses_today,
+                    "reset_date": today,
+                    "tier": profile.subscription_tier.value,
+                    "message": "Upgrade to Pro or Enterprise for more analyses"
+                };
+                return;
+            }
+        }
+
+        # NEW: Check business limit (only if creating new business)
+        # We'll increment after confirming the business is new
+
+        # NEW: Increment daily analysis counter BEFORE expensive operation
+        profile.analyses_today += 1;
+
         # Run full pipeline
         pipeline = here spawn FullPipelineAgent(
             url=self.url,
             max_reviews=self.max_reviews,
             report_type=self.analysis_depth,
             serp_api_key=self.api_key,
-            force_mock=self.force_mock
+            force_mock=self.force_mock,
+            owner=self.owner  # NEW: Pass owner to pipeline
         );
-        
+
         if pipeline.status == "completed" {
             self.success = True;
             self.output = pipeline.output;
             self.business_id = pipeline.business_id;
             self.stages_completed = pipeline.stages_completed;
             self.data_source = pipeline.data_source;
-            
-            
+
+            # NEW: Add usage info to output
+            enhanced_output = self.output;
+            enhanced_output["usage"] = {
+                "analyses_today": profile.analyses_today,
+                "daily_limit": profile.daily_analysis_limit,
+                "businesses_count": profile.current_business_count,
+                "business_limit": profile.max_businesses,
+                "tier": profile.subscription_tier.value
+            };
+
             # Report for API response
-            report self.output;
+            report enhanced_output;
         } else {
             self.success = False;
             self.error = pipeline.error;
-            
+
+            # NEW: Decrement counter if pipeline failed
+            if profile.analyses_today > 0 {
+                profile.analyses_today -= 1;
+            }
+
             report {
                 "success": False,
                 "error": self.error
@@ -220,8 +289,25 @@ walker health_check {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 walker diagnostics {
+    has username: str = "";  # NEW: Required for authentication
+
+    obj __specs__ {
+        static has auth: bool = True;  # NEW: Require authentication
+    }
+
     can check with `root entry {
-        import os;
+
+        # NEW: Admin-only endpoint
+        if not self.username {
+            report {"error": "Username required"};
+            return;
+        }
+
+        profiles = [-->(`?UserProfile)](?username == self.username);
+        if not profiles or profiles[0].role != UserRole.ADMIN {
+            report {"error": "Unauthorized. Admin access required."};
+            return;
+        }
 
         report {
             "environment": {

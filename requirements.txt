@@ -2,4 +2,4 @@ jaclang
 byllm
 requests
 python-dotenv
-jacscale
+jac-scale

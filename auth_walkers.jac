@@ -13,26 +13,22 @@ include models;
 # ═══════════════════════════════════════════════════════════════════════════════
 # WALKER 1: Create User Profile
 # ═══════════════════════════════════════════════════════════════════════════════
-# Creates a UserProfile node for a registered user
-# Call this after /user/register to set up subscription limits
+# Creates a UserProfile node on the authenticated user's root
+# Called after /user/register - requires JWT token in Authorization header
 
 walker create_user_profile {
-    has username: str;
     has subscription_tier: str = "free";
 
-    obj __specs__ {
-        static has auth: bool = False;  # No auth needed for profile creation
-    }
+    
 
     can create_profile with `root entry {
-        # Check if profile already exists
-        existing = [-->(`?UserProfile)](?username == self.username);
+        # Check if profile already exists on this user's root
+        existing = [-->(`?UserProfile)];
 
         if existing {
             report {
                 "status": "exists",
-                "message": "User profile already exists",
-                "username": self.username
+                "message": "User profile already exists"
             };
             return;
         }
@@ -49,9 +45,10 @@ walker create_user_profile {
             daily_limit = -1;  # unlimited
         }
 
-        # Create profile
+        # Create profile on authenticated user's root
+        # Note: Username is not needed - profile is on user's isolated root
         new_profile = UserProfile(
-            username=self.username,
+            username="",  # Will be set if needed, but root isolation handles identity
             subscription_tier=SubscriptionTier(self.subscription_tier),
             max_businesses=max_biz,
             daily_analysis_limit=daily_limit,
@@ -63,7 +60,6 @@ walker create_user_profile {
 
         report {
             "status": "created",
-            "username": self.username,
             "tier": self.subscription_tier,
             "limits": {
                 "businesses": max_biz,
@@ -76,22 +72,19 @@ walker create_user_profile {
 # ═══════════════════════════════════════════════════════════════════════════════
 # WALKER 2: Get User Profile
 # ═══════════════════════════════════════════════════════════════════════════════
-# Retrieves user profile and current usage/limits
+# Retrieves the authenticated user's profile and current usage/limits
 
 walker get_user_profile {
-    has username: str;
-
-    obj __specs__ {
-        static has auth: bool = False;
-    }
+    
 
     can fetch_profile with `root entry {
-        profiles = [-->(`?UserProfile)](?username == self.username);
+        # Get profile from authenticated user's root (no username filter needed)
+        profiles = [-->(`?UserProfile)];
 
         if not profiles {
             report {
                 "status": "not_found",
-                "message": "User profile not found. Create profile first."
+                "message": "User profile not found. Create profile first using create_user_profile."
             };
             return;
         }
@@ -107,7 +100,6 @@ walker get_user_profile {
 
         report {
             "status": "found",
-            "username": profile.username,
             "role": profile.role.value,
             "subscription": profile.subscription_tier.value,
             "limits": {
@@ -127,25 +119,26 @@ walker get_user_profile {
 # WALKER 3: Update Subscription (Admin Only)
 # ═══════════════════════════════════════════════════════════════════════════════
 # Allows admins to upgrade/downgrade user subscriptions
+# SECURITY: Admin status verified from authenticated user's own profile
 
 walker update_subscription {
-    has target_username: str;
+    has target_username: str;  # Username of user to update
     has new_tier: str;
-    has admin_username: str;
 
-    obj __specs__ {
-        static has auth: bool = True;  # Requires authentication
-    }
+    
 
     can upgrade_user with `root entry {
-        # Verify admin permissions
-        admin_profiles = [-->(`?UserProfile)](?username == self.admin_username);
-        if not admin_profiles or admin_profiles[0].role != UserRole.ADMIN {
+        # SECURITY: Verify admin from OWN profile (on authenticated user's root)
+        # This prevents impersonation - admin status comes from JWT context, not body
+        my_profiles = [-->(`?UserProfile)];
+        if not my_profiles or my_profiles[0].role != UserRole.ADMIN {
             report {"error": "Unauthorized. Admin access required."};
             return;
         }
 
-        # Find target user
+        # Find target user profile
+        # NOTE: With full isolated roots, this requires AdminRoot pattern
+        # For now, searching from root which may have shared access
         target_profiles = [-->(`?UserProfile)](?username == self.target_username);
         if not target_profiles {
             report {"error": "Target user not found"};
@@ -170,7 +163,7 @@ walker update_subscription {
 
         report {
             "status": "updated",
-            "username": profile.username,
+            "target_username": self.target_username,
             "new_tier": self.new_tier,
             "new_limits": {
                 "businesses": profile.max_businesses,
@@ -183,29 +176,31 @@ walker update_subscription {
 # ═══════════════════════════════════════════════════════════════════════════════
 # WALKER 4: Create Admin (Setup Only)
 # ═══════════════════════════════════════════════════════════════════════════════
-# Creates or upgrades a user to admin role
+# Upgrades the authenticated user to admin role
+# SECURITY: Requires authentication + secret key, upgrades the caller's own profile
 
 walker create_admin {
-    has username: str;
-    has secret_key: str = "";  # Optional: require secret for first admin
+    has secret_key: str = "";  # Required: must match ADMIN_SETUP_SECRET env var
 
-    obj __specs__ {
-        static has auth: bool = False;  # Special case for setup
-    }
+    
 
     can setup_admin with `root entry {
-        # Optional: Check secret key from environment
+        # SECURITY: Check secret key from environment
         admin_secret = os.getenv('ADMIN_SETUP_SECRET', '');
-        if admin_secret and self.secret_key != admin_secret {
+        if not admin_secret {
+            report {"error": "ADMIN_SETUP_SECRET environment variable not configured"};
+            return;
+        }
+        if self.secret_key != admin_secret {
             report {"error": "Invalid admin setup secret"};
             return;
         }
 
-        # Check if profile exists
-        existing = [-->(`?UserProfile)](?username == self.username);
+        # Get the authenticated user's profile (on their own root)
+        existing = [-->(`?UserProfile)];
 
         if existing {
-            # Upgrade existing user to admin
+            # Upgrade existing profile to admin
             profile = existing[0];
             profile.role = UserRole.ADMIN;
             profile.subscription_tier = SubscriptionTier.ENTERPRISE;
@@ -214,13 +209,12 @@ walker create_admin {
 
             report {
                 "status": "upgraded",
-                "message": "User upgraded to admin",
-                "username": self.username
+                "message": "Your account has been upgraded to admin"
             };
         } else {
-            # Create new admin profile
+            # Create new admin profile on the authenticated user's root
             admin_profile = UserProfile(
-                username=self.username,
+                username="",  # Not needed with isolated roots
                 role=UserRole.ADMIN,
                 subscription_tier=SubscriptionTier.ENTERPRISE,
                 max_businesses=-1,
@@ -234,9 +228,7 @@ walker create_admin {
 
             report {
                 "status": "created",
-                "message": "Admin profile created",
-                "username": self.username,
-                "note": "Make sure to register this user via /user/register endpoint"
+                "message": "Admin profile created for your account"
             };
         }
     }
@@ -251,9 +243,7 @@ walker create_admin {
 #     has admin_username: str;
 #     has confirm_reset: bool = False;
 
-#     obj __specs__ {
-#         static has auth: bool = False;  # Special case for setup
-#     }
+
 
 #     can clean_database with `root entry {
 #         if not self.confirm_reset {

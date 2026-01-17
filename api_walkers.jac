@@ -23,30 +23,20 @@ include walkers;
 walker GetBusinesses {
     has limit: int = 20;
     has status_filter: str = "";  # "pending", "fetched", "analyzed", "completed"
-    has username: str = "";  # NEW: Required for user isolation
 
-    obj __specs__ {
-        static has auth: bool = True;  # NEW: Require authentication
-    }
+    
 
     can start with `root entry {
-        # NEW: Verify user
-        if not self.username {
-            report {"error": "Username required"};
-            return;
-        }
+        # SECURITY: With isolated roots, user only sees their own businesses automatically
+        # No need for username parameter or owner filtering
 
-        # NEW: Check if user is admin
-        profiles = [-->(`?UserProfile)](?username == self.username);
+        # Check if user is admin (from their own profile)
+        profiles = [-->(`?UserProfile)];
         is_admin = profiles and profiles[0].role == UserRole.ADMIN;
 
+        # Get businesses from authenticated user's root
+        # With isolated roots, this automatically returns only the user's businesses
         businesses = [here -->(`?Business)];
-
-        # NEW: Filter by owner (unless admin)
-        if not is_admin {
-            # Regular users only see their own businesses
-            businesses = [b for b in businesses if b.owner == self.username];
-        }
 
         results = [];
         count = 0;
@@ -78,8 +68,7 @@ walker GetBusinesses {
                 "has_analysis": has_analysis,
                 "has_report": has_report,
                 "fetched_at": biz.fetched_at,
-                "owner": biz.owner,  # NEW: Include owner
-                "created_at": biz.created_at  # NEW: Include timestamp
+                "created_at": biz.created_at
             });
             count += 1;
         }
@@ -89,8 +78,7 @@ walker GetBusinesses {
             "count": len(results),
             "total_in_graph": len(businesses),
             "businesses": results,
-            "viewing_as": "admin" if is_admin else "user",  # NEW
-            "owner_filter": "all" if is_admin else self.username  # NEW
+            "viewing_as": "admin" if is_admin else "user"
         };
     }
 }
@@ -102,24 +90,14 @@ walker GetBusinesses {
 
 walker GetReport {
     has business_id: str;
-    has username: str = "";  # NEW: Required for permission check
 
-    obj __specs__ {
-        static has auth: bool = True;  # NEW: Require authentication
-    }
+    
 
     can start with `root entry {
-        # NEW: Verify user
-        if not self.username {
-            report {"error": "Username required"};
-            return;
-        }
+        # SECURITY: With isolated roots, user can only see their own businesses
+        # No need for username parameter or permission check
 
-        # NEW: Check if user is admin
-        profiles = [-->(`?UserProfile)](?username == self.username);
-        is_admin = profiles and profiles[0].role == UserRole.ADMIN;
-
-        # Find the business
+        # Find the business on authenticated user's root
         businesses = [here -->(`?Business)];
         target_biz = None;
 
@@ -136,15 +114,6 @@ walker GetReport {
                 "error": f"Business not found: {self.business_id}"
             };
             disengage;
-        }
-
-        # NEW: Permission check - user must own business or be admin
-        if not is_admin and target_biz.owner != self.username {
-            report {
-                "error": "Access denied",
-                "message": "You don't have permission to access this business"
-            };
-            return;
         }
 
         # Get the report
@@ -165,8 +134,7 @@ walker GetReport {
             "business": {
                 "place_id": target_biz.place_id,
                 "name": target_biz.name,
-                "rating": target_biz.rating,
-                "owner": target_biz.owner  # NEW: Include owner info
+                "rating": target_biz.rating
             },
             "report": {
                 "report_id": r.report_id,
@@ -192,7 +160,9 @@ walker GetReport {
 
 walker GetAnalysis {
     has business_id: str;
+
     
+
     can start with `root entry {
         # Find the business
         businesses = [here -->(`?Business)];
@@ -311,7 +281,9 @@ walker GetReviews {
     has min_rating: int = 1;
     has max_rating: int = 5;
     has sort_by: str = "date";  # "date", "rating", "sentiment_score"
+
     
+
     can start with `root entry {
         # Find the business
         businesses = [here -->(`?Business)];
@@ -409,7 +381,9 @@ walker Reanalyze {
     has business_id: str;
     has report_type: str = "executive";
     has force_sentiment: bool = False;  # Re-run sentiment analysis too
+
     
+
     can start with `root entry {
         # Find the business
         businesses = [here -->(`?Business)];
@@ -485,7 +459,9 @@ walker Reanalyze {
 
 walker DeleteBusiness {
     has business_id: str;
+
     
+
     can start with `root entry {
         # Find the business
         businesses = [here -->(`?Business)];
@@ -537,6 +513,8 @@ walker DeleteBusiness {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 walker GetStats {
+    
+
     can start with `root entry {
         businesses = [here -->(`?Business)];
         

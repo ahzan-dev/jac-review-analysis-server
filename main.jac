@@ -21,15 +21,12 @@ include auth_walkers;
 # API WALKER: AnalyzeUrl
 # Main entry point for analysis - called by external services
 # ═══════════════════════════════════════════════════════════════════════════════
-glob SERPAPI_KEY:
-         str = os.getenv('SERPAPI_KEY', '');
+
 walker AnalyzeUrl {
     # Input parameters
     has url: str;
     has max_reviews: int = 100;
     has analysis_depth: str = "deep";  # "basic", "standard", "deep"
-    has api_key: str = SERPAPI_KEY;
-    has force_mock: bool = False;
     has force_refresh: bool = False;    # Force re-fetch even if cached data is fresh
     has freshness_days: int = 7;        # Configurable freshness window (days)
 
@@ -90,7 +87,7 @@ walker AnalyzeUrl {
         business_id = parsed["data_id"] if parsed["data_id"] else "";
 
         # Check for existing fresh business (cache check)
-        if business_id and not self.force_refresh and not self.force_mock {
+        if business_id and not self.force_refresh {
             existing = self.find_existing_business(here, business_id);
             if existing {
                 freshness = self.check_freshness(existing, self.freshness_days);
@@ -157,9 +154,7 @@ walker AnalyzeUrl {
         pipeline = here spawn FullPipelineAgent(
             url=self.url,
             max_reviews=self.max_reviews,
-            report_type=self.analysis_depth,
-            serp_api_key=self.api_key,
-            force_mock=self.force_mock
+            report_type=self.analysis_depth
         );
 
         if pipeline.status == "completed" {

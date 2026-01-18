@@ -253,8 +253,6 @@ def parse_review_date(date_str: str, relative_date: str) -> str {
 walker DataFetcherAgent {
     has url: str;
     has max_reviews: int = 100;
-    has serp_api_key: str = "";
-    has force_mock: bool = False;
     has existing_business_id: str = "";  # Pass existing business_id for refresh mode
 
     # Results
@@ -268,17 +266,13 @@ walker DataFetcherAgent {
     can start with `root entry {
         print(f"\n🚀 DataFetcherAgent starting...");
 
-        if not self.serp_api_key {
-            self.serp_api_key = os.environ.get("SERPAPI_KEY", "");
-        }
+        # Get API key from environment (not stored as property to avoid exposure)
+        serp_api_key = os.environ.get("SERPAPI_KEY", "");
 
         # Determine data source
-        if self.force_mock {
-            self.data_source = "mock";
-            print("   📦 DATA SOURCE: MOCK (forced)");
-        } elif self.serp_api_key and len(self.serp_api_key) > 10 {
+        if serp_api_key and len(serp_api_key) > 10 {
             self.data_source = "serpapi";
-            masked = self.serp_api_key[:6] + "..." + self.serp_api_key[-4:];
+            masked = serp_api_key[:6] + "..." + serp_api_key[-4:];
             print(f"   🌐 DATA SOURCE: SERP API (key: {masked})");
         } else {
             self.data_source = "mock";
@@ -399,11 +393,14 @@ walker DataFetcherAgent {
             data_id = parsed["data_id"];
             data_param = f"!4m5!3m4!1s{data_id}!8m2!3d0!4d0!16s";
 
+            # Get API key from environment
+            api_key = os.environ.get("SERPAPI_KEY", "");
+
             params = {
                 "engine": "google_maps",
                 "type": "place",
                 "data": data_param,
-                "api_key": self.serp_api_key,
+                "api_key": api_key,
                 "hl": "en"
             };
 
@@ -493,13 +490,16 @@ walker DataFetcherAgent {
         next_page_token = None;
         total_fetched = 0;
         page = 1;
-        
+
+        # Get API key from environment
+        api_key = os.environ.get("SERPAPI_KEY", "");
+
         while total_fetched < self.max_reviews {
             try {
                 params = {
                     "engine": "google_maps_reviews",
                     "data_id": parsed["data_id"],
-                    "api_key": self.serp_api_key,
+                    "api_key": api_key,
                     "sort_by": "newestFirst"
                 };
                 
@@ -1556,9 +1556,7 @@ walker FullPipelineAgent {
     has url: str;
     has max_reviews: int = 100;
     has report_type: str = "deep";
-    has serp_api_key: str = "";
-    has force_mock: bool = False;
-    
+
     # Results
     has business_id: str = "";
     has status: str = "pending";
@@ -1581,9 +1579,7 @@ walker FullPipelineAgent {
         
         fetcher = here spawn DataFetcherAgent(
             url=self.url,
-            max_reviews=self.max_reviews,
-            serp_api_key=self.serp_api_key,
-            force_mock=self.force_mock
+            max_reviews=self.max_reviews
         );
         
         if fetcher.status == "failed" {

@@ -1325,7 +1325,7 @@ walker RecommendationAgent {
     }
 
     def calculate_severity_metrics(analysis: Analysis, themes: list, total_reviews: int) -> dict {
-        """Calculate severity levels for each issue based on mention percentage."""
+        # """Calculate severity levels for each issue based on mention percentage."""
         severity_data = {
             "issues": [],
             "overall_severity": "low"
@@ -1389,7 +1389,7 @@ walker RecommendationAgent {
     }
 
     def detect_brand_positioning(business: Business, analysis: Analysis, themes: list) -> dict {
-        """Detect brand positioning from price level and theme performance."""
+        # """Detect brand positioning from price level and theme performance."""
 
         # Detect price positioning from price_level
         price_level = business.price_level.lower() if business.price_level else "";
@@ -1675,7 +1675,7 @@ walker FullPipelineAgent {
     }
 
     def rec_to_dict(r: BrandAwareRecommendation) -> dict {
-        """Convert BrandAwareRecommendation to dict for storage/output."""
+        # """Convert BrandAwareRecommendation to dict for storage/output."""
         return {
             "action": r.action,
             "action_type": r.action_type,
@@ -1699,7 +1699,7 @@ walker FullPipelineAgent {
     }
 
     def protective_to_dict(p: ProtectiveRecommendation) -> dict {
-        """Convert ProtectiveRecommendation to dict for storage/output."""
+        # """Convert ProtectiveRecommendation to dict for storage/output."""
         return {
             "area": p.area,
             "do_not_action": p.do_not_action,
@@ -1943,7 +1943,7 @@ walker ReanalyzePipeline {
     }
 
     def rec_to_dict(r: BrandAwareRecommendation) -> dict {
-        """Convert BrandAwareRecommendation to dict for storage/output."""
+        # """Convert BrandAwareRecommendation to dict for storage/output."""
         return {
             "action": r.action,
             "action_type": r.action_type,
@@ -1967,7 +1967,7 @@ walker ReanalyzePipeline {
     }
 
     def protective_to_dict(p: ProtectiveRecommendation) -> dict {
-        """Convert ProtectiveRecommendation to dict for storage/output."""
+        # """Convert ProtectiveRecommendation to dict for storage/output."""
         return {
             "area": p.area,
             "do_not_action": p.do_not_action,

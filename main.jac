@@ -197,7 +197,7 @@ walker AnalyzeUrl {
     }
 
     def find_existing_business(root_node: `root, business_id: str) -> Business | None {
-        """Find existing business by place_id in user's root."""
+        # """Find existing business by place_id in user's root."""
         businesses = [root_node -->(`?Business)];
         for biz in businesses {
             if biz.place_id == business_id {
@@ -208,7 +208,7 @@ walker AnalyzeUrl {
     }
 
     def check_freshness(business: Business, max_days: int) -> dict {
-        """Check if business data is still fresh based on fetched_at timestamp."""
+        # """Check if business data is still fresh based on fetched_at timestamp."""
         if not business.fetched_at {
             return {"is_fresh": False, "age_days": -1, "reason": "No fetch timestamp"};
         }

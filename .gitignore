@@ -1,6 +1,7 @@
 /.env
 
 /.jac
+/.jir
 main.session.db
 __pycache__/
 .vscode/

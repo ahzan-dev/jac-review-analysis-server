@@ -672,4 +672,4 @@ sem BrandAwareRecommendationResult.recommendations_immediate = "Immediate action
 sem BrandAwareRecommendationResult.recommendations_short_term = "Short-term actions (this month) - typically 2-4 items";
 sem BrandAwareRecommendationResult.recommendations_long_term = "Long-term actions (this quarter) - typically 1-3 items";
 sem BrandAwareRecommendationResult.do_not_recommendations = "CRITICAL: Protective recommendations listing what NOT to do - typically 2-4 items";
-sem BrandAwareRecommendationResult.overall_risk_assessment = "Summary of overall risk profile of all recommendations"
+sem BrandAwareRecommendationResult.overall_risk_assessment = "Summary of overall risk profile of all recommendations";

@@ -27,11 +27,16 @@ RUN pip install --no-cache-dir \
 # Install additional Python dependencies
 RUN pip install --no-cache-dir requests python-dotenv
 
-# Copy JAC application files
-COPY *.jac ./
+# Copy ALL JAC application files
+COPY main.jac models.jac walkers.jac api_walkers.jac auth_walkers.jac ./
 
 # Create data and cache directories
 RUN mkdir -p /app/data /app/.jac/cache
+
+# ==========================================
+# CRITICAL: Compile .jac files to bytecode
+# ==========================================
+RUN jac build main.jac
 
 # Environment variables
 ENV PORT=8000

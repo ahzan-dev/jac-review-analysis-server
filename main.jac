@@ -30,13 +30,15 @@ walker AnalyzeUrl {
     has analysis_depth: str = "deep";  # "basic", "standard", "deep"
     has api_key: str = SERPAPI_KEY;
     has force_mock: bool = False;
+    has force_refresh: bool = False;    # Force re-fetch even if cached data is fresh
+    has freshness_days: int = 7;        # Configurable freshness window (days)
+
     # Output
     has success: bool = False;
     has data_source: str = "";
+    has from_cache: bool = False;       # Indicates if using cached data
     has output: dict = {};
     has error: str = "";
-
-    
 
     can start with `root entry {
         # SECURITY: Get user profile from authenticated user's root (no username param needed)
@@ -44,7 +46,7 @@ walker AnalyzeUrl {
         if not profiles {
             report {
                 "error": "User profile not found. Create profile first using create_user_profile walker"
-            } ;
+            };
             return;
         }
 
@@ -52,7 +54,7 @@ walker AnalyzeUrl {
 
         # Check if user is active
         if not profile.is_active {
-            report {"error": "User account is inactive"} ;
+            report {"error": "User account is inactive"};
             return;
         }
 
@@ -65,7 +67,6 @@ walker AnalyzeUrl {
 
         # Check daily analysis limit
         if profile.daily_analysis_limit != -1 {  # -1 means unlimited
-
             if profile.analyses_today >= profile.daily_analysis_limit {
                 report {
                     "error": "Daily analysis limit reached",
@@ -74,15 +75,84 @@ walker AnalyzeUrl {
                     "reset_date": today,
                     "tier": profile.subscription_tier.value,
                     "message": "Upgrade to Pro or Enterprise for more analyses"
-                } ;
+                };
                 return;
+            }
+        }
+
+        # Parse URL and extract business_id for cache check
+        parsed = parse_google_maps_url(self.url);
+        if not parsed["is_valid"] {
+            report {"error": f"Invalid URL: {parsed['error']}"};
+            return;
+        }
+
+        business_id = parsed["data_id"] if parsed["data_id"] else "";
+
+        # Check for existing fresh business (cache check)
+        if business_id and not self.force_refresh and not self.force_mock {
+            existing = self.find_existing_business(here, business_id);
+            if existing {
+                freshness = self.check_freshness(existing, self.freshness_days);
+                if freshness["is_fresh"] {
+                    # Use cached data - run only analysis stages (no fetch)
+                    print(f"   📦 Using cached data for business: {existing.name}");
+                    print(f"   📅 Data age: {freshness['age_days']} days (threshold: {self.freshness_days} days)");
+
+                    # Increment counter for cached analysis too
+                    profile.analyses_today += 1;
+
+                    # Run reanalysis pipeline on existing data
+                    pipeline = here spawn ReanalyzePipeline(
+                        business_id=business_id,
+                        report_type=self.analysis_depth
+                    );
+
+                    if pipeline.status == "completed" {
+                        self.success = True;
+                        self.output = pipeline.output;
+                        self.business_id = business_id;
+                        self.stages_completed = pipeline.stages_completed;
+                        self.data_source = "cache";
+                        self.from_cache = True;
+
+                        # Add usage and cache info to output
+                        enhanced_output = self.output;
+                        enhanced_output["usage"] = {
+                            "analyses_today": profile.analyses_today,
+                            "daily_limit": profile.daily_analysis_limit,
+                            "businesses_count": profile.current_business_count,
+                            "business_limit": profile.max_businesses,
+                            "tier": profile.subscription_tier.value
+                        };
+                        enhanced_output["cache_info"] = {
+                            "from_cache": True,
+                            "data_age_days": freshness["age_days"],
+                            "freshness_threshold_days": self.freshness_days,
+                            "fetched_at": existing.fetched_at,
+                            "message": "Using cached reviews. Use force_refresh=true to re-fetch."
+                        };
+                        report enhanced_output;
+                    } else {
+                        self.success = False;
+                        self.error = pipeline.error;
+                        if profile.analyses_today > 0 {
+                            profile.analyses_today -= 1;
+                        }
+                        report {"success": False, "error": self.error};
+                    }
+                    return;
+                } else {
+                    # Data is stale - will refresh
+                    print(f"   ⏰ Cached data is stale ({freshness['age_days']} days old). Refreshing...");
+                }
             }
         }
 
         # Increment daily analysis counter BEFORE expensive operation
         profile.analyses_today += 1;
 
-        # Run full pipeline
+        # Run full pipeline (fresh fetch)
         # SECURITY: Business will be created on authenticated user's root automatically
         pipeline = here spawn FullPipelineAgent(
             url=self.url,
@@ -98,6 +168,8 @@ walker AnalyzeUrl {
             self.business_id = pipeline.business_id;
             self.stages_completed = pipeline.stages_completed;
             self.data_source = pipeline.data_source;
+            self.from_cache = False;
+
             # Add usage info to output
             enhanced_output = self.output;
             enhanced_output["usage"] = {
@@ -107,8 +179,12 @@ walker AnalyzeUrl {
                 "business_limit": profile.max_businesses,
                 "tier": profile.subscription_tier.value
             };
+            enhanced_output["cache_info"] = {
+                "from_cache": False,
+                "message": "Fresh data fetched from API"
+            };
             # Report for API response
-            report enhanced_output ;
+            report enhanced_output;
         } else {
             self.success = False;
             self.error = pipeline.error;
@@ -116,7 +192,49 @@ walker AnalyzeUrl {
             if profile.analyses_today > 0 {
                 profile.analyses_today -= 1;
             }
-            report {"success": False, "error": self.error} ;
+            report {"success": False, "error": self.error};
+        }
+    }
+
+    def find_existing_business(root_node: `root, business_id: str) -> Business | None {
+        """Find existing business by place_id in user's root."""
+        businesses = [root_node -->(`?Business)];
+        for biz in businesses {
+            if biz.place_id == business_id {
+                return biz;
+            }
+        }
+        return None;
+    }
+
+    def check_freshness(business: Business, max_days: int) -> dict {
+        """Check if business data is still fresh based on fetched_at timestamp."""
+        if not business.fetched_at {
+            return {"is_fresh": False, "age_days": -1, "reason": "No fetch timestamp"};
+        }
+
+        try {
+            fetched = datetime.fromisoformat(business.fetched_at);
+            now = datetime.now();
+            age_delta = now - fetched;
+            age_days = age_delta.days;
+
+            if age_days <= max_days {
+                return {
+                    "is_fresh": True,
+                    "age_days": age_days,
+                    "max_days": max_days
+                };
+            } else {
+                return {
+                    "is_fresh": False,
+                    "age_days": age_days,
+                    "max_days": max_days,
+                    "reason": f"Data is {age_days} days old (max: {max_days})"
+                };
+            }
+        } except Exception as e {
+            return {"is_fresh": False, "age_days": -1, "reason": f"Invalid fetch timestamp: {str(e)}"};
         }
     }
 }

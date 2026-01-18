@@ -255,21 +255,23 @@ walker DataFetcherAgent {
     has max_reviews: int = 100;
     has serp_api_key: str = "";
     has force_mock: bool = False;
-    
+    has existing_business_id: str = "";  # Pass existing business_id for refresh mode
+
     # Results
     has business: Business = None;
     has reviews_fetched: int = 0;
     has status: str = "pending";
     has error: str = "";
     has data_source: str = "";
-    
+    has is_refresh: bool = False;
+
     can start with `root entry {
         print(f"\n🚀 DataFetcherAgent starting...");
-        
+
         if not self.serp_api_key {
             self.serp_api_key = os.environ.get("SERPAPI_KEY", "");
         }
-        
+
         # Determine data source
         if self.force_mock {
             self.data_source = "mock";
@@ -282,30 +284,82 @@ walker DataFetcherAgent {
             self.data_source = "mock";
             print("   📦 DATA SOURCE: MOCK (no API key)");
         }
-        
+
         # Parse URL
         parsed = parse_google_maps_url(self.url);
-        
+
         if not parsed["is_valid"] {
             self.error = f"Invalid URL: {parsed['error']}";
             self.status = "failed";
             print(f"   ❌ {self.error}");
             disengage;
         }
-        
+
         print(f"   ✓ URL parsed - data_id: {parsed['data_id']}");
-        
-        # Create Business node
+
+        # Check for existing business (refresh mode)
         business_id = parsed["data_id"] if parsed["data_id"] else str(uuid4());
-        
-        self.business = here ++> Business(
-            place_id=business_id,
-            data_id=parsed["data_id"],
-            name=parsed["place_name"] if parsed["place_name"] else "Unknown Business",
-            original_url=self.url,
-            status="fetching"
-        );
-        
+        existing_biz = None;
+
+        if self.existing_business_id {
+            # Explicit refresh mode - find the business
+            businesses = [here -->(`?Business)];
+            for biz in businesses {
+                if biz.place_id == self.existing_business_id {
+                    existing_biz = biz;
+                    break;
+                }
+            }
+        } else {
+            # Check if business already exists by place_id
+            businesses = [here -->(`?Business)];
+            for biz in businesses {
+                if biz.place_id == business_id {
+                    existing_biz = biz;
+                    break;
+                }
+            }
+        }
+
+        if existing_biz {
+            # Refresh mode: update existing business
+            self.is_refresh = True;
+            self.business = [existing_biz];
+            self.business[0].status = "refreshing";
+            print(f"   🔄 REFRESH MODE: Updating existing business: {existing_biz.name}");
+
+            # Clear old reviews, themes, analysis, and reports
+            old_reviews = [existing_biz -->(`?Review)];
+            old_themes = [existing_biz -->(`?Theme)];
+            old_analyses = [existing_biz -->(`?Analysis)];
+            old_reports = [existing_biz -->(`?Report)];
+
+            print(f"   🗑️  Clearing {len(old_reviews)} old reviews, {len(old_themes)} themes, {len(old_analyses)} analyses, {len(old_reports)} reports");
+
+            for r in old_reviews {
+                del r;
+            }
+            for t in old_themes {
+                del t;
+            }
+            for a in old_analyses {
+                del a;
+            }
+            for rep in old_reports {
+                del rep;
+            }
+        } else {
+            # Create new Business node
+            self.business = here ++> Business(
+                place_id=business_id,
+                data_id=parsed["data_id"],
+                name=parsed["place_name"] if parsed["place_name"] else "Unknown Business",
+                original_url=self.url,
+                status="fetching"
+            );
+            print(f"   ➕ Creating new business node");
+        }
+
         # Fetch place details
         print("   📍 Fetching place details...");
         self.fetch_place_details(parsed);
@@ -470,11 +524,11 @@ walker DataFetcherAgent {
                         author=rev.get("user", {}).get("name", "Anonymous"),
                         author_image=rev.get("user", {}).get("thumbnail", ""),
                         rating=int(rev.get("rating", 3)),
-                        text=rev.get("snippet", rev.get("text", "")),
-                        date=rev.get("date", ""),
-                        relative_date=rev.get("relative_date", ""),
+                        text=rev.get("extracted_snippet", {}).get("original", rev.get("snippet", "")),
+                        date=rev.get("iso_date", rev.get("date", "")),
+                        relative_date=rev.get("date", ""),
                         likes=int(rev.get("likes", 0)),
-                        owner_response=rev.get("response", {}).get("snippet", "") if rev.get("response") else ""
+                        owner_response=rev.get("response", {}).get("extracted_snippet", {}).get("original", rev.get("response", {}).get("snippet", "")) if rev.get("response") else ""
                     );
                     total_fetched += 1;
                 }
@@ -1193,6 +1247,308 @@ walker ReportGeneratorAgent {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# AGENT 5: BRAND-AWARE RECOMMENDATION AGENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker RecommendationAgent {
+    has business_id: str = "";
+
+    # Results
+    has recommendations: BrandAwareRecommendationResult = None;
+    has status: str = "pending";
+
+    can start with `root entry {
+        print("\n💡 RecommendationAgent starting...");
+        visit [-->(`?Business)];
+    }
+
+    can generate with Business entry {
+        if self.business_id and here.place_id != self.business_id {
+            visit [-->];
+            return;
+        }
+
+        print(f"   Generating brand-aware recommendations for: {here.name}");
+
+        # Get analysis and themes
+        analyses = [here -->(`?Analysis)];
+        if not analyses {
+            print("   ❌ No analysis found");
+            self.status = "failed";
+            disengage;
+        }
+
+        analysis = analyses[0];
+        themes = [here -->(`?Theme)];
+        reviews = [here -->(`?Review)];
+
+        # Calculate severity metrics
+        severity_data = self.calculate_severity_metrics(analysis, themes, len(reviews));
+
+        # Detect brand positioning
+        brand_positioning = self.detect_brand_positioning(here, analysis, themes);
+
+        print(f"   Brand positioning: {brand_positioning['price_positioning']}");
+        print(f"   Protected strengths: {brand_positioning['protected_strengths']}");
+
+        # Generate brand-aware recommendations
+        self.recommendations = self.generate_brand_aware_recommendations(
+            business_name=here.name,
+            business_type=here.business_type_normalized,
+            price_level=here.price_level,
+            rating=here.rating,
+            total_reviews=here.total_reviews,
+            reviews_analyzed=analysis.reviews_analyzed,
+            health_score=analysis.health_score,
+            health_grade=analysis.health_grade,
+            brand_positioning=brand_positioning,
+            severity_data=severity_data,
+            strengths=analysis.strengths,
+            weaknesses=analysis.weaknesses,
+            opportunities=analysis.opportunities,
+            critical_issues=analysis.critical_issues,
+            themes=[{
+                "name": t.name,
+                "sentiment": t.avg_sentiment,
+                "mentions": t.mention_count,
+                "mention_pct": round(t.mention_count / analysis.reviews_analyzed * 100, 1) if analysis.reviews_analyzed > 0 else 0,
+                "sub_themes": t.sub_themes
+            } for t in themes],
+            trend_direction=analysis.trend_direction
+        );
+
+        self.status = "completed";
+        print(f"   ✅ Generated {len(self.recommendations.recommendations_immediate)} immediate, "
+              f"{len(self.recommendations.recommendations_short_term)} short-term, "
+              f"{len(self.recommendations.recommendations_long_term)} long-term recommendations");
+        print(f"   🛡️ Generated {len(self.recommendations.do_not_recommendations)} protective recommendations");
+    }
+
+    def calculate_severity_metrics(analysis: Analysis, themes: list, total_reviews: int) -> dict {
+        """Calculate severity levels for each issue based on mention percentage."""
+        severity_data = {
+            "issues": [],
+            "overall_severity": "low"
+        };
+
+        # Analyze each weakness/critical issue
+        for issue in analysis.critical_issues {
+            mention_count = issue.get("mention_count", 0);
+            mention_pct = (mention_count / total_reviews * 100) if total_reviews > 0 else 0;
+
+            if mention_pct < 5 {
+                severity = "low";
+            } elif mention_pct < 15 {
+                severity = "moderate";
+            } else {
+                severity = "high";
+            }
+
+            severity_data["issues"].append({
+                "issue": issue.get("issue", ""),
+                "mention_count": mention_count,
+                "mention_pct": round(mention_pct, 1),
+                "severity": severity
+            });
+        }
+
+        # Analyze theme-level issues (negative sentiment themes)
+        for t in themes {
+            if t.avg_sentiment < -0.2 {
+                mention_pct = (t.mention_count / total_reviews * 100) if total_reviews > 0 else 0;
+                if mention_pct < 5 {
+                    severity = "low";
+                } elif mention_pct < 15 {
+                    severity = "moderate";
+                } else {
+                    severity = "high";
+                }
+
+                severity_data["issues"].append({
+                    "issue": f"Negative sentiment on {t.name}",
+                    "mention_count": t.mention_count,
+                    "mention_pct": round(mention_pct, 1),
+                    "severity": severity
+                });
+            }
+        }
+
+        # Calculate overall severity
+        high_count = sum(1 for i in severity_data["issues"] if i["severity"] == "high");
+        moderate_count = sum(1 for i in severity_data["issues"] if i["severity"] == "moderate");
+
+        if high_count > 0 {
+            severity_data["overall_severity"] = "high";
+        } elif moderate_count > 0 {
+            severity_data["overall_severity"] = "moderate";
+        } else {
+            severity_data["overall_severity"] = "low";
+        }
+
+        return severity_data;
+    }
+
+    def detect_brand_positioning(business: Business, analysis: Analysis, themes: list) -> dict {
+        """Detect brand positioning from price level and theme performance."""
+
+        # Detect price positioning from price_level
+        price_level = business.price_level.lower() if business.price_level else "";
+
+        if "10,000" in price_level or "$$$$" in price_level or "expensive" in price_level {
+            price_positioning = "premium";
+        } elif "$$$" in price_level or "5,000" in price_level {
+            price_positioning = "mid-range";
+        } else {
+            price_positioning = "standard";
+        }
+
+        # High rating + high health score = premium brand
+        if analysis.health_score >= 80 and business.rating >= 4.5 {
+            brand_positioning = "premium";
+        } elif analysis.health_score >= 70 and business.rating >= 4.0 {
+            brand_positioning = "quality";
+        } else {
+            brand_positioning = "standard";
+        }
+
+        # Identify protected strengths (themes with >0.7 sentiment and >10 mentions)
+        protected_strengths = [];
+        for t in themes {
+            if t.avg_sentiment > 0.7 and t.mention_count >= 10 {
+                protected_strengths.append(t.name);
+            }
+        }
+
+        # Identify brand risks based on positioning
+        brand_risks = [];
+        if price_positioning == "premium" {
+            brand_risks = [
+                "Discounting core offerings",
+                "Reducing quality to cut costs",
+                "Mass-market promotions that dilute exclusivity"
+            ];
+        }
+
+        return {
+            "price_positioning": price_positioning,
+            "brand_positioning": brand_positioning,
+            "protected_strengths": protected_strengths,
+            "brand_risks": brand_risks
+        };
+    }
+
+    def generate_brand_aware_recommendations(
+        business_name: str,
+        business_type: str,
+        price_level: str,
+        rating: float,
+        total_reviews: int,
+        reviews_analyzed: int,
+        health_score: int,
+        health_grade: str,
+        brand_positioning: dict,
+        severity_data: dict,
+        strengths: list,
+        weaknesses: list,
+        opportunities: list,
+        critical_issues: list,
+        themes: list,
+        trend_direction: str
+    ) -> BrandAwareRecommendationResult by llm(
+        incl_info={
+            # Business Context
+            "business_name": business_name,
+            "business_type": business_type,
+            "price_level": price_level,
+            "google_rating": rating,
+            "total_reviews": total_reviews,
+            "reviews_analyzed": reviews_analyzed,
+            "health_score": health_score,
+            "health_grade": health_grade,
+            "trend": trend_direction,
+
+            # Brand Context (CRITICAL)
+            "brand_context": brand_positioning,
+
+            # Severity Data (CRITICAL)
+            "severity_analysis": severity_data,
+
+            # Strategic Analysis
+            "strengths": strengths,
+            "weaknesses": weaknesses,
+            "opportunities": opportunities,
+            "critical_issues": critical_issues,
+            "themes": themes,
+
+            # COMPREHENSIVE INSTRUCTIONS
+            "instructions": """
+You are a senior business consultant generating BRAND-AWARE recommendations.
+
+## BRAND GUARDRAILS
+- Price positioning: Use brand_context.price_positioning
+- Brand positioning: Use brand_context.brand_positioning
+- Protected strengths: DO NOT compromise areas in brand_context.protected_strengths
+- Brand risks: AVOID actions in brand_context.brand_risks
+
+CRITICAL RULES:
+1. Do NOT recommend discounting core offerings unless evidence is overwhelming (>15% negative mentions)
+2. Do NOT suggest actions that dilute brand positioning
+3. Prefer perception/communication fixes over price cuts
+4. Scale recommendation strength to problem severity
+
+## SEVERITY CALIBRATION
+Check severity_analysis for each issue:
+- LOW severity (<5% mentions): ONLY use action_type="monitor" or action_type="communicate"
+- MODERATE severity (5-15% mentions): Can use action_type="experiment"
+- HIGH severity (>15% mentions): Can use action_type="change"
+
+CRITICAL: Do NOT recommend major operational or pricing changes for LOW severity issues.
+
+## EVIDENCE REQUIREMENT
+Every recommendation MUST include evidence with:
+- Exact issue it addresses (from critical_issues or themes)
+- Mention count AND percentage (calculate from data provided)
+- Customer segment affected (infer from feedback patterns: tourists, regulars, first-timers, families)
+- Sample feedback (paraphrase from themes.sample_quotes)
+
+If a recommendation cannot be linked to evidence, DO NOT include it.
+
+## BRAND-SAFE PREFERENCE
+When addressing value or pricing concerns:
+1. FIRST: Consider perception fixes (menu explanation, staff scripts, expectation setting)
+2. SECOND: Consider limited experiments (bundles, tasting menus, special occasions)
+3. LAST: Consider price changes (only if evidence is overwhelming >15%)
+
+## PROTECTIVE RECOMMENDATIONS (MANDATORY)
+You MUST generate 2-4 do_not_recommendations that:
+- Protect areas with high positive sentiment (>0.7 avg_sentiment)
+- Warn against actions that could damage brand
+- Are based on evidence from positive reviews
+
+## OUTPUT REQUIREMENTS
+- Generate 2-3 recommendations_immediate (this week)
+- Generate 2-4 recommendations_short_term (this month)
+- Generate 1-3 recommendations_long_term (this quarter)
+- Generate 2-4 do_not_recommendations (protective)
+
+For each recommendation:
+- action: Specific verb-driven action
+- action_type: Must match severity ("monitor"/"communicate" for low, "experiment" for moderate, "change" for high)
+- evidence: Must link to actual data with mention counts
+- expected_impact: Quantified where possible
+- downside_risk: What could go wrong
+- risk_level: "low", "medium", or "high"
+- confidence_level: Based on data strength
+- caution_note: Required for medium/high risk actions, empty string for low risk
+
+issue_severity_summary: Summarize overall problem scale (e.g., "Most issues are LOW severity (<5% of reviews). No major operational changes required.")
+overall_risk_assessment: Summarize risk profile of all recommendations
+"""
+        }
+    );
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # ORCHESTRATOR: FULL PIPELINE
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1267,17 +1623,47 @@ walker FullPipelineAgent {
             report_type=self.report_type
         );
         self.stages_completed.append("report");
-        
+
+        # Stage 5: Brand-Aware Recommendations
+        print("\n💡 STAGE 5: Brand-Aware Recommendations");
+        print("─" * 65);
+
+        recommender = here spawn RecommendationAgent(
+            business_id=self.business_id
+        );
+        self.stages_completed.append("recommendations");
+
+        # Store brand-aware recommendations in Report node (to avoid re-generating)
+        brand_recs = recommender.recommendations;
+        report_node = reporter.report[0];
+
+        # Convert and store brand-aware recommendations
+        report_node.brand_context = {
+            "price_positioning": brand_recs.brand_context.price_positioning,
+            "brand_positioning": brand_recs.brand_context.brand_positioning,
+            "protected_strengths": brand_recs.brand_context.protected_strengths,
+            "brand_risks": brand_recs.brand_context.brand_risks
+        };
+        report_node.issue_severity_summary = brand_recs.issue_severity_summary;
+        report_node.brand_recommendations_immediate = [self.rec_to_dict(r) for r in brand_recs.recommendations_immediate];
+        report_node.brand_recommendations_short_term = [self.rec_to_dict(r) for r in brand_recs.recommendations_short_term];
+        report_node.brand_recommendations_long_term = [self.rec_to_dict(r) for r in brand_recs.recommendations_long_term];
+        report_node.do_not_recommendations = [self.protective_to_dict(p) for p in brand_recs.do_not_recommendations];
+        report_node.overall_risk_assessment = brand_recs.overall_risk_assessment;
+
+        print(f"   💾 Stored brand-aware recommendations in Report node");
+
         # Build output
         self.output = self.build_output(
             fetcher.business[0],
             patterns.analysis[0],
             [fetcher.business[0] -->(`?Theme)],
-            reporter.report[0]
+            report_node,
+            brand_recs
         );
-        
+
         self.status = "completed";
-        
+
         print("\n" + "═" * 65);
         print("   ✅ PIPELINE COMPLETE");
         print("═" * 65);
@@ -1287,13 +1673,47 @@ walker FullPipelineAgent {
         print(f"   Data Source: {self.data_source.upper()}");
         print("═" * 65 + "\n");
     }
-    
-    def build_output(business: Business, analysis: Analysis, themes: list, report: Report) -> dict {
+
+    def rec_to_dict(r: BrandAwareRecommendation) -> dict {
+        """Convert BrandAwareRecommendation to dict for storage/output."""
+        return {
+            "action": r.action,
+            "action_type": r.action_type,
+            "reason": r.reason,
+            "evidence": {
+                "issue": r.evidence.issue,
+                "mention_count": r.evidence.mention_count,
+                "mention_percentage": r.evidence.mention_percentage,
+                "severity": r.evidence.severity,
+                "sample_feedback": r.evidence.sample_feedback,
+                "customer_segments": r.evidence.customer_segments
+            },
+            "expected_impact": r.expected_impact,
+            "downside_risk": r.downside_risk,
+            "effort": r.effort,
+            "risk_level": r.risk_level,
+            "confidence_level": r.confidence_level,
+            "priority_score": r.priority_score,
+            "caution_note": r.caution_note
+        };
+    }
+
+    def protective_to_dict(p: ProtectiveRecommendation) -> dict {
+        """Convert ProtectiveRecommendation to dict for storage/output."""
+        return {
+            "area": p.area,
+            "do_not_action": p.do_not_action,
+            "rationale": p.rationale,
+            "evidence_count": p.evidence_count
+        };
+    }
+
+    def build_output(business: Business, analysis: Analysis, themes: list, report: Report, brand_recs: BrandAwareRecommendationResult) -> dict {
         return {
             "success": True,
             "data_source": self.data_source,
             "generated_at": datetime.now().isoformat(),
-            
+
             "business": {
                 "name": business.name,
                 "type": business.business_type,
@@ -1309,7 +1729,7 @@ walker FullPipelineAgent {
                 "opening_hours": business.opening_hours,
                 "photos_count": business.photos_count
             },
-            
+
             "health_score": {
                 "overall": analysis.health_score,
                 "grade": analysis.health_grade,
@@ -1317,7 +1737,7 @@ walker FullPipelineAgent {
                 "breakdown": analysis.health_breakdown,
                 "trend": analysis.trend_direction
             },
-            
+
             "sentiment": {
                 "distribution": {
                     "positive": {"count": analysis.positive_count, "percentage": analysis.positive_percentage},
@@ -1327,7 +1747,7 @@ walker FullPipelineAgent {
                 "average_score": analysis.sentiment_score,
                 "sample_size_adequacy": analysis.confidence_details.get("adequacy", "")
             },
-            
+
             "themes": [
                 {
                     "name": t.name,
@@ -1343,7 +1763,7 @@ walker FullPipelineAgent {
                 }
                 for t in themes
             ],
-            
+
             "trends": {
                 "period_analyzed": f"{len(analysis.monthly_breakdown)} months",
                 "overall_trend": {
@@ -1352,31 +1772,317 @@ walker FullPipelineAgent {
                 },
                 "monthly_breakdown": analysis.monthly_breakdown
             },
-            
+
             "critical_issues": analysis.critical_issues,
-            
+
             "swot": {
                 "strengths": analysis.strengths,
                 "weaknesses": analysis.weaknesses,
                 "opportunities": analysis.opportunities,
                 "threats": analysis.threats
             },
-            
+
+            # Brand-Aware Recommendations (NEW)
             "recommendations": {
+                "brand_context": {
+                    "price_positioning": brand_recs.brand_context.price_positioning,
+                    "brand_positioning": brand_recs.brand_context.brand_positioning,
+                    "protected_strengths": brand_recs.brand_context.protected_strengths,
+                    "brand_risks": brand_recs.brand_context.brand_risks
+                },
+                "issue_severity_summary": brand_recs.issue_severity_summary,
+                "immediate": [self.rec_to_dict(r) for r in brand_recs.recommendations_immediate],
+                "short_term": [self.rec_to_dict(r) for r in brand_recs.recommendations_short_term],
+                "long_term": [self.rec_to_dict(r) for r in brand_recs.recommendations_long_term],
+                "do_not": [self.protective_to_dict(p) for p in brand_recs.do_not_recommendations],
+                "overall_risk_assessment": brand_recs.overall_risk_assessment
+            },
+
+            # Legacy recommendations (for backward compatibility)
+            "recommendations_legacy": {
                 "immediate": report.recommendations_immediate,
                 "short_term": report.recommendations_short_term,
                 "long_term": report.recommendations_long_term
             },
-            
+
             "executive_summary": {
                 "headline": report.headline,
                 "one_liner": report.one_liner,
                 "key_metric": report.key_metric,
                 "full_summary": report.executive_summary
             },
-            
+
             "key_findings": report.key_findings,
-            
+
+            "statistics": {
+                "reviews_analyzed": analysis.reviews_analyzed,
+                "date_range": {
+                    "from": analysis.date_range_start,
+                    "to": analysis.date_range_end
+                },
+                "rating_distribution": analysis.rating_distribution,
+                "avg_review_length": analysis.avg_review_length,
+                "reviews_with_photos": analysis.reviews_with_photos,
+                "response_rate": f"{analysis.response_rate}%"
+            }
+        };
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REANALYZE PIPELINE - Runs Stages 2-5 on Existing Data (Cache Mode)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker ReanalyzePipeline {
+    has business_id: str;
+    has report_type: str = "deep";
+
+    # Results
+    has status: str = "pending";
+    has stages_completed: list = [];
+    has data_source: str = "cache";
+    has output: dict = {};
+    has error: str = "";
+
+    can start with `root entry {
+        print("\n" + "═" * 65);
+        print("   🔄 REANALYZE PIPELINE (Using Cached Data)");
+        print("═" * 65);
+        print(f"   Business ID: {self.business_id}");
+        print("═" * 65);
+
+        # Find business
+        businesses = [here -->(`?Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            self.error = f"Business not found: {self.business_id}";
+            self.status = "failed";
+            print(f"   ❌ {self.error}");
+            disengage;
+        }
+
+        reviews = [target_biz -->(`?Review)];
+        print(f"   📦 Using {len(reviews)} cached reviews for: {target_biz.name}");
+
+        # Stage 2: Sentiment Analysis
+        print("\n🔍 STAGE 2: Sentiment Analysis (Batch Processing)");
+        print("─" * 65);
+        analyzer = here spawn SentimentAnalyzerAgent(business_id=self.business_id);
+        self.stages_completed.append("sentiment");
+
+        # Stage 3: Pattern Analysis
+        print("\n🎯 STAGE 3: Pattern Analysis");
+        print("─" * 65);
+        patterns = here spawn PatternAnalyzerAgent(business_id=self.business_id);
+        self.stages_completed.append("patterns");
+
+        # Stage 4: Report Generation
+        print("\n📝 STAGE 4: Report Generation");
+        print("─" * 65);
+        reporter = here spawn ReportGeneratorAgent(
+            business_id=self.business_id,
+            report_type=self.report_type
+        );
+        self.stages_completed.append("report");
+
+        # Stage 5: Brand-Aware Recommendations
+        print("\n💡 STAGE 5: Brand-Aware Recommendations");
+        print("─" * 65);
+        recommender = here spawn RecommendationAgent(business_id=self.business_id);
+        self.stages_completed.append("recommendations");
+
+        # Store brand-aware recommendations in Report node (to avoid re-generating)
+        brand_recs = recommender.recommendations;
+        report_node = reporter.report[0];
+
+        # Convert and store brand-aware recommendations
+        report_node.brand_context = {
+            "price_positioning": brand_recs.brand_context.price_positioning,
+            "brand_positioning": brand_recs.brand_context.brand_positioning,
+            "protected_strengths": brand_recs.brand_context.protected_strengths,
+            "brand_risks": brand_recs.brand_context.brand_risks
+        };
+        report_node.issue_severity_summary = brand_recs.issue_severity_summary;
+        report_node.brand_recommendations_immediate = [self.rec_to_dict(r) for r in brand_recs.recommendations_immediate];
+        report_node.brand_recommendations_short_term = [self.rec_to_dict(r) for r in brand_recs.recommendations_short_term];
+        report_node.brand_recommendations_long_term = [self.rec_to_dict(r) for r in brand_recs.recommendations_long_term];
+        report_node.do_not_recommendations = [self.protective_to_dict(p) for p in brand_recs.do_not_recommendations];
+        report_node.overall_risk_assessment = brand_recs.overall_risk_assessment;
+
+        print(f"   💾 Stored brand-aware recommendations in Report node");
+
+        # Update timestamp
+        target_biz.last_analyzed_at = datetime.now().isoformat();
+
+        # Build output
+        self.output = self.build_output(
+            target_biz,
+            patterns.analysis[0],
+            [target_biz -->(`?Theme)],
+            report_node,
+            brand_recs
+        );
+
+        self.status = "completed";
+
+        print("\n" + "═" * 65);
+        print("   ✅ REANALYZE PIPELINE COMPLETE (from cache)");
+        print("═" * 65);
+        print(f"   Business: {target_biz.name}");
+        print(f"   Reviews: {len(reviews)}");
+        print(f"   Health: {patterns.analysis[0].health_score} ({patterns.analysis[0].health_grade})");
+        print(f"   Data Source: CACHE");
+        print("═" * 65 + "\n");
+    }
+
+    def rec_to_dict(r: BrandAwareRecommendation) -> dict {
+        """Convert BrandAwareRecommendation to dict for storage/output."""
+        return {
+            "action": r.action,
+            "action_type": r.action_type,
+            "reason": r.reason,
+            "evidence": {
+                "issue": r.evidence.issue,
+                "mention_count": r.evidence.mention_count,
+                "mention_percentage": r.evidence.mention_percentage,
+                "severity": r.evidence.severity,
+                "sample_feedback": r.evidence.sample_feedback,
+                "customer_segments": r.evidence.customer_segments
+            },
+            "expected_impact": r.expected_impact,
+            "downside_risk": r.downside_risk,
+            "effort": r.effort,
+            "risk_level": r.risk_level,
+            "confidence_level": r.confidence_level,
+            "priority_score": r.priority_score,
+            "caution_note": r.caution_note
+        };
+    }
+
+    def protective_to_dict(p: ProtectiveRecommendation) -> dict {
+        """Convert ProtectiveRecommendation to dict for storage/output."""
+        return {
+            "area": p.area,
+            "do_not_action": p.do_not_action,
+            "rationale": p.rationale,
+            "evidence_count": p.evidence_count
+        };
+    }
+
+    def build_output(business: Business, analysis: Analysis, themes: list, report: Report, brand_recs: BrandAwareRecommendationResult) -> dict {
+        return {
+            "success": True,
+            "data_source": "cache",
+            "from_cache": True,
+            "generated_at": datetime.now().isoformat(),
+
+            "business": {
+                "name": business.name,
+                "type": business.business_type,
+                "type_normalized": business.business_type_normalized,
+                "address": business.address,
+                "phone": business.phone,
+                "website": business.website,
+                "google_rating": business.rating,
+                "total_reviews": business.total_reviews,
+                "reviews_analyzed": analysis.reviews_analyzed,
+                "price_level": business.price_level,
+                "coordinates": {"lat": business.latitude, "lng": business.longitude},
+                "opening_hours": business.opening_hours,
+                "photos_count": business.photos_count
+            },
+
+            "health_score": {
+                "overall": analysis.health_score,
+                "grade": analysis.health_grade,
+                "confidence": analysis.confidence_level,
+                "breakdown": analysis.health_breakdown,
+                "trend": analysis.trend_direction
+            },
+
+            "sentiment": {
+                "distribution": {
+                    "positive": {"count": analysis.positive_count, "percentage": analysis.positive_percentage},
+                    "negative": {"count": analysis.negative_count, "percentage": analysis.negative_percentage},
+                    "neutral": {"count": analysis.neutral_count, "percentage": analysis.neutral_percentage}
+                },
+                "average_score": analysis.sentiment_score,
+                "sample_size_adequacy": analysis.confidence_details.get("adequacy", "")
+            },
+
+            "themes": [
+                {
+                    "name": t.name,
+                    "mention_count": t.mention_count,
+                    "sentiment_score": t.avg_sentiment,
+                    "sentiment_label": "positive" if t.avg_sentiment > 0.3 else ("negative" if t.avg_sentiment < -0.3 else "mixed"),
+                    "confidence": "high" if t.mention_count >= 10 else ("medium" if t.mention_count >= 5 else "low"),
+                    "sub_themes": t.sub_themes,
+                    "sample_quotes": {
+                        "positive": t.sample_quotes_positive,
+                        "negative": t.sample_quotes_negative
+                    }
+                }
+                for t in themes
+            ],
+
+            "trends": {
+                "period_analyzed": f"{len(analysis.monthly_breakdown)} months",
+                "overall_trend": {
+                    "direction": analysis.trend_direction,
+                    "change": analysis.trend_change
+                },
+                "monthly_breakdown": analysis.monthly_breakdown
+            },
+
+            "critical_issues": analysis.critical_issues,
+
+            "swot": {
+                "strengths": analysis.strengths,
+                "weaknesses": analysis.weaknesses,
+                "opportunities": analysis.opportunities,
+                "threats": analysis.threats
+            },
+
+            # Brand-Aware Recommendations
+            "recommendations": {
+                "brand_context": {
+                    "price_positioning": brand_recs.brand_context.price_positioning,
+                    "brand_positioning": brand_recs.brand_context.brand_positioning,
+                    "protected_strengths": brand_recs.brand_context.protected_strengths,
+                    "brand_risks": brand_recs.brand_context.brand_risks
+                },
+                "issue_severity_summary": brand_recs.issue_severity_summary,
+                "immediate": [self.rec_to_dict(r) for r in brand_recs.recommendations_immediate],
+                "short_term": [self.rec_to_dict(r) for r in brand_recs.recommendations_short_term],
+                "long_term": [self.rec_to_dict(r) for r in brand_recs.recommendations_long_term],
+                "do_not": [self.protective_to_dict(p) for p in brand_recs.do_not_recommendations],
+                "overall_risk_assessment": brand_recs.overall_risk_assessment
+            },
+
+            # Legacy recommendations (for backward compatibility)
+            "recommendations_legacy": {
+                "immediate": report.recommendations_immediate,
+                "short_term": report.recommendations_short_term,
+                "long_term": report.recommendations_long_term
+            },
+
+            "executive_summary": {
+                "headline": report.headline,
+                "one_liner": report.one_liner,
+                "key_metric": report.key_metric,
+                "full_summary": report.executive_summary
+            },
+
+            "key_findings": report.key_findings,
+
             "statistics": {
                 "reviews_analyzed": analysis.reviews_analyzed,
                 "date_range": {

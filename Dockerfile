@@ -18,7 +18,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy JAC application files
-COPY main.jac models.jac walkers.jac api_walkers.jac ./
+COPY main.jac models.jac walkers.jac api_walkers.jac auth_walkers.jac ./
 
 # Create data and cache directories
 RUN mkdir -p /app/data /app/.jac/cache

@@ -1,5 +1,9 @@
-jaclang
-byllm
+# Jaseci monorepo packages
+git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=.
+git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=jac
+git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=jac-byllm
+git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=jac-scale
+
+# Your other deps
 requests
 python-dotenv
-jac-scale

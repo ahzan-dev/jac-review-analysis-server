@@ -84,19 +84,14 @@ walker GetBusinesses {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 2: GetReport - Get Report by Business ID
+# API 2: GetReport - Get Full Report by Business ID (No LLM Calls - Reads Stored Data)
 # POST /walker/GetReport
 # ═══════════════════════════════════════════════════════════════════════════════
 
 walker GetReport {
     has business_id: str;
 
-    
-
     can start with `root entry {
-        # SECURITY: With isolated roots, user can only see their own businesses
-        # No need for username parameter or permission check
-
         # Find the business on authenticated user's root
         businesses = [here -->(`?Business)];
         target_biz = None;
@@ -118,7 +113,6 @@ walker GetReport {
 
         # Get the report
         reports = [target_biz -->(`?Report)];
-
         if not reports {
             report {
                 "success": False,
@@ -126,66 +120,10 @@ walker GetReport {
             };
             disengage;
         }
-
         r = reports[0];
 
-        report {
-            "success": True,
-            "business": {
-                "place_id": target_biz.place_id,
-                "name": target_biz.name,
-                "rating": target_biz.rating
-            },
-            "report": {
-                "report_id": r.report_id,
-                "report_type": r.report_type,
-                "created_at": r.created_at,
-                "headline": r.headline,
-                "one_liner": r.one_liner,
-                "key_metric": r.key_metric,
-                "executive_summary": r.executive_summary,
-                "key_findings": r.key_findings,
-                "recommendations_immediate": r.recommendations_immediate,
-                "recommendations_short_term": r.recommendations_short_term,
-                "recommendations_long_term": r.recommendations_long_term
-            }
-        };
-    }
-}
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# API 3: GetAnalysis - Get Detailed Analysis by Business ID
-# POST /walker/GetAnalysis
-# ═══════════════════════════════════════════════════════════════════════════════
-
-walker GetAnalysis {
-    has business_id: str;
-
-    
-
-    can start with `root entry {
-        # Find the business
-        businesses = [here -->(`?Business)];
-        target_biz = None;
-        
-        for biz in businesses {
-            if biz.place_id == self.business_id {
-                target_biz = biz;
-                break;
-            }
-        }
-        
-        if target_biz is None {
-            report {
-                "success": False,
-                "error": f"Business not found: {self.business_id}"
-            };
-            disengage;
-        }
-        
         # Get the analysis
         analyses = [target_biz -->(`?Analysis)];
-        
         if not analyses {
             report {
                 "success": False,
@@ -193,84 +131,131 @@ walker GetAnalysis {
             };
             disengage;
         }
-        
         a = analyses[0];
-        
+
         # Get themes
         themes = [target_biz -->(`?Theme)];
-        theme_data = [];
-        for t in themes {
-            theme_data.append({
-                "name": t.name,
-                "category": t.category,
-                "mention_count": t.mention_count,
-                "positive_count": t.positive_count,
-                "negative_count": t.negative_count,
-                "neutral_count": t.neutral_count,
-                "mixed_count": t.mixed_count,
-                "avg_sentiment": t.avg_sentiment,
-                "keywords": t.keywords,
-                "sample_quotes_positive": t.sample_quotes_positive,
-                "sample_quotes_negative": t.sample_quotes_negative,
-                "sub_themes": t.sub_themes
-            });
-        }
-        
-        # Sort themes by mention count (manual sort since lambda may not work)
-        for i in range(len(theme_data)) {
-            for j in range(i + 1, len(theme_data)) {
-                if theme_data[j]["mention_count"] > theme_data[i]["mention_count"] {
-                    temp = theme_data[i];
-                    theme_data[i] = theme_data[j];
-                    theme_data[j] = temp;
-                }
-            }
-        }
-        
+
+        # Build full output (same structure as AnalyzeUrl but from stored data)
         report {
             "success": True,
+            "data_source": "stored",
+            "from_cache": True,
+            "generated_at": r.created_at,
+
             "business": {
                 "place_id": target_biz.place_id,
                 "name": target_biz.name,
-                "rating": target_biz.rating,
-                "total_reviews": target_biz.total_reviews
-            },
-            "analysis": {
-                "analysis_id": a.analysis_id,
-                "created_at": a.created_at,
-                "model_used": a.model_used,
+                "type": target_biz.business_type,
+                "type_normalized": target_biz.business_type_normalized,
+                "address": target_biz.address,
+                "phone": target_biz.phone,
+                "website": target_biz.website,
+                "google_rating": target_biz.rating,
+                "total_reviews": target_biz.total_reviews,
                 "reviews_analyzed": a.reviews_analyzed,
-                "date_range_start": a.date_range_start,
-                "date_range_end": a.date_range_end,
-                "health_score": a.health_score,
-                "health_grade": a.health_grade,
-                "health_breakdown": a.health_breakdown,
-                "overall_sentiment": a.overall_sentiment,
-                "sentiment_score": a.sentiment_score,
-                "confidence_level": a.confidence_level,
-                "confidence_details": a.confidence_details,
-                "sentiment_breakdown": {
-                    "positive": a.positive_percentage,
-                    "negative": a.negative_percentage,
-                    "neutral": a.neutral_percentage,
-                    "mixed": a.mixed_count
+                "price_level": target_biz.price_level,
+                "coordinates": {"lat": target_biz.latitude, "lng": target_biz.longitude},
+                "opening_hours": target_biz.opening_hours,
+                "photos_count": target_biz.photos_count
+            },
+
+            "health_score": {
+                "overall": a.health_score,
+                "grade": a.health_grade,
+                "confidence": a.confidence_level,
+                "breakdown": a.health_breakdown,
+                "trend": a.trend_direction
+            },
+
+            "sentiment": {
+                "distribution": {
+                    "positive": {"count": a.positive_count, "percentage": a.positive_percentage},
+                    "negative": {"count": a.negative_count, "percentage": a.negative_percentage},
+                    "neutral": {"count": a.neutral_count, "percentage": a.neutral_percentage}
                 },
-                "rating_distribution": a.rating_distribution,
+                "average_score": a.sentiment_score,
+                "sample_size_adequacy": a.confidence_details.get("adequacy", "")
+            },
+
+            "themes": [
+                {
+                    "name": t.name,
+                    "mention_count": t.mention_count,
+                    "sentiment_score": t.avg_sentiment,
+                    "sentiment_label": "positive" if t.avg_sentiment > 0.3 else ("negative" if t.avg_sentiment < -0.3 else "mixed"),
+                    "confidence": "high" if t.mention_count >= 10 else ("medium" if t.mention_count >= 5 else "low"),
+                    "sub_themes": t.sub_themes,
+                    "sample_quotes": {
+                        "positive": t.sample_quotes_positive,
+                        "negative": t.sample_quotes_negative
+                    }
+                }
+                for t in themes
+            ],
+
+            "trends": {
+                "period_analyzed": f"{len(a.monthly_breakdown)} months",
+                "overall_trend": {
+                    "direction": a.trend_direction,
+                    "change": a.trend_change
+                },
+                "monthly_breakdown": a.monthly_breakdown
+            },
+
+            "critical_issues": a.critical_issues,
+
+            "swot": {
                 "strengths": a.strengths,
                 "weaknesses": a.weaknesses,
                 "opportunities": a.opportunities,
-                "threats": a.threats,
-                "critical_issues": a.critical_issues,
-                "pain_points": a.pain_points,
-                "delighters": a.delighters
+                "threats": a.threats
             },
-            "themes": theme_data
+
+            # Brand-Aware Recommendations (from stored Report node)
+            "recommendations": {
+                "brand_context": r.brand_context,
+                "issue_severity_summary": r.issue_severity_summary,
+                "immediate": r.brand_recommendations_immediate,
+                "short_term": r.brand_recommendations_short_term,
+                "long_term": r.brand_recommendations_long_term,
+                "do_not": r.do_not_recommendations,
+                "overall_risk_assessment": r.overall_risk_assessment
+            },
+
+            # Legacy recommendations (for backward compatibility)
+            "recommendations_legacy": {
+                "immediate": r.recommendations_immediate,
+                "short_term": r.recommendations_short_term,
+                "long_term": r.recommendations_long_term
+            },
+
+            "executive_summary": {
+                "headline": r.headline,
+                "one_liner": r.one_liner,
+                "key_metric": r.key_metric,
+                "full_summary": r.executive_summary
+            },
+
+            "key_findings": r.key_findings,
+
+            "statistics": {
+                "reviews_analyzed": a.reviews_analyzed,
+                "date_range": {
+                    "from": a.date_range_start,
+                    "to": a.date_range_end
+                },
+                "rating_distribution": a.rating_distribution,
+                "avg_review_length": a.avg_review_length,
+                "reviews_with_photos": a.reviews_with_photos,
+                "response_rate": f"{a.response_rate}%"
+            }
         };
     }
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 4: GetReviews - Get Reviews with Filtering
+# API 3: GetReviews - Get Reviews with Filtering
 # POST /walker/GetReviews
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -373,29 +358,27 @@ walker GetReviews {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# API 5: Reanalyze - Re-run Analysis on Existing Data
+# API 5: Reanalyze - Re-run Analysis on Existing Data (Returns Full Output)
 # POST /walker/Reanalyze
 # ═══════════════════════════════════════════════════════════════════════════════
 
 walker Reanalyze {
     has business_id: str;
-    has report_type: str = "executive";
+    has report_type: str = "deep";
     has force_sentiment: bool = False;  # Re-run sentiment analysis too
-
-    
 
     can start with `root entry {
         # Find the business
         businesses = [here -->(`?Business)];
         target_biz = None;
-        
+
         for biz in businesses {
             if biz.place_id == self.business_id {
                 target_biz = biz;
                 break;
             }
         }
-        
+
         if target_biz is None {
             report {
                 "success": False,
@@ -403,13 +386,15 @@ walker Reanalyze {
             };
             disengage;
         }
-        
+
         stages = [];
-        
+        reviews = [target_biz -->(`?Review)];
+        print(f"\n🔄 Reanalyzing business: {target_biz.name}");
+        print(f"   📦 Using {len(reviews)} existing reviews");
+
         # Optionally re-run sentiment analysis
         if self.force_sentiment {
             # Clear existing sentiment data
-            reviews = [target_biz -->(`?Review)];
             for r in reviews {
                 r.sentiment = "";
                 r.sentiment_score = 0.0;
@@ -417,36 +402,216 @@ walker Reanalyze {
                 r.keywords = [];
                 r.emotion = "";
             }
-            
+
             # Re-run sentiment analyzer
             analyzer = here spawn SentimentAnalyzerAgent(
                 business_id=self.business_id
             );
             stages.append("sentiment");
         }
-        
+
         # Re-run pattern analysis
-        pattern_analyzer = here spawn PatternAnalyzerAgent(
+        patterns = here spawn PatternAnalyzerAgent(
             business_id=self.business_id
         );
         stages.append("patterns");
-        
+
         # Re-generate report
-        report_gen = here spawn ReportGeneratorAgent(
+        reporter = here spawn ReportGeneratorAgent(
             business_id=self.business_id,
             report_type=self.report_type
         );
         stages.append("report");
-        
-        report {
+
+        # Re-run brand-aware recommendations (Stage 5)
+        recommender = here spawn RecommendationAgent(
+            business_id=self.business_id
+        );
+        stages.append("recommendations");
+
+        # Store brand-aware recommendations in Report node
+        brand_recs = recommender.recommendations;
+        report_node = reporter.report[0];
+
+        report_node.brand_context = {
+            "price_positioning": brand_recs.brand_context.price_positioning,
+            "brand_positioning": brand_recs.brand_context.brand_positioning,
+            "protected_strengths": brand_recs.brand_context.protected_strengths,
+            "brand_risks": brand_recs.brand_context.brand_risks
+        };
+        report_node.issue_severity_summary = brand_recs.issue_severity_summary;
+        report_node.brand_recommendations_immediate = [self.rec_to_dict(r) for r in brand_recs.recommendations_immediate];
+        report_node.brand_recommendations_short_term = [self.rec_to_dict(r) for r in brand_recs.recommendations_short_term];
+        report_node.brand_recommendations_long_term = [self.rec_to_dict(r) for r in brand_recs.recommendations_long_term];
+        report_node.do_not_recommendations = [self.protective_to_dict(p) for p in brand_recs.do_not_recommendations];
+        report_node.overall_risk_assessment = brand_recs.overall_risk_assessment;
+
+        # Update last_analyzed_at timestamp
+        target_biz.last_analyzed_at = datetime.now().isoformat();
+
+        # Build full output (same structure as AnalyzeUrl)
+        output = self.build_full_output(
+            target_biz,
+            patterns.analysis[0],
+            [target_biz -->(`?Theme)],
+            report_node,
+            brand_recs,
+            stages
+        );
+
+        print(f"   ✅ Reanalysis complete");
+        report output;
+    }
+
+    def rec_to_dict(r: BrandAwareRecommendation) -> dict {
+        return {
+            "action": r.action,
+            "action_type": r.action_type,
+            "reason": r.reason,
+            "evidence": {
+                "issue": r.evidence.issue,
+                "mention_count": r.evidence.mention_count,
+                "mention_percentage": r.evidence.mention_percentage,
+                "severity": r.evidence.severity,
+                "sample_feedback": r.evidence.sample_feedback,
+                "customer_segments": r.evidence.customer_segments
+            },
+            "expected_impact": r.expected_impact,
+            "downside_risk": r.downside_risk,
+            "effort": r.effort,
+            "risk_level": r.risk_level,
+            "confidence_level": r.confidence_level,
+            "priority_score": r.priority_score,
+            "caution_note": r.caution_note
+        };
+    }
+
+    def protective_to_dict(p: ProtectiveRecommendation) -> dict {
+        return {
+            "area": p.area,
+            "do_not_action": p.do_not_action,
+            "rationale": p.rationale,
+            "evidence_count": p.evidence_count
+        };
+    }
+
+    def build_full_output(business: Business, analysis: Analysis, themes: list, report: Report, brand_recs: BrandAwareRecommendationResult, stages: list) -> dict {
+        return {
             "success": True,
-            "business_id": self.business_id,
+            "data_source": "reanalysis",
+            "from_cache": True,
             "stages_rerun": stages,
-            "new_report": {
-                "report_id": report_gen.report[0].report_id,
-                "title": report_gen.report[0].title,
-                "key_findings_count": len(report_gen.report[0].key_findings),
-                "recommendations_count": len(report_gen.report[0].recommendations)
+            "generated_at": datetime.now().isoformat(),
+
+            "business": {
+                "place_id": business.place_id,
+                "name": business.name,
+                "type": business.business_type,
+                "type_normalized": business.business_type_normalized,
+                "address": business.address,
+                "phone": business.phone,
+                "website": business.website,
+                "google_rating": business.rating,
+                "total_reviews": business.total_reviews,
+                "reviews_analyzed": analysis.reviews_analyzed,
+                "price_level": business.price_level,
+                "coordinates": {"lat": business.latitude, "lng": business.longitude},
+                "opening_hours": business.opening_hours,
+                "photos_count": business.photos_count
+            },
+
+            "health_score": {
+                "overall": analysis.health_score,
+                "grade": analysis.health_grade,
+                "confidence": analysis.confidence_level,
+                "breakdown": analysis.health_breakdown,
+                "trend": analysis.trend_direction
+            },
+
+            "sentiment": {
+                "distribution": {
+                    "positive": {"count": analysis.positive_count, "percentage": analysis.positive_percentage},
+                    "negative": {"count": analysis.negative_count, "percentage": analysis.negative_percentage},
+                    "neutral": {"count": analysis.neutral_count, "percentage": analysis.neutral_percentage}
+                },
+                "average_score": analysis.sentiment_score,
+                "sample_size_adequacy": analysis.confidence_details.get("adequacy", "")
+            },
+
+            "themes": [
+                {
+                    "name": t.name,
+                    "mention_count": t.mention_count,
+                    "sentiment_score": t.avg_sentiment,
+                    "sentiment_label": "positive" if t.avg_sentiment > 0.3 else ("negative" if t.avg_sentiment < -0.3 else "mixed"),
+                    "confidence": "high" if t.mention_count >= 10 else ("medium" if t.mention_count >= 5 else "low"),
+                    "sub_themes": t.sub_themes,
+                    "sample_quotes": {
+                        "positive": t.sample_quotes_positive,
+                        "negative": t.sample_quotes_negative
+                    }
+                }
+                for t in themes
+            ],
+
+            "trends": {
+                "period_analyzed": f"{len(analysis.monthly_breakdown)} months",
+                "overall_trend": {
+                    "direction": analysis.trend_direction,
+                    "change": analysis.trend_change
+                },
+                "monthly_breakdown": analysis.monthly_breakdown
+            },
+
+            "critical_issues": analysis.critical_issues,
+
+            "swot": {
+                "strengths": analysis.strengths,
+                "weaknesses": analysis.weaknesses,
+                "opportunities": analysis.opportunities,
+                "threats": analysis.threats
+            },
+
+            "recommendations": {
+                "brand_context": {
+                    "price_positioning": brand_recs.brand_context.price_positioning,
+                    "brand_positioning": brand_recs.brand_context.brand_positioning,
+                    "protected_strengths": brand_recs.brand_context.protected_strengths,
+                    "brand_risks": brand_recs.brand_context.brand_risks
+                },
+                "issue_severity_summary": brand_recs.issue_severity_summary,
+                "immediate": [self.rec_to_dict(r) for r in brand_recs.recommendations_immediate],
+                "short_term": [self.rec_to_dict(r) for r in brand_recs.recommendations_short_term],
+                "long_term": [self.rec_to_dict(r) for r in brand_recs.recommendations_long_term],
+                "do_not": [self.protective_to_dict(p) for p in brand_recs.do_not_recommendations],
+                "overall_risk_assessment": brand_recs.overall_risk_assessment
+            },
+
+            "recommendations_legacy": {
+                "immediate": report.recommendations_immediate,
+                "short_term": report.recommendations_short_term,
+                "long_term": report.recommendations_long_term
+            },
+
+            "executive_summary": {
+                "headline": report.headline,
+                "one_liner": report.one_liner,
+                "key_metric": report.key_metric,
+                "full_summary": report.executive_summary
+            },
+
+            "key_findings": report.key_findings,
+
+            "statistics": {
+                "reviews_analyzed": analysis.reviews_analyzed,
+                "date_range": {
+                    "from": analysis.date_range_start,
+                    "to": analysis.date_range_end
+                },
+                "rating_distribution": analysis.rating_distribution,
+                "avg_review_length": analysis.avg_review_length,
+                "reviews_with_photos": analysis.reviews_with_photos,
+                "response_rate": f"{analysis.response_rate}%"
             }
         };
     }

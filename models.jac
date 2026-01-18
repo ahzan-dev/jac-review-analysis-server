@@ -328,18 +328,29 @@ node Report {
     has report_id: str = "";
     has report_type: str = "";
     has created_at: str = "";
-    
+
     # Executive Summary
     has headline: str = "";
     has one_liner: str = "";
     has key_metric: str = "";
     has executive_summary: str = "";
-    
-    # Findings and Recommendations
+
+    # Findings
     has key_findings: list[str] = [];
+
+    # Legacy Recommendations (kept for backward compatibility)
     has recommendations_immediate: list[dict] = [];
     has recommendations_short_term: list[dict] = [];
     has recommendations_long_term: list[dict] = [];
+
+    # Brand-Aware Recommendations (NEW - stored to avoid re-generating)
+    has brand_context: dict = {};                      # {price_positioning, brand_positioning, protected_strengths, brand_risks}
+    has issue_severity_summary: str = "";
+    has brand_recommendations_immediate: list[dict] = [];
+    has brand_recommendations_short_term: list[dict] = [];
+    has brand_recommendations_long_term: list[dict] = [];
+    has do_not_recommendations: list[dict] = [];
+    has overall_risk_assessment: str = "";
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -556,7 +567,7 @@ obj AnalysisOutput {
     has data_source: str;
     has generated_at: str;
     has error: str = "";
-    
+
     # All sections
     has business: dict = {};
     has health_score: dict = {};
@@ -569,3 +580,96 @@ obj AnalysisOutput {
     has executive_summary: dict = {};
     has statistics: dict = {};
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BRAND-AWARE RECOMMENDATION MODELS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+obj BrandContext {
+    has price_positioning: str;
+    has brand_positioning: str;
+    has protected_strengths: list[str];
+    has brand_risks: list[str];
+}
+
+sem BrandContext = "Brand positioning context for recommendation calibration";
+sem BrandContext.price_positioning = "Price tier: 'premium', 'mid-range', 'standard', or 'budget'";
+sem BrandContext.brand_positioning = "Brand tier: 'luxury', 'premium', 'quality', 'standard', or 'value'";
+sem BrandContext.protected_strengths = "List of high-performing areas that must NOT be compromised";
+sem BrandContext.brand_risks = "List of actions that could damage brand positioning";
+
+obj EvidenceLink {
+    has issue: str;
+    has mention_count: int;
+    has mention_percentage: float;
+    has severity: str;
+    has sample_feedback: list[str];
+    has customer_segments: list[str];
+}
+
+sem EvidenceLink = "Data evidence backing a recommendation";
+sem EvidenceLink.issue = "The specific issue this recommendation addresses";
+sem EvidenceLink.mention_count = "Number of reviews mentioning this issue";
+sem EvidenceLink.mention_percentage = "Percentage of total reviews mentioning this issue";
+sem EvidenceLink.severity = "Severity level based on mention percentage: 'low' (<5%), 'moderate' (5-15%), 'high' (>15%)";
+sem EvidenceLink.sample_feedback = "Example customer feedback phrases (paraphrased, 2-3 examples)";
+sem EvidenceLink.customer_segments = "Customer segments affected (e.g., 'tourists', 'regulars', 'first-timers', 'families')";
+
+obj BrandAwareRecommendation {
+    has action: str;
+    has action_type: str;
+    has reason: str;
+    has evidence: EvidenceLink;
+    has expected_impact: str;
+    has downside_risk: str;
+    has effort: str;
+    has risk_level: str;
+    has confidence_level: str;
+    has priority_score: int;
+    has caution_note: str = "";
+}
+
+sem BrandAwareRecommendation = "A brand-aware, evidence-based recommendation with risk assessment";
+sem BrandAwareRecommendation.action = "Specific verb-driven action to take";
+sem BrandAwareRecommendation.action_type = "Action type: 'monitor' (watch/track), 'communicate' (messaging/training), 'experiment' (limited test), or 'change' (structural change)";
+sem BrandAwareRecommendation.reason = "Why this action is recommended based on data";
+sem BrandAwareRecommendation.evidence = "Data evidence linking this recommendation to actual customer feedback";
+sem BrandAwareRecommendation.expected_impact = "Quantified expected outcome with realistic estimates";
+sem BrandAwareRecommendation.downside_risk = "What could go wrong if this recommendation is implemented poorly";
+sem BrandAwareRecommendation.effort = "Effort level: 'low', 'medium', or 'high'";
+sem BrandAwareRecommendation.risk_level = "Risk to brand/operations: 'low', 'medium', or 'high'";
+sem BrandAwareRecommendation.confidence_level = "Confidence in recommendation based on data strength: 'low', 'medium', or 'high'";
+sem BrandAwareRecommendation.priority_score = "Priority score from 0-100 considering severity, impact, and risk";
+sem BrandAwareRecommendation.caution_note = "Warning note for medium/high risk actions (empty for low risk)";
+
+obj ProtectiveRecommendation {
+    has area: str;
+    has do_not_action: str;
+    has rationale: str;
+    has evidence_count: int;
+}
+
+sem ProtectiveRecommendation = "A protective DO NOT recommendation to preserve strong areas";
+sem ProtectiveRecommendation.area = "The area/theme that is performing strongly";
+sem ProtectiveRecommendation.do_not_action = "Specific action that should NOT be taken";
+sem ProtectiveRecommendation.rationale = "Why this action would be harmful based on positive sentiment data";
+sem ProtectiveRecommendation.evidence_count = "Number of positive reviews supporting this protection";
+
+obj BrandAwareRecommendationResult {
+    has brand_context: BrandContext;
+    has issue_severity_summary: str;
+    has recommendations_immediate: list[BrandAwareRecommendation];
+    has recommendations_short_term: list[BrandAwareRecommendation];
+    has recommendations_long_term: list[BrandAwareRecommendation];
+    has do_not_recommendations: list[ProtectiveRecommendation];
+    has overall_risk_assessment: str;
+}
+
+sem BrandAwareRecommendationResult = "Complete brand-aware recommendation output with protective guidance";
+sem BrandAwareRecommendationResult.brand_context = "Detected brand positioning context";
+sem BrandAwareRecommendationResult.issue_severity_summary = "Overall assessment of problem scale relative to review volume";
+sem BrandAwareRecommendationResult.recommendations_immediate = "Immediate actions (this week) - typically 2-3 items";
+sem BrandAwareRecommendationResult.recommendations_short_term = "Short-term actions (this month) - typically 2-4 items";
+sem BrandAwareRecommendationResult.recommendations_long_term = "Long-term actions (this quarter) - typically 1-3 items";
+sem BrandAwareRecommendationResult.do_not_recommendations = "CRITICAL: Protective recommendations listing what NOT to do - typically 2-4 items";
+sem BrandAwareRecommendationResult.overall_risk_assessment = "Summary of overall risk profile of all recommendations"

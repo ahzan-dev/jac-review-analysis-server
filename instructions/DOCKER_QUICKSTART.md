@@ -47,7 +47,6 @@ docker build -t review-analyzer:latest .
 # Run the container
 docker run -p 8000:8000 \
   --env-file .env \
-  -v $(pwd)/data:/app/data \
   review-analyzer:latest
 
 # Stop the container

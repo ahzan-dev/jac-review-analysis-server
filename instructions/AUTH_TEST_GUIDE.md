@@ -137,8 +137,8 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://www.google.com/maps/place/Tamarind+Tree+Garden+Resort/@7.1630848,79.9304625,9100m/data=!3m1!1e3!4m9!3m8!1s0x3afca7ceaf6334a7:0xb1397998b6bcfc37!5m2!4m1!1i2!8m2!3d7.1811592!4d79.9169383!16s%2Fg%2F1tjdk55k?entry=ttu",
-    "max_reviews": 20
+    "url": "https://www.google.com/maps/place/SakeColombo+By+Tsukiji+Uoichi+Japanese+Restaurant/@6.8879184,79.8621696,4553m/data=!3m1!1e3!4m31!1m23!2m22!1sRestaurants!5m19!24m3!1f3000!2f3500!3sLKR!24m3!1f3500!2f4000!3sLKR!24m3!1f4000!2f4500!3sLKR!24m3!1f4500!2f5000!3sLKR!24m2!1f5000!3sLKR!6e5!3m6!1s0x3ae2597c21182b83:0x4532953da6144c78!8m2!3d6.8897907!4d79.8637139!15sCgtSZXN0YXVyYW50c1oNIgtyZXN0YXVyYW50c5IBE2phcGFuZXNlX3Jlc3RhdXJhbnSaASNDaFpEU1VoTk1HOW5TMFZKUTBGblNVTnFMVFZwUzJaM0VBReABAPoBBAgAEDk!16s%2Fg%2F11b6bn98sx?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D",
+    "max_reviews": 200
   }'
 ```
 
@@ -213,7 +213,7 @@ First, note the business_id from farhan's analysis (e.g., `0x3afca7ceaf6334a7:0x
 curl -X POST http://localhost:8000/walker/GetReport \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
   -H "Content-Type: application/json" \
-  -d '{"business_id": "FARHAN_BUSINESS_ID_HERE"}'
+  -d '{"business_id": "0x3ae2e504abeae36b:0x35743bd849a861"}'
 ```
 
 **Expected**: `Business not found` - ahzan cannot see farhan's business
@@ -226,7 +226,7 @@ curl -X POST http://localhost:8000/walker/GetReport \
 curl -X POST http://localhost:8000/walker/GetAnalysis \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
-  -d '{"business_id": "0x3afca7ceaf6334a7:0xb1397998b6bcfc37"}'
+  -d '{"business_id": "0x3ae2e504abeae36b:0x35743bd849a861"}'
 ```
 
 **Expected**: `Business not found` - farhan cannot see ahzan's business
@@ -251,10 +251,10 @@ curl -X POST http://localhost:8000/walker/DeleteBusiness \
 ### Test 6.1: AHZAN Gets Stats
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetStats \
+curl -X POST http://localhost:8000/walker/GetReviews \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
   -H "Content-Type: application/json" \
-  -d '{}'
+  -d '{"business_id": "0x3ae2e504abeae36b:0x35743bd849a861"}'
 ```
 
 **Expected**: Stats for ahzan's businesses only (1 business)

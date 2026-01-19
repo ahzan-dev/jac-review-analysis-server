@@ -837,11 +837,11 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/user/login \
+curl -X POST https://review-analysis-server.trynewways.com/user/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "sample123",
-    "password": "sample123"
+    "username": "farhan",
+    "password": "farhan123"
   }'
 ```
 
@@ -849,11 +849,11 @@ curl -X POST http://localhost:8000/user/login \
 
 ### Request
 ```bash
-curl -X POST http://localhost:8000/user/register \
+curl -X POST https://review-analysis-server.trynewways.com/user/register \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "farhan",
-    "password": "farhan123"
+    "username": "baby",
+    "password": "baby123"
   }'
 ```
 

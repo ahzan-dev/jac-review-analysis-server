@@ -4,7 +4,7 @@
 
 ```bash
 # User 1: ahzan
-AHZAN_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4"
+AHZAN_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs"
 
 # User 2: farhan
 FARHAN_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE"
@@ -23,7 +23,7 @@ FARHAN_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsI
 ### Test 1.1: Create Profile WITHOUT Token (SHOULD FAIL)
 
 ```bash
-curl -X POST http://localhost:8000/walker/create_user_profile \
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_user_profile \
   -H "Content-Type: application/json" \
   -d '{"subscription_tier": "free"}'
 ```
@@ -35,8 +35,8 @@ curl -X POST http://localhost:8000/walker/create_user_profile \
 ### Test 1.2: Create Profile for AHZAN (SHOULD WORK)
 
 ```bash
-curl -X POST http://localhost:8000/walker/create_user_profile \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_user_profile \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{"subscription_tier": "free"}'
 ```
@@ -48,7 +48,7 @@ curl -X POST http://localhost:8000/walker/create_user_profile \
 ### Test 1.3: Create Profile for FARHAN (SHOULD WORK)
 
 ```bash
-curl -X POST http://localhost:8000/walker/create_user_profile \
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_user_profile \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{"subscription_tier": "pro"}'
@@ -61,8 +61,8 @@ curl -X POST http://localhost:8000/walker/create_user_profile \
 ### Test 1.4: Create Duplicate Profile (SHOULD RETURN EXISTS)
 
 ```bash
-curl -X POST http://localhost:8000/walker/create_user_profile \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_user_profile \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{"subscription_tier": "pro"}'
 ```
@@ -76,7 +76,7 @@ curl -X POST http://localhost:8000/walker/create_user_profile \
 ### Test 2.1: Get Profile WITHOUT Token (SHOULD FAIL)
 
 ```bash
-curl -X POST http://localhost:8000/walker/get_user_profile \
+curl -X POST https://review-analysis-server.trynewways.com/walker/get_user_profile \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -89,8 +89,8 @@ curl -X POST http://localhost:8000/walker/get_user_profile \
 ### Test 2.2: Get AHZAN's Profile with AHZAN's Token (SHOULD WORK)
 
 ```bash
-curl -X POST http://localhost:8000/walker/get_user_profile \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/get_user_profile \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -102,7 +102,7 @@ curl -X POST http://localhost:8000/walker/get_user_profile \
 ### Test 2.3: Get FARHAN's Profile with FARHAN's Token (SHOULD WORK)
 
 ```bash
-curl -X POST http://localhost:8000/walker/get_user_profile \
+curl -X POST https://review-analysis-server.trynewways.com/walker/get_user_profile \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -117,8 +117,8 @@ curl -X POST http://localhost:8000/walker/get_user_profile \
 ### Test 3.1: AHZAN Analyzes Sasha Food Court (SHOULD WORK)
 
 ```bash
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/Sasha+Food+Court/@7.1630848,79.9304625,9100m/data=!3m1!1e3!4m6!3m5!1s0x3ae2e504abeae36b:0x35743bd849a861!8m2!3d7.1733194!4d79.9344347!16s%2Fg%2F11j2fkq284?entry=ttu",
@@ -133,7 +133,7 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 ### Test 3.2: FARHAN Analyzes Tamarind Tree Resort (SHOULD WORK)
 
 ```bash
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{
@@ -149,7 +149,7 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 ### Test 3.3: Analyze WITHOUT Token (SHOULD FAIL)
 
 ```bash
-curl -X POST http://localhost:8000/walker/AnalyzeUrl \
+curl -X POST https://review-analysis-server.trynewways.com/walker/AnalyzeUrl \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/Sasha+Food+Court/...",
@@ -166,8 +166,8 @@ curl -X POST http://localhost:8000/walker/AnalyzeUrl \
 ### Test 4.1: AHZAN Lists Businesses (SHOULD ONLY SEE AHZAN's)
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetBusinesses \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -180,7 +180,7 @@ curl -X POST http://localhost:8000/walker/GetBusinesses \
 ### Test 4.2: FARHAN Lists Businesses (SHOULD ONLY SEE FARHAN's)
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetBusinesses \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -194,7 +194,7 @@ curl -X POST http://localhost:8000/walker/GetBusinesses \
 ### Test 4.3: List Businesses WITHOUT Token (SHOULD FAIL)
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetBusinesses \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetBusinesses \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -210,8 +210,8 @@ curl -X POST http://localhost:8000/walker/GetBusinesses \
 First, note the business_id from farhan's analysis (e.g., `0x3afca7ceaf6334a7:0xb1397998b6bcfc37`)
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetReport \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReport \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{"business_id": "0x3ae2e504abeae36b:0x35743bd849a861"}'
 ```
@@ -223,7 +223,7 @@ curl -X POST http://localhost:8000/walker/GetReport \
 ### Test 5.2: FARHAN Tries to Get AHZAN's Business Analysis
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetAnalysis \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetAnalysis \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{"business_id": "0x3ae2e504abeae36b:0x35743bd849a861"}'
@@ -236,8 +236,8 @@ curl -X POST http://localhost:8000/walker/GetAnalysis \
 ### Test 5.3: AHZAN Tries to Delete FARHAN's Business
 
 ```bash
-curl -X POST http://localhost:8000/walker/DeleteBusiness \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/DeleteBusiness \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{"business_id": "FARHAN_BUSINESS_ID_HERE"}'
 ```
@@ -251,8 +251,8 @@ curl -X POST http://localhost:8000/walker/DeleteBusiness \
 ### Test 6.1: AHZAN Gets Stats
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetReviews \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetReviews \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{"business_id": "0x3ae2e504abeae36b:0x35743bd849a861"}'
 ```
@@ -264,7 +264,7 @@ curl -X POST http://localhost:8000/walker/GetReviews \
 ### Test 6.2: FARHAN Gets Stats
 
 ```bash
-curl -X POST http://localhost:8000/walker/GetStats \
+curl -X POST https://review-analysis-server.trynewways.com/walker/GetStats \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -279,7 +279,7 @@ curl -X POST http://localhost:8000/walker/GetStats \
 ### Test 7.1: Create Admin WITHOUT Token (SHOULD FAIL)
 
 ```bash
-curl -X POST http://localhost:8000/walker/create_admin \
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_admin \
   -H "Content-Type: application/json" \
   -d '{"secret_key": "secret123"}'
 ```
@@ -291,8 +291,8 @@ curl -X POST http://localhost:8000/walker/create_admin \
 ### Test 7.2: Create Admin with WRONG Secret (SHOULD FAIL)
 
 ```bash
-curl -X POST http://localhost:8000/walker/create_admin \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_admin \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{"secret_key": "wrong_secret"}'
 ```
@@ -307,8 +307,8 @@ curl -X POST http://localhost:8000/walker/create_admin \
 # Make sure ADMIN_SETUP_SECRET is set on server
 # export ADMIN_SETUP_SECRET=secret123
 
-curl -X POST http://localhost:8000/walker/create_admin \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/create_admin \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{"secret_key": "secret123"}'
 ```
@@ -320,8 +320,8 @@ curl -X POST http://localhost:8000/walker/create_admin \
 ### Test 7.4: Verify AHZAN is Now Admin
 
 ```bash
-curl -X POST http://localhost:8000/walker/get_user_profile \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/get_user_profile \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -333,7 +333,7 @@ curl -X POST http://localhost:8000/walker/get_user_profile \
 ### Test 7.5: FARHAN (Non-Admin) Cannot Access Diagnostics
 
 ```bash
-curl -X POST http://localhost:8000/walker/diagnostics \
+curl -X POST https://review-analysis-server.trynewways.com/walker/diagnostics \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{}'
@@ -346,8 +346,8 @@ curl -X POST http://localhost:8000/walker/diagnostics \
 ### Test 7.6: AHZAN (Admin) Can Access Diagnostics
 
 ```bash
-curl -X POST http://localhost:8000/walker/diagnostics \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/diagnostics \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -361,7 +361,7 @@ curl -X POST http://localhost:8000/walker/diagnostics \
 ### Test 8.1: Non-Admin Cannot Update Subscriptions
 
 ```bash
-curl -X POST http://localhost:8000/walker/update_subscription \
+curl -X POST https://review-analysis-server.trynewways.com/walker/update_subscription \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE" \
   -H "Content-Type: application/json" \
   -d '{
@@ -377,8 +377,8 @@ curl -X POST http://localhost:8000/walker/update_subscription \
 ### Test 8.2: Admin (AHZAN) Updates FARHAN's Subscription
 
 ```bash
-curl -X POST http://localhost:8000/walker/update_subscription \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4" \
+curl -X POST https://review-analysis-server.trynewways.com/walker/update_subscription \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs" \
   -H "Content-Type: application/json" \
   -d '{
     "target_username": "farhan",
@@ -418,7 +418,7 @@ curl -X POST http://localhost:8000/walker/update_subscription \
 ```bash
 #!/bin/bash
 
-AHZAN_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFoemFuIiwiZXhwIjoxNzY5MjUxNjM5LCJpYXQiOjE3Njg2NDY4MzkuNjAzMjA2fQ.ogh_hh3sKXM95b88hEpvwiHFvG4-xmQpld59A3p4PQ4"
+AHZAN_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImJhYnkiLCJleHAiOjE3NjkzODc1OTMsImlhdCI6MTc2ODc4Mjc5My41OTQ5N30.QtKAeKIhhwV0UKF5C-LenGaIVk80-EDdNi8lUYf3eFs"
 FARHAN_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImZhcmhhbiIsImV4cCI6MTc2OTI1MTY2NCwiaWF0IjoxNzY4NjQ2ODY0LjE0NzU0M30.nMdeWcSgjCU2fa66u2cDgU8aQYMjHBLmBEEvmhpTnHE"
 BASE_URL="http://localhost:8000"
 

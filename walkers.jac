@@ -523,12 +523,14 @@ walker DataFetcherAgent {
                         review_id=rev.get("review_id", str(uuid4())),
                         author=rev.get("user", {}).get("name", "Anonymous"),
                         author_image=rev.get("user", {}).get("thumbnail", ""),
+                        review_link=rev.get("link", ""),
                         rating=int(rev.get("rating", 3)),
                         text=rev.get("extracted_snippet", {}).get("original", rev.get("snippet", "")),
                         date=rev.get("iso_date", rev.get("date", "")),
                         relative_date=rev.get("date", ""),
                         likes=int(rev.get("likes", 0)),
                         owner_response=rev.get("response", {}).get("extracted_snippet", {}).get("original", rev.get("response", {}).get("snippet", "")) if rev.get("response") else ""
+
                     );
                     total_fetched += 1;
                 }

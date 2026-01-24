@@ -317,6 +317,8 @@ walker GetReviews {
             results.append({
                 "review_id": r.review_id,
                 "author": r.author,
+                "author_image": r.author_image,
+                "review_link": r.review_link,
                 "rating": r.rating,
                 "text": r.text,
                 "date": r.date,
@@ -391,6 +393,23 @@ walker Reanalyze {
         reviews = [target_biz -->(`?Review)];
         print(f"\n🔄 Reanalyzing business: {target_biz.name}");
         print(f"   📦 Using {len(reviews)} existing reviews");
+
+        # Delete old analysis artifacts to prevent duplicates
+        old_themes = [target_biz -->(`?Theme)];
+        old_analyses = [target_biz -->(`?Analysis)];
+        old_reports = [target_biz -->(`?Report)];
+
+        for theme in old_themes {
+            del theme;
+        }
+        for analysis in old_analyses {
+            del analysis;
+        }
+        for report in old_reports {
+            del report;
+        }
+
+        print(f"   🗑️  Cleaned up old data (themes: {len(old_themes)}, analyses: {len(old_analyses)}, reports: {len(old_reports)})");
 
         # Optionally re-run sentiment analysis
         if self.force_sentiment {

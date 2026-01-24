@@ -231,6 +231,7 @@ node Review {
     has review_id: str;
     has author: str;
     has author_image: str = "";
+    has review_link: str = "";
     has rating: int = 0;
     has text: str = "";
     has date: str = "";

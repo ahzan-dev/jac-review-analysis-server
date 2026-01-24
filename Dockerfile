@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir \
 RUN pip install --no-cache-dir requests python-dotenv
 
 # Copy ALL JAC application files
-COPY main.jac models.jac walkers.jac api_walkers.jac auth_walkers.jac ./
+COPY main.jac models.jac walkers.jac api_walkers.jac auth_walkers.jac errors.jac ./
 
 # Create data and cache directories
 RUN mkdir -p /app/data /app/.jac/cache
@@ -48,12 +48,15 @@ USER appuser
 
 EXPOSE 8000
 
-# Health check
+# Health check - uses the health_check walker endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/docs || exit 1
+    CMD curl -f -X POST http://localhost:8000/walker/health_check \
+        -H "Content-Type: application/json" \
+        -d '{}' || exit 1
 
 # ==========================================
-# IMPORTANT: Do NOT use --scale flag!
-# --scale is for Kubernetes, not Coolify
+# Production command
 # ==========================================
+# Note: jac start automatically binds to 0.0.0.0 in Docker
+# --host and --no-client flags are not supported in jac 0.9.10
 CMD ["jac", "start", "main.jac", "--port", "8000"]

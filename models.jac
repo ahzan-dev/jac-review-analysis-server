@@ -325,6 +325,19 @@ node Analysis {
     has languages: dict = {};
 }
 
+# Semantic hints for Analysis node
+sem Analysis.health_score = "Overall business health score from 0-100 based on review analysis";
+sem Analysis.health_grade = "Letter grade: A+, A, A-, B+, B, B-, C+, C, C-, D+, D, F";
+sem Analysis.confidence_level = "Analysis confidence: 'high' (100+ reviews), 'medium' (20-99 reviews), 'low' (<20 reviews)";
+sem Analysis.overall_sentiment = "Dominant sentiment: 'very_positive', 'positive', 'mixed', 'negative', 'very_negative'";
+sem Analysis.sentiment_score = "Average sentiment score from -1.0 (very negative) to 1.0 (very positive)";
+sem Analysis.positive_percentage = "Percentage of positive reviews (0-100)";
+sem Analysis.negative_percentage = "Percentage of negative reviews (0-100)";
+sem Analysis.trend_direction = "Sentiment trend over time: 'improving', 'stable', or 'declining'";
+sem Analysis.critical_issues = "List of urgent issues requiring immediate attention with severity ratings";
+sem Analysis.pain_points = "Customer pain points mentioned repeatedly in reviews";
+sem Analysis.delighters = "Aspects that customers love and mention frequently";
+
 node Report {
     has report_id: str = "";
     has report_type: str = "";
@@ -353,6 +366,19 @@ node Report {
     has do_not_recommendations: list[dict] = [];
     has overall_risk_assessment: str = "";
 }
+
+# Semantic hints for Report node
+sem Report.headline = "Compelling executive summary headline (10-15 words)";
+sem Report.one_liner = "Single-sentence key takeaway for quick scanning";
+sem Report.key_metric = "Primary metric highlight (e.g., '91% customer satisfaction')";
+sem Report.executive_summary = "2-3 paragraph executive summary for decision makers";
+sem Report.key_findings = "List of 3-7 key findings ordered by importance";
+sem Report.recommendations_immediate = "Actions to take this week (2-3 items)";
+sem Report.recommendations_short_term = "Actions to take this month (2-4 items)";
+sem Report.recommendations_long_term = "Actions to take this quarter (1-3 items)";
+sem Report.brand_context = "Brand positioning context with price level, protected strengths, and risks";
+sem Report.do_not_recommendations = "CRITICAL: List of what NOT to do to protect brand (2-4 items)";
+sem Report.overall_risk_assessment = "Summary of risk profile across all recommendations";
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # USER MANAGEMENT & AUTHENTICATION
@@ -387,6 +413,13 @@ node UserProfile {
     # Audit
     has last_login: str = "";
     has is_active: bool = True;
+
+    # Token Management (for session control beyond JWT)
+    has token: str = "";
+    has token_expires: str = "";
+
+    # Note: Token management handled via walkers, not node abilities
+    # JAC node abilities don't support parameters
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════

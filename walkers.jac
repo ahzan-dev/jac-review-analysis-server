@@ -709,12 +709,33 @@ walker SentimentAnalyzerAgent {
         }
     }
     
+    """Analyze sentiment and themes for a batch of reviews.
+
+    Given reviews from a {business_type} business, classify each review's sentiment
+    (positive/negative/neutral/mixed) with a score from -1.0 to 1.0, detect themes
+    from the allowed theme list, identify sub-themes under each main theme, extract
+    up to 5 key keywords, and determine the primary emotion.
+
+    All analysis must be based on actual review content, not assumptions. For short
+    reviews with insufficient context, mark sentiment as 'neutral' and limit themes
+    to what's explicitly mentioned.
+
+    Args:
+        reviews: List of review texts to analyze
+        business_type: Type of business (RESTAURANT, HOTEL, etc.)
+        allowed_themes: List of valid themes for this business type
+        allowed_sub_themes: Mapping of themes to valid sub-themes
+
+    Returns:
+        BatchReviewAnalysis with sentiment, themes, keywords, and emotions for each review
+    """
     def analyze_reviews_batch(
         reviews: list,
         business_type: str,
         allowed_themes: list,
         allowed_sub_themes: dict
     ) -> BatchReviewAnalysis by llm(
+        temperature=0.0,  # Factual classification requires low randomness
         incl_info={
             "reviews": reviews,
             "business_type": business_type,
@@ -1102,6 +1123,24 @@ walker PatternAnalyzerAgent {
         };
     }
     
+    """Generate comprehensive pattern analysis from review data.
+
+    Analyzes aggregated review statistics, themes, and trends to produce a health
+    score (0-100), letter grade, theme-by-theme breakdown, SWOT analysis, and
+    critical issues identification. This is an interpretive task that requires
+    balanced reasoning between data and insights.
+
+    Args:
+        business_name: Name of the business being analyzed
+        business_type: Business category (RESTAURANT, HOTEL, etc.)
+        review_count: Total number of reviews analyzed
+        stats: Sentiment statistics (positive/negative/neutral percentages)
+        themes: List of detected themes with scores and sentiment breakdowns
+        trends: Trend analysis data (direction, monthly breakdown)
+
+    Returns:
+        PatternAnalysisResult with health metrics, SWOT, critical issues, and recommendations
+    """
     def generate_pattern_analysis(
         business_name: str,
         business_type: str,
@@ -1110,6 +1149,7 @@ walker PatternAnalyzerAgent {
         themes: list,
         trends: dict
     ) -> PatternAnalysisResult by llm(
+        temperature=0.5,  # Balanced - interpretive but grounded in data
         incl_info={
             "business_name": business_name,
             "business_type": business_type,
@@ -1204,6 +1244,39 @@ walker ReportGeneratorAgent {
         print(f"   ✅ Report generated: {content.headline}");
     }
     
+    """Generate executive-level business report from analysis data.
+
+    Creates a comprehensive business intelligence report with headline, executive summary,
+    key findings, and actionable recommendations. This is a creative task that requires
+    synthesizing data into clear, compelling narratives for business decision-makers.
+
+    The report should scale to the review count - more reviews warrant more detailed
+    findings and recommendations. All recommendations must be specific, measurable,
+    and prioritized by expected business impact.
+
+    Args:
+        business_name: Name of the business
+        business_type: Business category
+        rating: Google Maps rating
+        total_reviews: Total reviews on Google
+        reviews_analyzed: Number of reviews we analyzed
+        health_score: Overall health score (0-100)
+        health_grade: Letter grade (A+, A, B+, etc.)
+        confidence_level: Analysis confidence (high/medium/low)
+        sentiment_score: Average sentiment (-1.0 to 1.0)
+        positive_pct: Percentage of positive reviews
+        negative_pct: Percentage of negative reviews
+        strengths: SWOT strengths
+        weaknesses: SWOT weaknesses
+        opportunities: SWOT opportunities
+        critical_issues: Urgent issues requiring attention
+        themes: Theme analysis with scores
+        trend_direction: Trend (improving/stable/declining)
+        monthly_data: Monthly sentiment breakdown
+
+    Returns:
+        ReportGenerationResult with headline, summary, findings, and tiered recommendations
+    """
     def generate_report_content(
         business_name: str,
         business_type: str,
@@ -1224,6 +1297,7 @@ walker ReportGeneratorAgent {
         trend_direction: str,
         monthly_data: list
     ) -> ReportGenerationResult by llm(
+        temperature=0.7,  # Creative - requires narrative synthesis and compelling communication
         incl_info={
             "business_name": business_name,
             "business_type": business_type,
@@ -1439,6 +1513,42 @@ walker RecommendationAgent {
         };
     }
 
+    """Generate brand-aware strategic recommendations with protective guardrails.
+
+    Creates actionable recommendations that respect brand positioning, price level, and
+    business strengths. Uses severity calibration to ensure recommendations are proportional
+    to evidence. Includes protective "do-not" recommendations to guard against brand dilution.
+
+    This is a strategic task requiring balanced creativity (finding solutions) with analytical
+    rigor (matching actions to evidence severity).
+
+    Key principles:
+    - Scale action intensity to problem severity (monitor/communicate/experiment/change)
+    - Protect high-performing areas from misguided changes
+    - Prioritize perception fixes over operational changes for low-severity issues
+    - Every recommendation must link to specific evidence with mention counts
+
+    Args:
+        business_name: Name of the business
+        business_type: Business category
+        price_level: Price positioning ($$, $$$, $$$$)
+        rating: Google Maps rating
+        total_reviews: Total reviews on Google
+        reviews_analyzed: Number of reviews analyzed
+        health_score: Overall health score (0-100)
+        health_grade: Letter grade
+        brand_positioning: Dict with price_positioning, brand_positioning, protected_strengths, brand_risks
+        severity_data: Issue severity calibration with mention percentages
+        strengths: SWOT strengths
+        weaknesses: SWOT weaknesses
+        opportunities: SWOT opportunities
+        critical_issues: Urgent issues requiring attention
+        themes: Theme analysis with scores and sentiment
+        trend_direction: Trend (improving/stable/declining)
+
+    Returns:
+        BrandAwareRecommendationResult with immediate/short/long-term recommendations and protective do-not list
+    """
     def generate_brand_aware_recommendations(
         business_name: str,
         business_type: str,
@@ -1457,6 +1567,7 @@ walker RecommendationAgent {
         themes: list,
         trend_direction: str
     ) -> BrandAwareRecommendationResult by llm(
+        temperature=0.6,  # Strategic - balanced between creative problem-solving and analytical precision
         incl_info={
             # Business Context
             "business_name": business_name,

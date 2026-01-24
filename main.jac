@@ -16,6 +16,7 @@ include models;
 include walkers;
 include api_walkers;
 include auth_walkers;
+include errors;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API WALKER: AnalyzeUrl
@@ -51,7 +52,7 @@ walker AnalyzeUrl {
 
         # Check if user is active
         if not profile.is_active {
-            report {"error": "User account is inactive"};
+            report unauthorized_error("User account is inactive");
             return;
         }
 
@@ -65,14 +66,11 @@ walker AnalyzeUrl {
         # Check daily analysis limit
         if profile.daily_analysis_limit != -1 {  # -1 means unlimited
             if profile.analyses_today >= profile.daily_analysis_limit {
-                report {
-                    "error": "Daily analysis limit reached",
-                    "limit": profile.daily_analysis_limit,
-                    "used": profile.analyses_today,
-                    "reset_date": today,
-                    "tier": profile.subscription_tier.value,
-                    "message": "Upgrade to Pro or Enterprise for more analyses"
-                };
+                report quota_exceeded_error(
+                    "daily_analyses",
+                    profile.daily_analysis_limit,
+                    profile.analyses_today
+                );
                 return;
             }
         }
@@ -80,7 +78,7 @@ walker AnalyzeUrl {
         # Parse URL and extract business_id for cache check
         parsed = parse_google_maps_url(self.url);
         if not parsed["is_valid"] {
-            report {"error": f"Invalid URL: {parsed['error']}"};
+            report validation_error("url", parsed["error"]);
             return;
         }
 
@@ -136,7 +134,7 @@ walker AnalyzeUrl {
                         if profile.analyses_today > 0 {
                             profile.analyses_today -= 1;
                         }
-                        report {"success": False, "error": self.error};
+                        report error_response(ErrorCode.INTERNAL_ERROR, self.error, {});
                     }
                     return;
                 } else {
@@ -187,7 +185,7 @@ walker AnalyzeUrl {
             if profile.analyses_today > 0 {
                 profile.analyses_today -= 1;
             }
-            report {"success": False, "error": self.error};
+            report error_response(ErrorCode.INTERNAL_ERROR, self.error, {});
         }
     }
 
@@ -372,9 +370,43 @@ walker AnalyzeUrl {
 # ═══════════════════════════════════════════════════════════════════════════════
 # HEALTH CHECK ENDPOINT
 # ═══════════════════════════════════════════════════════════════════════════════
-walker health_check {
+walker:pub health_check {
     can check with `root entry {
         report {"status": "healthy", "service": "review-analyzer", "version": "2.0"} ;
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# READINESS PROBE - Check if service is ready to accept traffic
+# ═══════════════════════════════════════════════════════════════════════════════
+# Verifies that all dependencies are configured and accessible
+# Used by Docker/Kubernetes to determine when service can receive requests
+
+walker:pub ready {
+    """Readiness probe - checks if service is ready to accept traffic."""
+
+    can check with `root entry {
+        # Check critical environment variables
+        openai_key = os.getenv("OPENAI_API_KEY");
+        serpapi_key = os.getenv("SERPAPI_KEY");
+
+        # Dependency checks
+        checks = {
+            "openai_configured": bool(openai_key and openai_key != ""),
+            "serpapi_configured": bool(serpapi_key and serpapi_key != ""),
+            "graph_accessible": True  # If we reach here, graph database is accessible
+        };
+
+        # Determine overall readiness
+        all_ready = all(checks.values());
+
+        report {
+            "ready": all_ready,
+            "status": "ready" if all_ready else "not_ready",
+            "checks": checks,
+            "service": "review-analyzer",
+            "timestamp": str(datetime.now())
+        };
     }
 }
 
@@ -388,7 +420,7 @@ walker diagnostics {
         # SECURITY: Admin-only endpoint - check from authenticated user's own profile
         profiles = [-->(`?UserProfile)];
         if not profiles or profiles[0].role != UserRole.ADMIN {
-            report {"error": "Unauthorized. Admin access required."} ;
+            report error_response(ErrorCode.INSUFFICIENT_PERMISSIONS, "Admin access required", {});
             return;
         }
 

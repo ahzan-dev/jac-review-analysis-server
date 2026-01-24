@@ -4,7 +4,8 @@
 # Walkers for user profile management, subscription control, and admin operations
 # ══════════════════════════════════════════════════════════════════════════════
 
-import from datetime { datetime }
+import from datetime { datetime, timedelta }
+import from uuid { uuid4 }
 
 import os;
 
@@ -231,6 +232,102 @@ walker create_admin {
                 "message": "Admin profile created for your account"
             };
         }
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TOKEN MANAGEMENT WALKERS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Session token management with expiration support
+# Note: These are separate from JWT tokens - used for additional session control
+
+walker generate_session_token {
+    has expiry_days: int = 7;
+
+    can generate with `root entry {
+        # Get user profile
+        profiles = [-->(`?UserProfile)];
+        if not profiles {
+            report {"error": "User profile not found"};
+            return;
+        }
+
+        profile = profiles[0];
+
+        # Generate token with expiration
+        profile.token = str(uuid4());
+        expires_at = datetime.now() + timedelta(days=self.expiry_days);
+        profile.token_expires = expires_at.isoformat();
+
+        report {
+            "token": profile.token,
+            "expires_at": profile.token_expires,
+            "expires_in_days": self.expiry_days
+        };
+    }
+}
+
+walker validate_session_token {
+    has token: str;
+
+    can validate with `root entry {
+        # Get user profile
+        profiles = [-->(`?UserProfile)];
+        if not profiles {
+            report {"valid": False, "reason": "Profile not found"};
+            return;
+        }
+
+        profile = profiles[0];
+
+        # Check if token matches
+        if not profile.token or profile.token != self.token {
+            report {"valid": False, "reason": "Invalid token"};
+            return;
+        }
+
+        # Check if token has expired
+        if not profile.token_expires {
+            report {"valid": False, "reason": "Token has no expiration set"};
+            return;
+        }
+
+        try {
+            expires_at = datetime.fromisoformat(profile.token_expires);
+            now = datetime.now();
+
+            if now > expires_at {
+                report {"valid": False, "reason": "Token expired", "expired_at": profile.token_expires};
+                return;
+            }
+
+            report {
+                "valid": True,
+                "expires_at": profile.token_expires,
+                "username": profile.username
+            };
+        } except Exception as e {
+            report {"valid": False, "reason": f"Token validation error: {str(e)}"};
+        }
+    }
+}
+
+walker revoke_session_token {
+    can revoke with `root entry {
+        # Get user profile
+        profiles = [-->(`?UserProfile)];
+        if not profiles {
+            report {"error": "User profile not found"};
+            return;
+        }
+
+        profile = profiles[0];
+
+        # Clear token and expiration
+        profile.token = "";
+        profile.token_expires = "";
+
+        report {"status": "revoked", "message": "Session token has been revoked"};
     }
 }
 

@@ -17,10 +17,10 @@ include models;
 # Creates a UserProfile node on the authenticated user's root
 # Called after /user/register - requires JWT token in Authorization header
 
-walker create_user_profile {
+walker:pub create_user_profile {
     has subscription_tier: str = "free";
 
-    
+
 
     can create_profile with `root entry {
         # Check if profile already exists on this user's root
@@ -75,8 +75,8 @@ walker create_user_profile {
 # ═══════════════════════════════════════════════════════════════════════════════
 # Retrieves the authenticated user's profile and current usage/limits
 
-walker get_user_profile {
-    
+walker:pub get_user_profile {
+
 
     can fetch_profile with `root entry {
         # Get profile from authenticated user's root (no username filter needed)
@@ -241,7 +241,7 @@ walker create_admin {
 # Session token management with expiration support
 # Note: These are separate from JWT tokens - used for additional session control
 
-walker generate_session_token {
+walker:pub generate_session_token {
     has expiry_days: int = 7;
 
     can generate with `root entry {
@@ -267,7 +267,7 @@ walker generate_session_token {
     }
 }
 
-walker validate_session_token {
+walker:pub validate_session_token {
     has token: str;
 
     can validate with `root entry {
@@ -312,7 +312,7 @@ walker validate_session_token {
     }
 }
 
-walker revoke_session_token {
+walker:pub revoke_session_token {
     can revoke with `root entry {
         # Get user profile
         profiles = [-->(`?UserProfile)];

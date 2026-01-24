@@ -1,0 +1,44 @@
+
+[project]
+name = "review-analyzer"
+version = "0.1.0"
+description = "AI-powered review analysis backend using Jac"
+entry-point = "main.jac"
+jac-version = ">=0.9.10"
+
+
+[dependencies]
+byllm = ">=0.4.15"
+requests = ">=2.31.0"
+pymongo = ">=4.6.0"
+redis = ">=5.0.0"
+
+
+[run]
+main = true
+cache = true
+session = ""
+
+
+[serve]
+port = 8000
+main = true
+
+
+[build]
+typecheck = false
+dir = ".jac"
+
+
+[cache]
+enabled = true
+
+
+[plugins]
+discovery = "auto"
+
+
+
+[environment]
+default_profile = "production"
+

@@ -14,9 +14,8 @@ RUN apt-get update && apt-get install -y \
 
 # Alternative: Install from git (if you need latest)
 RUN pip install --no-cache-dir \
-    "git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=jac" \
-    "git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=jac-byllm" \
-    "git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=jac-scale"
+    "git+https://github.com/Jaseci-Labs/jaseci.git#subdirectory=jaseci-package" 
+    
 
 # Install additional Python dependencies
 RUN pip install --no-cache-dir requests python-dotenv

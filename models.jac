@@ -214,6 +214,40 @@ glob TIER_PRICING: dict = {
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# CREDIT ALLOCATIONS BY TIER
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fetch credits: 1 credit = 1 SerpAPI call (~15 reviews)
+# Analysis credits: 1 credit = 1 batch (5 reviews) + fixed overhead
+# Formula: 100 reviews = 7 fetch + 23 analysis credits
+
+glob TIER_CREDITS: dict = {
+    "free": {
+        "fetch_credits": 10,         # ~2 analyses (20 reviews each)
+        "analysis_credits": 50
+    },
+    "pro": {
+        "fetch_credits": 500,        # ~70 analyses (100 reviews each)
+        "analysis_credits": 2000
+    },
+    "enterprise": {
+        "fetch_credits": 2000,       # ~280 analyses
+        "analysis_credits": 10000
+    }
+};
+
+# Overage pricing (per credit)
+glob CREDIT_OVERAGE_PRICING: dict = {
+    "pro": {
+        "fetch_credit": 0.04,
+        "analysis_credit": 0.008
+    },
+    "enterprise": {
+        "fetch_credit": 0.03,
+        "analysis_credit": 0.005
+    }
+};
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # NODE DEFINITIONS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -454,6 +488,12 @@ node UserProfile {
     has last_payment_date: str = "";
     has next_billing_date: str = "";
 
+    # Credit System (NEW - for usage-based billing)
+    has fetch_credits: int = 0;               # SerpAPI credits (1 credit = 1 API call)
+    has analysis_credits: int = 0;            # OpenAI credits (1 credit = 1 batch/5 reviews)
+    has fetch_credits_used: int = 0;          # Total fetch credits used (lifetime)
+    has analysis_credits_used: int = 0;       # Total analysis credits used (lifetime)
+
     # Note: Token management handled via walkers, not node abilities
     # JAC node abilities don't support parameters
 }
@@ -489,6 +529,18 @@ node Transaction {
     has metadata: dict = {};
 }
 
+node CreditTransaction {
+    has transaction_id: str = "";
+    has user_id: str = "";
+    has transaction_type: str = "";               # "grant", "usage", "purchase", "refund", "expiry"
+    has credit_type: str = "";                    # "fetch" or "analysis"
+    has amount: int = 0;                          # Positive for add, negative for deduct
+    has balance_after: int = 0;                   # Balance after this transaction
+    has description: str = "";                    # "Analysis of Street Burger", "Monthly Pro allocation"
+    has related_analysis_id: str = "";            # Link to analysis if usage type
+    has created_at: str = "";
+}
+
 # Semantic hints for UserProfile subscription fields
 sem UserProfile.subscription_status = "Subscription status: 'active' (paying/using), 'pending_payment' (awaiting payment), 'expired' (past due), 'cancelled' (cancelled but may have access until period end)";
 sem UserProfile.pending_upgrade_tier = "Tier user intends to upgrade to after payment (empty if none pending)";
@@ -520,6 +572,22 @@ sem Transaction.amount = "Transaction amount in USD (0.0 for downgrades/cancella
 sem Transaction.payment_id = "Link to PaymentIntent.payment_id if applicable";
 sem Transaction.status = "Transaction status: 'completed', 'pending', 'failed'";
 sem Transaction.metadata = "Additional context about the transaction";
+
+# Semantic hints for CreditTransaction node
+sem CreditTransaction.transaction_id = "Unique UUID for this credit transaction";
+sem CreditTransaction.user_id = "Username of the user";
+sem CreditTransaction.transaction_type = "Type: 'grant' (monthly allocation), 'usage' (analysis), 'purchase' (buy more), 'refund', 'expiry'";
+sem CreditTransaction.credit_type = "Credit type: 'fetch' (SerpAPI) or 'analysis' (OpenAI)";
+sem CreditTransaction.amount = "Amount changed: positive for add, negative for deduct";
+sem CreditTransaction.balance_after = "Credit balance after this transaction";
+sem CreditTransaction.description = "Human-readable description of the transaction";
+sem CreditTransaction.related_analysis_id = "Link to business place_id if this was a usage transaction";
+
+# Semantic hints for UserProfile credit fields
+sem UserProfile.fetch_credits = "SerpAPI credits balance (1 credit = 1 API call = ~15 reviews fetched)";
+sem UserProfile.analysis_credits = "OpenAI credits balance (1 credit = 1 batch of 5 reviews analyzed)";
+sem UserProfile.fetch_credits_used = "Lifetime total of fetch credits consumed";
+sem UserProfile.analysis_credits_used = "Lifetime total of analysis credits consumed";
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EDGE DEFINITIONS

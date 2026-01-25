@@ -11,13 +11,14 @@ import from datetime {
     datetime,
     timedelta
 }
-import json, os;
+import json, os, math;
 
 include models;
 include walkers;
 include api_walkers;
 include auth_walkers;
 include payment_walkers;
+include credit_walkers;
 include errors;
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -80,6 +81,21 @@ walker:pub AnalyzeUrl {
             }
         }
 
+        # ═══════════════════════════════════════════════════════════════════
+        # CREDIT CALCULATION
+        # ═══════════════════════════════════════════════════════════════════
+        # Formula (from plan):
+        #   fetch_credits = ceil(reviews / 15) + 1   (1 for place lookup + pagination)
+        #   analysis_credits = ceil(reviews / 5) + 3  (batches + 3 fixed stages)
+
+        fetch_credits_needed = int(math.ceil(self.max_reviews / 15.0)) + 1;
+        analysis_credits_needed = int(math.ceil(self.max_reviews / 5.0)) + 3;
+
+        # Check if user has enough credits for full analysis
+        # (we'll refine this for cached vs fresh after we check cache)
+        has_enough_fetch = profile.fetch_credits >= fetch_credits_needed;
+        has_enough_analysis = profile.analysis_credits >= analysis_credits_needed;
+
         # Parse URL and extract business_id for cache check
         parsed = parse_google_maps_url(self.url);
         if not parsed["is_valid"] {
@@ -98,6 +114,20 @@ walker:pub AnalyzeUrl {
                     # Use cached data - run only analysis stages (no fetch)
                     print(f"   📦 Using cached data for business: {existing.name}");
                     print(f"   📅 Data age: {freshness['age_days']} days (threshold: {self.freshness_days} days)");
+
+                    # CREDIT CHECK: For cached data, only analysis credits needed
+                    if not has_enough_analysis {
+                        report insufficient_credits_error(
+                            "analysis",
+                            analysis_credits_needed,
+                            profile.analysis_credits
+                        );
+                        return;
+                    }
+
+                    # Deduct only analysis credits (no fetch for cached)
+                    profile.analysis_credits -= analysis_credits_needed;
+                    profile.analysis_credits_used += analysis_credits_needed;
 
                     # Increment counter for cached analysis too
                     profile.analyses_today += 1;
@@ -132,10 +162,22 @@ walker:pub AnalyzeUrl {
                             "fetched_at": existing.fetched_at,
                             "message": "Using cached reviews. Use force_refresh=true to re-fetch."
                         };
+                        enhanced_output["credits_used"] = {
+                            "fetch_credits": 0,
+                            "analysis_credits": analysis_credits_needed,
+                            "note": "No fetch credits used (cached data)"
+                        };
+                        enhanced_output["credits_remaining"] = {
+                            "fetch_credits": profile.fetch_credits,
+                            "analysis_credits": profile.analysis_credits
+                        };
                         report enhanced_output;
                     } else {
                         self.success = False;
                         self.error = pipeline.error;
+                        # Refund analysis credits on cache pipeline failure
+                        profile.analysis_credits += analysis_credits_needed;
+                        profile.analysis_credits_used -= analysis_credits_needed;
                         if profile.analyses_today > 0 {
                             profile.analyses_today -= 1;
                         }
@@ -148,6 +190,32 @@ walker:pub AnalyzeUrl {
                 }
             }
         }
+
+        # ═══════════════════════════════════════════════════════════════════
+        # CREDIT CHECK: For fresh fetch, need both fetch + analysis credits
+        # ═══════════════════════════════════════════════════════════════════
+        if not has_enough_fetch {
+            report insufficient_credits_error(
+                "fetch",
+                fetch_credits_needed,
+                profile.fetch_credits
+            );
+            return;
+        }
+        if not has_enough_analysis {
+            report insufficient_credits_error(
+                "analysis",
+                analysis_credits_needed,
+                profile.analysis_credits
+            );
+            return;
+        }
+
+        # Deduct credits BEFORE expensive operation
+        profile.fetch_credits -= fetch_credits_needed;
+        profile.analysis_credits -= analysis_credits_needed;
+        profile.fetch_credits_used += fetch_credits_needed;
+        profile.analysis_credits_used += analysis_credits_needed;
 
         # Increment daily analysis counter BEFORE expensive operation
         profile.analyses_today += 1;
@@ -181,11 +249,24 @@ walker:pub AnalyzeUrl {
                 "from_cache": False,
                 "message": "Fresh data fetched from API"
             };
+            enhanced_output["credits_used"] = {
+                "fetch_credits": fetch_credits_needed,
+                "analysis_credits": analysis_credits_needed
+            };
+            enhanced_output["credits_remaining"] = {
+                "fetch_credits": profile.fetch_credits,
+                "analysis_credits": profile.analysis_credits
+            };
             # Report for API response
             report enhanced_output;
         } else {
             self.success = False;
             self.error = pipeline.error;
+            # Refund credits if pipeline failed
+            profile.fetch_credits += fetch_credits_needed;
+            profile.analysis_credits += analysis_credits_needed;
+            profile.fetch_credits_used -= fetch_credits_needed;
+            profile.analysis_credits_used -= analysis_credits_needed;
             # Decrement counter if pipeline failed
             if profile.analyses_today > 0 {
                 profile.analyses_today -= 1;

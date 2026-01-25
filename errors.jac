@@ -35,7 +35,10 @@ enum ErrorCode {
     SUBSCRIPTION_EXPIRED = "SUBSCRIPTION_EXPIRED",
     INVALID_BILLING_INTERVAL = "INVALID_BILLING_INTERVAL",
     CARD_DECLINED = "CARD_DECLINED",
-    INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS"
+    INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
+
+    # Credit-related errors
+    INSUFFICIENT_CREDITS = "INSUFFICIENT_CREDITS"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -119,5 +122,20 @@ def not_found_error(resource_type: str, identifier: str) -> dict {
         error_code,
         f"{resource_type.capitalize()} not found: {identifier}",
         {"resource_type": resource_type, "identifier": identifier}
+    );
+}
+
+# Create an insufficient credits error response
+def insufficient_credits_error(credit_type: str, required: int, available: int) -> dict {
+    return error_response(
+        ErrorCode.INSUFFICIENT_CREDITS,
+        f"Insufficient {credit_type} credits: need {required}, have {available}",
+        {
+            "credit_type": credit_type,
+            "required": required,
+            "available": available,
+            "shortage": required - available,
+            "action": "Purchase more credits or upgrade your plan"
+        }
     );
 }

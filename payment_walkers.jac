@@ -217,6 +217,39 @@ walker:pub process_payment {
         profile.analyses_today = 0;
         profile.last_reset_date = str(now.date());
 
+        # Grant credits based on tier
+        tier_credits = TIER_CREDITS.get(payment.tier, {"fetch_credits": 0, "analysis_credits": 0});
+        granted_fetch = tier_credits["fetch_credits"];
+        granted_analysis = tier_credits["analysis_credits"];
+
+        profile.fetch_credits += granted_fetch;
+        profile.analysis_credits += granted_analysis;
+
+        # Create credit transaction record
+        credit_txn = CreditTransaction(
+            transaction_id=str(uuid4()),
+            user_id=profile.username,
+            transaction_type="grant",
+            credit_type="fetch",
+            amount=granted_fetch,
+            balance_after=profile.fetch_credits,
+            description=f"Monthly {payment.tier.upper()} allocation ({billing_interval})",
+            created_at=str(now)
+        );
+        here ++> credit_txn;
+
+        credit_txn2 = CreditTransaction(
+            transaction_id=str(uuid4()),
+            user_id=profile.username,
+            transaction_type="grant",
+            credit_type="analysis",
+            amount=granted_analysis,
+            balance_after=profile.analysis_credits,
+            description=f"Monthly {payment.tier.upper()} allocation ({billing_interval})",
+            created_at=str(now)
+        );
+        here ++> credit_txn2;
+
         # Create transaction record for audit trail
         transaction = Transaction(
             transaction_id=str(uuid4()),
@@ -249,8 +282,16 @@ walker:pub process_payment {
                     "daily_analyses": profile.daily_analysis_limit
                 }
             },
+            "credits_granted": {
+                "fetch_credits": granted_fetch,
+                "analysis_credits": granted_analysis
+            },
+            "credits_balance": {
+                "fetch_credits": profile.fetch_credits,
+                "analysis_credits": profile.analysis_credits
+            },
             "transaction_id": transaction.transaction_id,
-            "message": f"Payment successful! Upgraded to {payment.tier.upper()} tier."
+            "message": f"Payment successful! Upgraded to {payment.tier.upper()} tier with {granted_fetch} fetch credits and {granted_analysis} analysis credits."
         };
     }
 }
@@ -316,6 +357,12 @@ walker:pub get_subscription_details {
                 "daily_analysis_limit": profile.daily_analysis_limit,
                 "analyses_today": profile.analyses_today,
                 "remaining_today": profile.daily_analysis_limit - profile.analyses_today if profile.daily_analysis_limit != -1 else -1
+            },
+            "credits": {
+                "fetch_credits": profile.fetch_credits,
+                "analysis_credits": profile.analysis_credits,
+                "fetch_credits_used": profile.fetch_credits_used,
+                "analysis_credits_used": profile.analysis_credits_used
             },
             "can_upgrade": profile.subscription_tier.value != "enterprise",
             "can_downgrade": profile.subscription_tier.value != "free"

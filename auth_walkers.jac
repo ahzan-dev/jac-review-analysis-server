@@ -41,27 +41,39 @@ walker:pub create_profile {
         }
 
         # Determine status and limits based on requested tier
+        # Get credit allocations from TIER_CREDITS config
+        free_credits = TIER_CREDITS.get("free", {"fetch_credits": 10, "analysis_credits": 50});
+
         if self.tier_requested == "free" {
             status = "active";
             tier = SubscriptionTier.FREE;
             pending = "";
             max_biz = 5;
             daily_limit = 10;
+            # FREE tier gets credits immediately
+            fetch_creds = free_credits["fetch_credits"];
+            analysis_creds = free_credits["analysis_credits"];
         } elif self.tier_requested == "pro" {
             status = "pending_payment";
             tier = SubscriptionTier.FREE;  # Start with free until payment succeeds
             pending = "pro";
             max_biz = 5;  # Free limits until upgraded
             daily_limit = 10;
+            # Credits granted after payment - start with 0
+            fetch_creds = 0;
+            analysis_creds = 0;
         } else {  # enterprise
             status = "pending_payment";
             tier = SubscriptionTier.FREE;
             pending = "enterprise";
             max_biz = 5;
             daily_limit = 10;
+            # Credits granted after payment - start with 0
+            fetch_creds = 0;
+            analysis_creds = 0;
         }
 
-        # Create profile
+        # Create profile with credit initialization
         new_profile = UserProfile(
             username="",  # Populated by JAC auth context
             subscription_tier=tier,
@@ -69,6 +81,8 @@ walker:pub create_profile {
             pending_upgrade_tier=pending,
             max_businesses=max_biz,
             daily_analysis_limit=daily_limit,
+            fetch_credits=fetch_creds,
+            analysis_credits=analysis_creds,
             created_at=str(datetime.now()),
             last_reset_date=str(datetime.now().date())
         );
@@ -83,6 +97,10 @@ walker:pub create_profile {
             "limits": {
                 "max_businesses": max_biz,
                 "daily_analyses": daily_limit
+            },
+            "credits": {
+                "fetch_credits": fetch_creds,
+                "analysis_credits": analysis_creds
             }
         };
 
@@ -90,6 +108,7 @@ walker:pub create_profile {
         if pending != "" {
             response["pending_upgrade"] = pending;
             response["next_step"] = "Call initiate_payment to start payment process";
+            response["credits_note"] = "Credits will be granted after payment is processed";
         }
 
         report response;
@@ -139,6 +158,12 @@ walker:pub get_user_profile {
                 "daily_analysis_limit": profile.daily_analysis_limit,
                 "analyses_today": profile.analyses_today,
                 "remaining_today": int(profile.daily_analysis_limit) - int(profile.analyses_today) if profile.daily_analysis_limit != -1 else -1
+            },
+            "credits": {
+                "fetch_credits": profile.fetch_credits,
+                "analysis_credits": profile.analysis_credits,
+                "fetch_credits_used": profile.fetch_credits_used,
+                "analysis_credits_used": profile.analysis_credits_used
             },
             "is_active": profile.is_active
         };

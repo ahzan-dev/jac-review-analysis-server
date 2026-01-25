@@ -952,3 +952,11 @@ curl -X POST http://localhost:8000/walker/GetBusinesses \
     "username": "farhan",
     "password": "farhan123"
   }'
+
+  curl -X POST "$BASE_URL/walker/AnalyzeUrl" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.google.com/maps/place/The+Kingsbury+Colombo/@6.933924,79.8395386,1138m/data=!3m1!1e3!4m13!1m2!2m1!1sHotels!3m9!1s0x3ae259259a6157fb:0x8c0cebb288af4419!5m2!4m1!1i2!8m2!3d6.9328529!4d79.8419406!15sCgZIb3RlbHOSAQVob3RlbKoBOhABKgoiBmhvdGVscygAMh4QASIainsixGVQ51rDIRxGAWYdQunD1rZjbCyu2qAyChACIgZob3RlbHPgAQA!16s%2Fm%2F025x4p6?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D",
+    "max_reviews": 100
+  }'

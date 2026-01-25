@@ -8,7 +8,8 @@
 #
 # ══════════════════════════════════════════════════════════════════════════════
 import from datetime {
-    datetime
+    datetime,
+    timedelta
 }
 import json, os;
 
@@ -16,6 +17,7 @@ include models;
 include walkers;
 include api_walkers;
 include auth_walkers;
+include payment_walkers;
 include errors;
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -23,7 +25,7 @@ include errors;
 # Main entry point for analysis - called by external services
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker AnalyzeUrl {
+walker:pub AnalyzeUrl {
     # Input parameters
     has url: str;
     has max_reviews: int = 100;
@@ -39,11 +41,14 @@ walker AnalyzeUrl {
     has error: str = "";
 
     can start with `root entry {
+
+          # Get profile from authenticated user's root (no username filter needed)
+       
         # SECURITY: Get user profile from authenticated user's root (no username param needed)
         profiles = [-->(`?UserProfile)];
         if not profiles {
             report {
-                "error": "User profile not found. Create profile first using create_user_profile walker"
+                "error": "User profile not found. Create profile first using create_profile walker"
             };
             return;
         }
@@ -200,17 +205,20 @@ walker AnalyzeUrl {
         return None;
     }
 
-    def check_freshness(business: Business, max_days: int) -> dict {
+    def check_freshness(business: Business | None, max_days: int) -> dict {
         # """Check if business data is still fresh based on fetched_at timestamp."""
-        if not business.fetched_at {
+        if not business or not business.fetched_at {
             return {"is_fresh": False, "age_days": -1, "reason": "No fetch timestamp"};
         }
 
         try {
             fetched = datetime.fromisoformat(business.fetched_at);
             now = datetime.now();
-            age_delta = now - fetched;
-            age_days = age_delta.days;
+            # Calculate days difference using timestamps to avoid type checker issues
+            now_ts = int(now.timestamp());
+            fetched_ts = int(fetched.timestamp());
+            diff_seconds = now_ts - fetched_ts;
+            age_days = int(diff_seconds / 86400);  # 86400 seconds in a day
 
             if age_days <= max_days {
                 return {
@@ -383,7 +391,7 @@ walker:pub health_check {
 # Used by Docker/Kubernetes to determine when service can receive requests
 
 walker:pub ready {
-    """Readiness probe - checks if service is ready to accept traffic."""
+    # """Readiness probe - checks if service is ready to accept traffic."""
 
     can check with `root entry {
         # Check critical environment variables
@@ -424,17 +432,20 @@ walker diagnostics {
             return;
         }
 
+        # Get API keys with safe string handling
+        openai_key = os.getenv('OPENAI_API_KEY');
+        serpapi_key = os.getenv('SERPAPI_KEY');
+
+        openai_display = str(openai_key)[:20] + "..." if openai_key else "NOT_SET";
+        serpapi_display = str(serpapi_key)[:20] + "..." if serpapi_key else "NOT_SET";
+
         report {
             "environment": {
                 "LLM_MODEL": os.getenv('LLM_MODEL', 'NOT_SET'),
                 "DEBUG": os.getenv('DEBUG', 'NOT_SET'),
                 "PORT": os.getenv('PORT', 'NOT_SET'),
-                "OPENAI_API_KEY": os.getenv('OPENAI_API_KEY', 'NOT_SET')[:20] + "..."
-                if os.getenv('OPENAI_API_KEY')
-                else "NOT_SET",
-                "SERPAPI_KEY": os.getenv('SERPAPI_KEY', 'NOT_SET')[:20] + "..."
-                if os.getenv('SERPAPI_KEY')
-                else "NOT_SET"
+                "OPENAI_API_KEY": openai_display,
+                "SERPAPI_KEY": serpapi_display
             },
             "system_info": {"python_version": os.sys.version, "cwd": os.getcwd()}
         } ;

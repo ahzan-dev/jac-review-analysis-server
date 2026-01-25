@@ -195,6 +195,25 @@ glob CONFIDENCE_THRESHOLDS: dict = {
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SUBSCRIPTION PRICING (Monthly + Annual with 15% discount)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+glob TIER_PRICING: dict = {
+    "free": {
+        "monthly": 0.00,
+        "annual": 0.00
+    },
+    "pro": {
+        "monthly": 29.00,
+        "annual": 295.00  # 15% discount from $348 (12 * $29)
+    },
+    "enterprise": {
+        "monthly": 99.00,
+        "annual": 1009.00  # 15% discount from $1,188 (12 * $99)
+    }
+};
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # NODE DEFINITIONS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -418,9 +437,89 @@ node UserProfile {
     has token: str = "";
     has token_expires: str = "";
 
+    # Subscription Lifecycle (NEW - for payment and upgrade flows)
+    has subscription_status: str = "active";  # "active", "pending_payment", "expired", "cancelled"
+    has pending_upgrade_tier: str = "";       # Tier waiting for payment
+    has pending_downgrade_tier: str = "";     # Tier to downgrade to at period end
+    has billing_interval: str = "monthly";    # "monthly" or "annual"
+    has subscription_start_date: str = "";    # When current subscription started
+    has subscription_end_date: str = "";      # When current subscription ends
+
+    # Onboarding (NEW - track user onboarding progress)
+    has onboarding_completed: bool = False;
+    has onboarding_step: int = 0;             # Current step (0-5)
+
+    # Payment History (NEW - for billing management)
+    has payment_customer_id: str = "";        # Stripe customer ID (dummy)
+    has last_payment_date: str = "";
+    has next_billing_date: str = "";
+
     # Note: Token management handled via walkers, not node abilities
     # JAC node abilities don't support parameters
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PAYMENT SYSTEM NODES (NEW - for dummy payment integration)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+node PaymentIntent {
+    has payment_id: str;                      # UUID for tracking
+    has user_id: str = "";                    # Link to UserProfile
+    has tier: str="";                            # "pro" or "enterprise"
+    has amount: float=0.0;                        # Amount in USD
+    has currency: str = "USD";
+    has status: str = "pending";              # "pending", "succeeded", "failed"
+    has payment_method: dict = {};            # Dummy card info (last4, brand)
+    has created_at: str = "";
+    has updated_at: str = "";
+    has metadata: dict = {};                  # upgrade_from, proration, billing_interval
+}
+
+node Transaction {
+    has transaction_id: str ="";
+    has user_id: str = "";
+    has transaction_type: str ="";                # "subscription_start", "upgrade", "downgrade", "payment", "refund", "cancellation"
+    has tier_from: str = "";
+    has tier_to: str = "";
+    has amount: float = 0.0;
+    has currency: str = "USD";
+    has payment_id: str = "";
+    has status: str = "completed";
+    has created_at: str = "";
+    has metadata: dict = {};
+}
+
+# Semantic hints for UserProfile subscription fields
+sem UserProfile.subscription_status = "Subscription status: 'active' (paying/using), 'pending_payment' (awaiting payment), 'expired' (past due), 'cancelled' (cancelled but may have access until period end)";
+sem UserProfile.pending_upgrade_tier = "Tier user intends to upgrade to after payment (empty if none pending)";
+sem UserProfile.pending_downgrade_tier = "Tier to downgrade to at subscription_end_date (empty if none scheduled)";
+sem UserProfile.billing_interval = "Billing frequency: 'monthly' or 'annual'";
+sem UserProfile.subscription_start_date = "ISO timestamp when current subscription period started";
+sem UserProfile.subscription_end_date = "ISO timestamp when current subscription period ends (renewal date)";
+sem UserProfile.onboarding_completed = "True if user has completed all onboarding steps";
+sem UserProfile.onboarding_step = "Current onboarding step number (0-5, where 5 is complete)";
+sem UserProfile.payment_customer_id = "Stripe customer ID for payment processing (dummy in this implementation)";
+sem UserProfile.last_payment_date = "ISO timestamp of most recent successful payment";
+sem UserProfile.next_billing_date = "ISO timestamp of next scheduled billing date";
+
+# Semantic hints for PaymentIntent node
+sem PaymentIntent.payment_id = "Unique UUID for this payment intent";
+sem PaymentIntent.user_id = "Username of the user making the payment";
+sem PaymentIntent.tier = "Subscription tier being purchased: 'pro' or 'enterprise'";
+sem PaymentIntent.amount = "Payment amount in USD (e.g., 29.00 for Pro monthly)";
+sem PaymentIntent.status = "Payment status: 'pending', 'requires_payment_method', 'succeeded', 'failed'";
+sem PaymentIntent.payment_method = "Dummy card info: {last4: '4242', brand: 'visa', exp_month: 12, exp_year: 2025}";
+sem PaymentIntent.metadata = "Additional context: {billing_interval: 'monthly'/'annual', upgrade_from: 'free', proration_applied: true/false}";
+
+# Semantic hints for Transaction node
+sem Transaction.transaction_id = "Unique UUID for audit trail";
+sem Transaction.transaction_type = "Type: 'subscription_start', 'upgrade', 'downgrade', 'payment', 'refund', 'cancellation'";
+sem Transaction.tier_from = "Previous subscription tier (e.g., 'free')";
+sem Transaction.tier_to = "New subscription tier (e.g., 'pro')";
+sem Transaction.amount = "Transaction amount in USD (0.0 for downgrades/cancellations)";
+sem Transaction.payment_id = "Link to PaymentIntent.payment_id if applicable";
+sem Transaction.status = "Transaction status: 'completed', 'pending', 'failed'";
+sem Transaction.metadata = "Additional context about the transaction";
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EDGE DEFINITIONS

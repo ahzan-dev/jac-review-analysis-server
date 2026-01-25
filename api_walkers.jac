@@ -20,7 +20,7 @@ include walkers;
 # POST /walker/GetBusinesses
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker GetBusinesses {
+walker:pub GetBusinesses {
     has limit: int = 20;
     has status_filter: str = "";  # "pending", "fetched", "analyzed", "completed"
 
@@ -88,7 +88,7 @@ walker GetBusinesses {
 # POST /walker/GetReport
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker GetReport {
+walker:pub GetReport {
     has business_id: str;
 
     can start with `root entry {
@@ -259,7 +259,7 @@ walker GetReport {
 # POST /walker/GetReviews
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker GetReviews {
+walker:pub GetReviews {
     has business_id: str;
     has limit: int = 50;
     has sentiment_filter: str = "";  # "positive", "negative", "neutral", "mixed"
@@ -364,7 +364,7 @@ walker GetReviews {
 # POST /walker/Reanalyze
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker Reanalyze {
+walker:pub Reanalyze {
     has business_id: str;
     has report_type: str = "deep";
     has force_sentiment: bool = False;  # Re-run sentiment analysis too
@@ -641,7 +641,7 @@ walker Reanalyze {
 # POST /walker/DeleteBusiness
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker DeleteBusiness {
+walker:pub DeleteBusiness {
     has business_id: str;
 
     
@@ -696,7 +696,7 @@ walker DeleteBusiness {
 # POST /walker/GetStats
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker GetStats {
+walker:pub GetStats {
     
 
     can start with `root entry {

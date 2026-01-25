@@ -31,9 +31,7 @@ enum ErrorCode {
 
     # Payment-related errors
     PAYMENT_FAILED = "PAYMENT_FAILED",
-    PAYMENT_INTENT_NOT_FOUND = "PAYMENT_INTENT_NOT_FOUND",
-    SUBSCRIPTION_EXPIRED = "SUBSCRIPTION_EXPIRED",
-    INVALID_BILLING_INTERVAL = "INVALID_BILLING_INTERVAL",
+    INVALID_PACKAGE = "INVALID_PACKAGE",
     CARD_DECLINED = "CARD_DECLINED",
     INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",
 
@@ -126,16 +124,15 @@ def not_found_error(resource_type: str, identifier: str) -> dict {
 }
 
 # Create an insufficient credits error response
-def insufficient_credits_error(credit_type: str, required: int, available: int) -> dict {
+def insufficient_credits_error(required: int, available: int) -> dict {
     return error_response(
         ErrorCode.INSUFFICIENT_CREDITS,
-        f"Insufficient {credit_type} credits: need {required}, have {available}",
+        f"Insufficient credits: need {required}, have {available}",
         {
-            "credit_type": credit_type,
             "required": required,
             "available": available,
             "shortage": required - available,
-            "action": "Purchase more credits or upgrade your plan"
+            "action": "Purchase a credit package to continue"
         }
     );
 }

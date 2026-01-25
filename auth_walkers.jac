@@ -1,12 +1,11 @@
 # ══════════════════════════════════════════════════════════════════════════════
 # AUTHENTICATION & USER MANAGEMENT WALKERS
 # ══════════════════════════════════════════════════════════════════════════════
-# Simplified walkers for user profile management and subscription control
-# Flow: Register -> Create Profile -> Payment (if needed) -> Done!
+# Simplified walkers for user profile management
+# Credit-based system: Users purchase credit packages for analyses
 # ══════════════════════════════════════════════════════════════════════════════
 
-import from datetime { datetime, timedelta }
-import from uuid { uuid4 }
+import from datetime { datetime }
 
 import os;
 
@@ -16,12 +15,9 @@ include errors;
 # ═══════════════════════════════════════════════════════════════════════════════
 # WALKER 1: Create Profile
 # ═══════════════════════════════════════════════════════════════════════════════
-# Creates a UserProfile node with selected tier
-# - FREE tier: active immediately
-# - PRO/ENTERPRISE: pending_payment status until payment completes
+# Creates a UserProfile node with 0 credits (users purchase packages)
 
 walker:pub create_profile {
-    has tier_requested: str = "free";
 
     can create with `root entry {
         # Check if profile already exists
@@ -34,91 +30,26 @@ walker:pub create_profile {
             return;
         }
 
-        # Validate tier
-        if self.tier_requested not in ["free", "pro", "enterprise"] {
-            report validation_error("tier_requested", "Must be 'free', 'pro', or 'enterprise'");
-            return;
-        }
-
-        # Determine status and limits based on requested tier
-        # Get credit allocations from TIER_CREDITS config
-        free_credits = TIER_CREDITS.get("free", {"fetch_credits": 10, "analysis_credits": 50});
-
-        if self.tier_requested == "free" {
-            status = "active";
-            tier = SubscriptionTier.FREE;
-            pending = "";
-            max_biz = 5;
-            daily_limit = 10;
-            # FREE tier gets credits immediately
-            fetch_creds = free_credits["fetch_credits"];
-            analysis_creds = free_credits["analysis_credits"];
-        } elif self.tier_requested == "pro" {
-            status = "pending_payment";
-            tier = SubscriptionTier.FREE;  # Start with free until payment succeeds
-            pending = "pro";
-            max_biz = 5;  # Free limits until upgraded
-            daily_limit = 10;
-            # Credits granted after payment - start with 0
-            fetch_creds = 0;
-            analysis_creds = 0;
-        } else {  # enterprise
-            status = "pending_payment";
-            tier = SubscriptionTier.FREE;
-            pending = "enterprise";
-            max_biz = 5;
-            daily_limit = 10;
-            # Credits granted after payment - start with 0
-            fetch_creds = 0;
-            analysis_creds = 0;
-        }
-
-        # Create profile with credit initialization
+        # Create profile with 0 credits
         new_profile = UserProfile(
             username="",  # Populated by JAC auth context
-            subscription_tier=tier,
-            subscription_status=status,
-            pending_upgrade_tier=pending,
-            max_businesses=max_biz,
-            daily_analysis_limit=daily_limit,
-            fetch_credits=fetch_creds,
-            analysis_credits=analysis_creds,
-            created_at=str(datetime.now()),
-            last_reset_date=str(datetime.now().date())
+            created_at=str(datetime.now())
         );
 
         here ++> new_profile;
 
-        # Build response
-        response = {
+        report {
             "success": True,
-            "tier": tier.value,
-            "subscription_status": status,
-            "limits": {
-                "max_businesses": max_biz,
-                "daily_analyses": daily_limit
-            },
-            "credits": {
-                "fetch_credits": fetch_creds,
-                "analysis_credits": analysis_creds
-            }
+            "credits": 0,
+            "message": "Profile created. Purchase a credit package to start analyzing."
         };
-
-        # Add payment info if paid tier requested
-        if pending != "" {
-            response["pending_upgrade"] = pending;
-            response["next_step"] = "Call initiate_payment to start payment process";
-            response["credits_note"] = "Credits will be granted after payment is processed";
-        }
-
-        report response;
     }
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # WALKER 2: Get User Profile
 # ═══════════════════════════════════════════════════════════════════════════════
-# Retrieves the authenticated user's profile and current usage/limits
+# Retrieves the authenticated user's profile and credit balance
 
 walker:pub get_user_profile {
 
@@ -136,105 +67,21 @@ walker:pub get_user_profile {
 
         profile = profiles[0];
 
-        # Check if daily limit needs reset
-        today = str(datetime.now().date());
-        if profile.last_reset_date != today {
-            profile.analyses_today = 0;
-            profile.last_reset_date = today;
-        }
-
         report {
             "success": True,
             "role": profile.role.value,
-            "subscription": {
-                "tier": profile.subscription_tier.value,
-                "status": profile.subscription_status,
-                "pending_upgrade": profile.pending_upgrade_tier
-            },
-            "limits": {
-                "max_businesses": profile.max_businesses,
-                "current_businesses": profile.current_business_count,
-                "remaining_businesses": int(profile.max_businesses) - int(profile.current_business_count) if profile.max_businesses != -1 else -1,
-                "daily_analysis_limit": profile.daily_analysis_limit,
-                "analyses_today": profile.analyses_today,
-                "remaining_today": int(profile.daily_analysis_limit) - int(profile.analyses_today) if profile.daily_analysis_limit != -1 else -1
-            },
             "credits": {
-                "fetch_credits": profile.fetch_credits,
-                "analysis_credits": profile.analysis_credits,
-                "fetch_credits_used": profile.fetch_credits_used,
-                "analysis_credits_used": profile.analysis_credits_used
+                "available": profile.credits,
+                "used": profile.credits_used
             },
+            "businesses_count": profile.current_business_count,
             "is_active": profile.is_active
         };
     }
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# WALKER 3: Update Subscription (Admin Only)
-# ═══════════════════════════════════════════════════════════════════════════════
-# Allows admins to upgrade/downgrade user subscriptions
-
-walker update_subscription {
-    has target_username: str;
-    has new_tier: str;
-
-    can upgrade_user with `root entry {
-        # Verify admin from OWN profile
-        my_profiles = [-->(`?UserProfile)];
-        if not my_profiles or my_profiles[0].role != UserRole.ADMIN {
-            report unauthorized_error("Admin access required");
-            return;
-        }
-
-        # Find target user profile
-        target_profiles = [-->(`?UserProfile)](?username == self.target_username);
-        if not target_profiles {
-            report not_found_error("Target user not found");
-            return;
-        }
-
-        profile = target_profiles[0];
-
-        # Validate tier
-        if self.new_tier not in ["free", "pro", "enterprise"] {
-            report validation_error("new_tier", "Must be 'free', 'pro', or 'enterprise'");
-            return;
-        }
-
-        # Update tier and limits
-        if self.new_tier == "free" {
-            profile.max_businesses = 5;
-            profile.daily_analysis_limit = 10;
-            tier_enum = SubscriptionTier.FREE;
-        } elif self.new_tier == "pro" {
-            profile.max_businesses = 50;
-            profile.daily_analysis_limit = 100;
-            tier_enum = SubscriptionTier.PRO;
-        } else {  # enterprise
-            profile.max_businesses = -1;
-            profile.daily_analysis_limit = -1;
-            tier_enum = SubscriptionTier.ENTERPRISE;
-        }
-
-        profile.subscription_tier = tier_enum;
-        profile.subscription_status = "active";
-        profile.pending_upgrade_tier = "";
-
-        report {
-            "success": True,
-            "target_username": self.target_username,
-            "new_tier": self.new_tier,
-            "limits": {
-                "max_businesses": profile.max_businesses,
-                "daily_analyses": profile.daily_analysis_limit
-            }
-        };
-    }
-}
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# WALKER 4: Create Admin (Setup Only)
+# WALKER 3: Create Admin (Setup Only)
 # ═══════════════════════════════════════════════════════════════════════════════
 # Upgrades the authenticated user to admin role
 # Requires ADMIN_SETUP_SECRET environment variable
@@ -264,10 +111,7 @@ walker create_admin {
             # Upgrade existing profile to admin
             profile = existing[0];
             profile.role = UserRole.ADMIN;
-            profile.subscription_tier = SubscriptionTier.ENTERPRISE;
-            profile.max_businesses = -1;
-            profile.daily_analysis_limit = -1;
-            profile.subscription_status = "active";
+            profile.credits = 9999;  # Admin gets generous credits
 
             report {
                 "success": True,
@@ -278,12 +122,8 @@ walker create_admin {
             admin_profile = UserProfile(
                 username="",
                 role=UserRole.ADMIN,
-                subscription_tier=SubscriptionTier.ENTERPRISE,
-                subscription_status="active",
-                max_businesses=-1,
-                daily_analysis_limit=-1,
+                credits=9999,
                 created_at=str(datetime.now()),
-                last_reset_date=str(datetime.now().date()),
                 is_active=True
             );
 

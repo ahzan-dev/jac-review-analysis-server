@@ -11,7 +11,7 @@ import from datetime {
     datetime,
     timedelta
 }
-import json, os, math;
+import json, os;
 
 include models;
 include walkers;
@@ -43,9 +43,7 @@ walker:pub AnalyzeUrl {
 
     can start with `root entry {
 
-          # Get profile from authenticated user's root (no username filter needed)
-       
-        # SECURITY: Get user profile from authenticated user's root (no username param needed)
+        # SECURITY: Get user profile from authenticated user's root
         profiles = [-->(`?UserProfile)];
         if not profiles {
             report {
@@ -62,39 +60,13 @@ walker:pub AnalyzeUrl {
             return;
         }
 
-        # Reset daily limit if needed
-        today = str(datetime.now().date());
-        if profile.last_reset_date != today {
-            profile.analyses_today = 0;
-            profile.last_reset_date = today;
-        }
-
-        # Check daily analysis limit
-        if profile.daily_analysis_limit != -1 {  # -1 means unlimited
-            if profile.analyses_today >= profile.daily_analysis_limit {
-                report quota_exceeded_error(
-                    "daily_analyses",
-                    profile.daily_analysis_limit,
-                    profile.analyses_today
-                );
-                return;
-            }
-        }
-
         # ═══════════════════════════════════════════════════════════════════
-        # CREDIT CALCULATION
+        # CREDIT CHECK: 1 credit = 1 complete analysis
         # ═══════════════════════════════════════════════════════════════════
-        # Formula (from plan):
-        #   fetch_credits = ceil(reviews / 15) + 1   (1 for place lookup + pagination)
-        #   analysis_credits = ceil(reviews / 5) + 3  (batches + 3 fixed stages)
-
-        fetch_credits_needed = int(math.ceil(self.max_reviews / 15.0)) + 1;
-        analysis_credits_needed = int(math.ceil(self.max_reviews / 5.0)) + 3;
-
-        # Check if user has enough credits for full analysis
-        # (we'll refine this for cached vs fresh after we check cache)
-        has_enough_fetch = profile.fetch_credits >= fetch_credits_needed;
-        has_enough_analysis = profile.analysis_credits >= analysis_credits_needed;
+        if profile.credits < 1 {
+            report insufficient_credits_error(1, profile.credits);
+            return;
+        }
 
         # Parse URL and extract business_id for cache check
         parsed = parse_google_maps_url(self.url);
@@ -115,22 +87,9 @@ walker:pub AnalyzeUrl {
                     print(f"   📦 Using cached data for business: {existing.name}");
                     print(f"   📅 Data age: {freshness['age_days']} days (threshold: {self.freshness_days} days)");
 
-                    # CREDIT CHECK: For cached data, only analysis credits needed
-                    if not has_enough_analysis {
-                        report insufficient_credits_error(
-                            "analysis",
-                            analysis_credits_needed,
-                            profile.analysis_credits
-                        );
-                        return;
-                    }
-
-                    # Deduct only analysis credits (no fetch for cached)
-                    profile.analysis_credits -= analysis_credits_needed;
-                    profile.analysis_credits_used += analysis_credits_needed;
-
-                    # Increment counter for cached analysis too
-                    profile.analyses_today += 1;
+                    # Deduct 1 credit for cached analysis
+                    profile.credits -= 1;
+                    profile.credits_used += 1;
 
                     # Run reanalysis pipeline on existing data
                     pipeline = here spawn ReanalyzePipeline(
@@ -148,12 +107,9 @@ walker:pub AnalyzeUrl {
 
                         # Add usage and cache info to output
                         enhanced_output = self.output;
-                        enhanced_output["usage"] = {
-                            "analyses_today": profile.analyses_today,
-                            "daily_limit": profile.daily_analysis_limit,
-                            "businesses_count": profile.current_business_count,
-                            "business_limit": profile.max_businesses,
-                            "tier": profile.subscription_tier.value
+                        enhanced_output["credits"] = {
+                            "used": 1,
+                            "remaining": profile.credits
                         };
                         enhanced_output["cache_info"] = {
                             "from_cache": True,
@@ -162,25 +118,13 @@ walker:pub AnalyzeUrl {
                             "fetched_at": existing.fetched_at,
                             "message": "Using cached reviews. Use force_refresh=true to re-fetch."
                         };
-                        enhanced_output["credits_used"] = {
-                            "fetch_credits": 0,
-                            "analysis_credits": analysis_credits_needed,
-                            "note": "No fetch credits used (cached data)"
-                        };
-                        enhanced_output["credits_remaining"] = {
-                            "fetch_credits": profile.fetch_credits,
-                            "analysis_credits": profile.analysis_credits
-                        };
                         report enhanced_output;
                     } else {
                         self.success = False;
                         self.error = pipeline.error;
-                        # Refund analysis credits on cache pipeline failure
-                        profile.analysis_credits += analysis_credits_needed;
-                        profile.analysis_credits_used -= analysis_credits_needed;
-                        if profile.analyses_today > 0 {
-                            profile.analyses_today -= 1;
-                        }
+                        # Refund credit on pipeline failure
+                        profile.credits += 1;
+                        profile.credits_used -= 1;
                         report error_response(ErrorCode.INTERNAL_ERROR, self.error, {});
                     }
                     return;
@@ -191,34 +135,9 @@ walker:pub AnalyzeUrl {
             }
         }
 
-        # ═══════════════════════════════════════════════════════════════════
-        # CREDIT CHECK: For fresh fetch, need both fetch + analysis credits
-        # ═══════════════════════════════════════════════════════════════════
-        if not has_enough_fetch {
-            report insufficient_credits_error(
-                "fetch",
-                fetch_credits_needed,
-                profile.fetch_credits
-            );
-            return;
-        }
-        if not has_enough_analysis {
-            report insufficient_credits_error(
-                "analysis",
-                analysis_credits_needed,
-                profile.analysis_credits
-            );
-            return;
-        }
-
-        # Deduct credits BEFORE expensive operation
-        profile.fetch_credits -= fetch_credits_needed;
-        profile.analysis_credits -= analysis_credits_needed;
-        profile.fetch_credits_used += fetch_credits_needed;
-        profile.analysis_credits_used += analysis_credits_needed;
-
-        # Increment daily analysis counter BEFORE expensive operation
-        profile.analyses_today += 1;
+        # Deduct 1 credit BEFORE expensive operation
+        profile.credits -= 1;
+        profile.credits_used += 1;
 
         # Run full pipeline (fresh fetch)
         # SECURITY: Business will be created on authenticated user's root automatically
@@ -236,41 +155,24 @@ walker:pub AnalyzeUrl {
             self.data_source = pipeline.data_source;
             self.from_cache = False;
 
-            # Add usage info to output
+            # Add credits info to output
             enhanced_output = self.output;
-            enhanced_output["usage"] = {
-                "analyses_today": profile.analyses_today,
-                "daily_limit": profile.daily_analysis_limit,
-                "businesses_count": profile.current_business_count,
-                "business_limit": profile.max_businesses,
-                "tier": profile.subscription_tier.value
+            enhanced_output["credits"] = {
+                "used": 1,
+                "remaining": profile.credits
             };
             enhanced_output["cache_info"] = {
                 "from_cache": False,
                 "message": "Fresh data fetched from API"
-            };
-            enhanced_output["credits_used"] = {
-                "fetch_credits": fetch_credits_needed,
-                "analysis_credits": analysis_credits_needed
-            };
-            enhanced_output["credits_remaining"] = {
-                "fetch_credits": profile.fetch_credits,
-                "analysis_credits": profile.analysis_credits
             };
             # Report for API response
             report enhanced_output;
         } else {
             self.success = False;
             self.error = pipeline.error;
-            # Refund credits if pipeline failed
-            profile.fetch_credits += fetch_credits_needed;
-            profile.analysis_credits += analysis_credits_needed;
-            profile.fetch_credits_used -= fetch_credits_needed;
-            profile.analysis_credits_used -= analysis_credits_needed;
-            # Decrement counter if pipeline failed
-            if profile.analyses_today > 0 {
-                profile.analyses_today -= 1;
-            }
+            # Refund credit if pipeline failed
+            profile.credits += 1;
+            profile.credits_used -= 1;
             report error_response(ErrorCode.INTERNAL_ERROR, self.error, {});
         }
     }

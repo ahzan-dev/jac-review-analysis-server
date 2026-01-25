@@ -195,56 +195,15 @@ glob CONFIDENCE_THRESHOLDS: dict = {
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SUBSCRIPTION PRICING (Monthly + Annual with 15% discount)
+# CREDIT PACKAGE CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
+# Simple credit packages: 1 credit = 1 complete analysis (any review count)
 
-glob TIER_PRICING: dict = {
-    "free": {
-        "monthly": 0.00,
-        "annual": 0.00
-    },
-    "pro": {
-        "monthly": 29.00,
-        "annual": 295.00  # 15% discount from $348 (12 * $29)
-    },
-    "enterprise": {
-        "monthly": 99.00,
-        "annual": 1009.00  # 15% discount from $1,188 (12 * $99)
-    }
-};
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CREDIT ALLOCATIONS BY TIER
-# ═══════════════════════════════════════════════════════════════════════════════
-# Fetch credits: 1 credit = 1 SerpAPI call (~15 reviews)
-# Analysis credits: 1 credit = 1 batch (5 reviews) + fixed overhead
-# Formula: 100 reviews = 7 fetch + 23 analysis credits
-
-glob TIER_CREDITS: dict = {
-    "free": {
-        "fetch_credits": 10,         # ~2 analyses (20 reviews each)
-        "analysis_credits": 50
-    },
-    "pro": {
-        "fetch_credits": 500,        # ~70 analyses (100 reviews each)
-        "analysis_credits": 2000
-    },
-    "enterprise": {
-        "fetch_credits": 2000,       # ~280 analyses
-        "analysis_credits": 10000
-    }
-};
-
-# Overage pricing (per credit)
-glob CREDIT_OVERAGE_PRICING: dict = {
-    "pro": {
-        "fetch_credit": 0.04,
-        "analysis_credit": 0.008
-    },
-    "enterprise": {
-        "fetch_credit": 0.03,
-        "analysis_credit": 0.005
-    }
+glob CREDIT_PACKAGES: dict = {
+    "bronze": {"credits": 1, "price": 5.0, "name": "Bronze"},
+    "silver": {"credits": 5, "price": 22.0, "name": "Silver"},
+    "gold": {"credits": 12, "price": 48.0, "name": "Gold"},
+    "platinum": {"credits": 30, "price": 110.0, "name": "Platinum"}
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -437,31 +396,22 @@ sem Report.overall_risk_assessment = "Summary of risk profile across all recomme
 # USER MANAGEMENT & AUTHENTICATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-enum SubscriptionTier {
-    FREE = "free",
-    PRO = "pro",
-    ENTERPRISE = "enterprise"
-}
-
 enum UserRole {
     USER = "user",
     ADMIN = "admin"
 }
 
 node UserProfile {
-    has username: str;  # Primary key - matches JAC user registration
+    has username: str = "";  # Primary key - matches JAC user registration
     has role: UserRole = UserRole.USER;
-    has subscription_tier: SubscriptionTier = SubscriptionTier.FREE;
     has created_at: str = "";
 
-    # Subscription Limits
-    has max_businesses: int = 5;  # Free: 5, Pro: 50, Enterprise: unlimited (-1)
-    has daily_analysis_limit: int = 10;  # Free: 10, Pro: 100, Enterprise: unlimited (-1)
+    # Simple Credit System (1 credit = 1 complete analysis)
+    has credits: int = 0;           # Available credits
+    has credits_used: int = 0;      # Lifetime credits used
 
     # Usage Tracking
     has current_business_count: int = 0;
-    has analyses_today: int = 0;
-    has last_reset_date: str = "";  # For daily limit reset
 
     # Audit
     has last_login: str = "";
@@ -471,123 +421,42 @@ node UserProfile {
     has token: str = "";
     has token_expires: str = "";
 
-    # Subscription Lifecycle (NEW - for payment and upgrade flows)
-    has subscription_status: str = "active";  # "active", "pending_payment", "expired", "cancelled"
-    has pending_upgrade_tier: str = "";       # Tier waiting for payment
-    has pending_downgrade_tier: str = "";     # Tier to downgrade to at period end
-    has billing_interval: str = "monthly";    # "monthly" or "annual"
-    has subscription_start_date: str = "";    # When current subscription started
-    has subscription_end_date: str = "";      # When current subscription ends
-
-    # Onboarding (NEW - track user onboarding progress)
-    has onboarding_completed: bool = False;
-    has onboarding_step: int = 0;             # Current step (0-5)
-
-    # Payment History (NEW - for billing management)
-    has payment_customer_id: str = "";        # Stripe customer ID (dummy)
+    # Payment tracking
+    has payment_customer_id: str = "";  # Stripe customer ID (dummy)
     has last_payment_date: str = "";
-    has next_billing_date: str = "";
-
-    # Credit System (NEW - for usage-based billing)
-    has fetch_credits: int = 0;               # SerpAPI credits (1 credit = 1 API call)
-    has analysis_credits: int = 0;            # OpenAI credits (1 credit = 1 batch/5 reviews)
-    has fetch_credits_used: int = 0;          # Total fetch credits used (lifetime)
-    has analysis_credits_used: int = 0;       # Total analysis credits used (lifetime)
-
-    # Note: Token management handled via walkers, not node abilities
-    # JAC node abilities don't support parameters
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# PAYMENT SYSTEM NODES (NEW - for dummy payment integration)
+# CREDIT SYSTEM NODES
 # ═══════════════════════════════════════════════════════════════════════════════
-
-node PaymentIntent {
-    has payment_id: str;                      # UUID for tracking
-    has user_id: str = "";                    # Link to UserProfile
-    has tier: str="";                            # "pro" or "enterprise"
-    has amount: float=0.0;                        # Amount in USD
-    has currency: str = "USD";
-    has status: str = "pending";              # "pending", "succeeded", "failed"
-    has payment_method: dict = {};            # Dummy card info (last4, brand)
-    has created_at: str = "";
-    has updated_at: str = "";
-    has metadata: dict = {};                  # upgrade_from, proration, billing_interval
-}
-
-node Transaction {
-    has transaction_id: str ="";
-    has user_id: str = "";
-    has transaction_type: str ="";                # "subscription_start", "upgrade", "downgrade", "payment", "refund", "cancellation"
-    has tier_from: str = "";
-    has tier_to: str = "";
-    has amount: float = 0.0;
-    has currency: str = "USD";
-    has payment_id: str = "";
-    has status: str = "completed";
-    has created_at: str = "";
-    has metadata: dict = {};
-}
 
 node CreditTransaction {
     has transaction_id: str = "";
     has user_id: str = "";
-    has transaction_type: str = "";               # "grant", "usage", "purchase", "refund", "expiry"
-    has credit_type: str = "";                    # "fetch" or "analysis"
-    has amount: int = 0;                          # Positive for add, negative for deduct
-    has balance_after: int = 0;                   # Balance after this transaction
-    has description: str = "";                    # "Analysis of Street Burger", "Monthly Pro allocation"
-    has related_analysis_id: str = "";            # Link to analysis if usage type
+    has transaction_type: str = "";           # "purchase", "usage", "grant", "refund"
+    has amount: int = 0;                      # Positive for add, negative for deduct
+    has balance_after: int = 0;               # Balance after this transaction
+    has package_name: str = "";               # "bronze", "silver", "gold", "platinum" (for purchases)
+    has description: str = "";                # "Analysis of Street Burger", "Purchased Gold package"
+    has related_business_id: str = "";        # Link to business place_id if usage type
     has created_at: str = "";
 }
 
-# Semantic hints for UserProfile subscription fields
-sem UserProfile.subscription_status = "Subscription status: 'active' (paying/using), 'pending_payment' (awaiting payment), 'expired' (past due), 'cancelled' (cancelled but may have access until period end)";
-sem UserProfile.pending_upgrade_tier = "Tier user intends to upgrade to after payment (empty if none pending)";
-sem UserProfile.pending_downgrade_tier = "Tier to downgrade to at subscription_end_date (empty if none scheduled)";
-sem UserProfile.billing_interval = "Billing frequency: 'monthly' or 'annual'";
-sem UserProfile.subscription_start_date = "ISO timestamp when current subscription period started";
-sem UserProfile.subscription_end_date = "ISO timestamp when current subscription period ends (renewal date)";
-sem UserProfile.onboarding_completed = "True if user has completed all onboarding steps";
-sem UserProfile.onboarding_step = "Current onboarding step number (0-5, where 5 is complete)";
+# Semantic hints for UserProfile
+sem UserProfile.credits = "Available credits (1 credit = 1 complete analysis)";
+sem UserProfile.credits_used = "Lifetime total credits consumed";
 sem UserProfile.payment_customer_id = "Stripe customer ID for payment processing (dummy in this implementation)";
 sem UserProfile.last_payment_date = "ISO timestamp of most recent successful payment";
-sem UserProfile.next_billing_date = "ISO timestamp of next scheduled billing date";
-
-# Semantic hints for PaymentIntent node
-sem PaymentIntent.payment_id = "Unique UUID for this payment intent";
-sem PaymentIntent.user_id = "Username of the user making the payment";
-sem PaymentIntent.tier = "Subscription tier being purchased: 'pro' or 'enterprise'";
-sem PaymentIntent.amount = "Payment amount in USD (e.g., 29.00 for Pro monthly)";
-sem PaymentIntent.status = "Payment status: 'pending', 'requires_payment_method', 'succeeded', 'failed'";
-sem PaymentIntent.payment_method = "Dummy card info: {last4: '4242', brand: 'visa', exp_month: 12, exp_year: 2025}";
-sem PaymentIntent.metadata = "Additional context: {billing_interval: 'monthly'/'annual', upgrade_from: 'free', proration_applied: true/false}";
-
-# Semantic hints for Transaction node
-sem Transaction.transaction_id = "Unique UUID for audit trail";
-sem Transaction.transaction_type = "Type: 'subscription_start', 'upgrade', 'downgrade', 'payment', 'refund', 'cancellation'";
-sem Transaction.tier_from = "Previous subscription tier (e.g., 'free')";
-sem Transaction.tier_to = "New subscription tier (e.g., 'pro')";
-sem Transaction.amount = "Transaction amount in USD (0.0 for downgrades/cancellations)";
-sem Transaction.payment_id = "Link to PaymentIntent.payment_id if applicable";
-sem Transaction.status = "Transaction status: 'completed', 'pending', 'failed'";
-sem Transaction.metadata = "Additional context about the transaction";
 
 # Semantic hints for CreditTransaction node
 sem CreditTransaction.transaction_id = "Unique UUID for this credit transaction";
 sem CreditTransaction.user_id = "Username of the user";
-sem CreditTransaction.transaction_type = "Type: 'grant' (monthly allocation), 'usage' (analysis), 'purchase' (buy more), 'refund', 'expiry'";
-sem CreditTransaction.credit_type = "Credit type: 'fetch' (SerpAPI) or 'analysis' (OpenAI)";
+sem CreditTransaction.transaction_type = "Type: 'purchase' (buy package), 'usage' (analysis), 'grant' (admin), 'refund'";
 sem CreditTransaction.amount = "Amount changed: positive for add, negative for deduct";
 sem CreditTransaction.balance_after = "Credit balance after this transaction";
+sem CreditTransaction.package_name = "Package name if purchase: 'bronze', 'silver', 'gold', 'platinum'";
 sem CreditTransaction.description = "Human-readable description of the transaction";
-sem CreditTransaction.related_analysis_id = "Link to business place_id if this was a usage transaction";
-
-# Semantic hints for UserProfile credit fields
-sem UserProfile.fetch_credits = "SerpAPI credits balance (1 credit = 1 API call = ~15 reviews fetched)";
-sem UserProfile.analysis_credits = "OpenAI credits balance (1 credit = 1 batch of 5 reviews analyzed)";
-sem UserProfile.fetch_credits_used = "Lifetime total of fetch credits consumed";
-sem UserProfile.analysis_credits_used = "Lifetime total of analysis credits consumed";
+sem CreditTransaction.related_business_id = "Link to business place_id if this was a usage transaction";
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EDGE DEFINITIONS

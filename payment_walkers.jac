@@ -46,7 +46,7 @@ walker:pub get_credit_packages {
 
         report success_response({
             "packages": packages,
-            "note": "1 credit = 1 complete analysis (any review count)"
+            "note": "1 credit = up to 100 reviews. Formula: ceil(reviews / 100)"
         }, {});
     }
 }

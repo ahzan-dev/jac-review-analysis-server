@@ -9,6 +9,31 @@ Local: http://localhost:8000
 
 ---
 
+## Credit Calculation Rules
+
+### Formula
+```
+credits_required = CEILING(total_reviews / 100)
+```
+
+### Credit Usage by Review Count
+
+| Reviews | Credits Required | Cost (Bronze @ $5/credit) |
+|---------|------------------|---------------------------|
+| 1-100   | 1 credit         | $5.00                     |
+| 101-200 | 2 credits        | $10.00                    |
+| 201-300 | 3 credits        | $15.00                    |
+| 500     | 5 credits        | $25.00                    |
+| 1000    | 10 credits       | $50.00                    |
+
+### Key Points
+- **1 credit = up to 100 reviews analyzed**
+- Credits scale linearly with review count
+- Each full or partial block of 100 reviews = 1 credit
+- The `max_reviews` parameter determines credit cost
+
+---
+
 ## Response Structure
 
 All API responses follow this structure:
@@ -136,7 +161,7 @@ Content-Type: application/json
       "available": 11,
       "used": 1
     },
-    "note": "1 credit = 1 complete analysis"
+    "note": "1 credit = up to 100 reviews. Formula: ceil(reviews / 100)"
   },
   "timestamp": "2026-01-25 21:33:29.120238"
 }
@@ -209,7 +234,7 @@ Content-Type: application/json
         "price_per_credit": 3.67
       }
     ],
-    "note": "1 credit = 1 complete analysis (any review count)"
+    "note": "1 credit = up to 100 reviews. Formula: ceil(reviews / 100)"
   },
   "timestamp": "2026-01-25 21:32:45.756442"
 }
@@ -367,7 +392,7 @@ interface PurchaseSuccessResponse {
 
 ### 5. Analyze URL
 
-Runs analysis on a Google Maps business URL. Costs 1 credit per analysis.
+Runs analysis on a Google Maps business URL. **Credit cost = ceil(max_reviews / 100)**.
 
 ```http
 POST /walker/AnalyzeUrl
@@ -413,7 +438,8 @@ Content-Type: application/json
   "recommendations": { ... },
   "credits": {
     "used": 1,
-    "remaining": 11
+    "remaining": 11,
+    "calculation": "100 reviews = 1 credit(s)"
   },
   "cache_info": {
     "from_cache": false,
@@ -458,6 +484,7 @@ interface AnalyzeSuccessResponse {
   credits: {
     used: number;
     remaining: number;
+    calculation: string;  // e.g., "100 reviews = 1 credit(s)"
   };
   cache_info: {
     from_cache: boolean;

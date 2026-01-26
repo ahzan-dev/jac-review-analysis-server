@@ -2,7 +2,8 @@
 # CREDIT MANAGEMENT WALKERS
 # ══════════════════════════════════════════════════════════════════════════════
 # Walkers for managing user credits
-# 1 credit = 1 complete analysis (any review count)
+# 1 credit = up to 100 reviews analyzed
+# Formula: credits_required = CEILING(total_reviews / 100)
 # ══════════════════════════════════════════════════════════════════════════════
 
 import from datetime { datetime }
@@ -32,7 +33,7 @@ walker:pub get_credit_balance {
                 "available": profile.credits,
                 "used": profile.credits_used
             },
-            "note": "1 credit = 1 complete analysis"
+            "note": "1 credit = up to 100 reviews. Formula: ceil(reviews / 100)"
         }, {});
     }
 }

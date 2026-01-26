@@ -197,7 +197,16 @@ glob CONFIDENCE_THRESHOLDS: dict = {
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREDIT PACKAGE CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
-# Simple credit packages: 1 credit = 1 complete analysis (any review count)
+# Credit Calculation Rule:
+#   1 credit = analysis of UP TO 100 reviews
+#   Formula: credits_required = CEILING(total_reviews / 100)
+#
+# Examples:
+#   1-100 reviews   → 1 credit
+#   101-200 reviews → 2 credits
+#   250 reviews     → 3 credits
+#   500 reviews     → 5 credits
+#   1000 reviews    → 10 credits
 
 glob CREDIT_PACKAGES: dict = {
     "bronze": {"credits": 1, "price": 5.0, "name": "Bronze"},
@@ -443,7 +452,7 @@ node CreditTransaction {
 }
 
 # Semantic hints for UserProfile
-sem UserProfile.credits = "Available credits (1 credit = 1 complete analysis)";
+sem UserProfile.credits = "Available credits (1 credit = up to 100 reviews analyzed)";
 sem UserProfile.credits_used = "Lifetime total credits consumed";
 sem UserProfile.payment_customer_id = "Stripe customer ID for payment processing (dummy in this implementation)";
 sem UserProfile.last_payment_date = "ISO timestamp of most recent successful payment";

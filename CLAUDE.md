@@ -208,6 +208,15 @@ When running `jac start main.jac`, the API is available at `http://localhost:800
 - `POST /walker/get_user_profile` - Get current user profile and limits
 - `POST /walker/update_subscription` - Update subscription tier (admin)
 
+### Review Reply Generation
+- `POST /walker/SaveReplyPromptConfig` - Save/update reply generation preferences
+- `POST /walker/GetReplyPromptConfig` - Get current reply configuration
+- `POST /walker/GenerateReviewReply` - Generate AI reply for a single review (0.25 credits)
+- `POST /walker/BulkGenerateReviewReplies` - Generate replies for multiple reviews
+- `POST /walker/RegenerateReviewReply` - Regenerate reply with current settings (0.25 credits)
+- `POST /walker/GetReviewReplies` - Get all generated replies for a business
+- `POST /walker/DeleteReviewReply` - Delete a generated reply
+
 ### Utilities
 - `POST /walker/DeleteBusiness` - Delete a business and all related data
 - `POST /walker/health_check` - Health check endpoint
@@ -229,6 +238,43 @@ The system auto-detects business types from Google Maps categories using `BUSINE
 - **GENERIC** - Fallback for unmatched types
 
 Business type determines which sub-themes are analyzed (e.g., "Food Quality" for restaurants, "Room Quality" for hotels).
+
+## Review Reply Generation System
+
+The system supports AI-powered review reply generation with customizable settings.
+
+### Credit Cost
+- **0.25 credits per reply** (single or bulk)
+- Credits are float values to support fractional costs
+
+### Graph Structure
+```
+Review ──(HasReply)──> ReviewReply
+   │                        ├── reply_text: str
+   │                        ├── generated_at: str
+   │                        └── credits_used: float (0.25)
+   │
+Business ──(HasReplyConfig)──> ReplyPromptConfig
+                                    ├── tone: str (friendly, formal, casual, friendly_professional)
+                                    ├── max_length: str (short, medium, long)
+                                    ├── include_name: bool
+                                    ├── offer_resolution: bool
+                                    └── custom_instructions: str
+```
+
+### Reply Configuration Options
+- **tone**: `friendly`, `formal`, `casual`, `friendly_professional` (default)
+- **max_length**: `short` (1-2 sentences), `medium` (2-3), `long` (3-4)
+- **include_name**: Include reviewer's name in reply
+- **offer_resolution**: Offer resolution for negative reviews
+- **sign_off**: Custom sign-off text
+- **custom_instructions**: Additional LLM instructions
+
+### Context-Aware Generation
+Replies are generated using:
+1. **Review data**: text, rating, sentiment, themes, emotion
+2. **Business context**: name, type, strengths (delighters), known issues (pain points)
+3. **User config**: tone, length, and custom instructions
 
 ## Important Notes
 

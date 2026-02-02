@@ -3,6 +3,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 # Walkers for managing user credits
 # 1 credit = up to 100 reviews analyzed
+# 0.25 credit = 1 review reply generation
 # Formula: credits_required = CEILING(total_reviews / 100)
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -33,7 +34,7 @@ walker:pub get_credit_balance {
                 "available": profile.credits,
                 "used": profile.credits_used
             },
-            "note": "1 credit = up to 100 reviews. Formula: ceil(reviews / 100)"
+            "note": "1 credit = up to 100 reviews analysis. 0.25 credit = 1 review reply."
         }, {});
     }
 }
@@ -45,7 +46,7 @@ walker:pub get_credit_balance {
 
 walker grant_credits {
     has target_username: str;
-    has amount: int;
+    has amount: float;
     has reason: str = "Admin grant";
 
     can grant with `root entry {

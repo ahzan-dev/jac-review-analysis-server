@@ -415,9 +415,9 @@ node UserProfile {
     has role: UserRole = UserRole.USER;
     has created_at: str = "";
 
-    # Simple Credit System (1 credit = 1 complete analysis)
-    has credits: int = 0;           # Available credits
-    has credits_used: int = 0;      # Lifetime credits used
+    # Simple Credit System (1 credit = 1 complete analysis, 0.25 = 1 reply)
+    has credits: float = 0.0;           # Available credits
+    has credits_used: float = 0.0;      # Lifetime credits used
 
     # Usage Tracking
     has current_business_count: int = 0;
@@ -442,17 +442,18 @@ node UserProfile {
 node CreditTransaction {
     has transaction_id: str = "";
     has user_id: str = "";
-    has transaction_type: str = "";           # "purchase", "usage", "grant", "refund"
-    has amount: int = 0;                      # Positive for add, negative for deduct
-    has balance_after: int = 0;               # Balance after this transaction
+    has transaction_type: str = "";           # "purchase", "usage", "grant", "refund", "reply"
+    has amount: float = 0.0;                  # Positive for add, negative for deduct
+    has balance_after: float = 0.0;           # Balance after this transaction
     has package_name: str = "";               # "bronze", "silver", "gold", "platinum" (for purchases)
-    has description: str = "";                # "Analysis of Street Burger", "Purchased Gold package"
+    has description: str = "";                # "Analysis of Street Burger", "Reply to review"
     has related_business_id: str = "";        # Link to business place_id if usage type
+    has related_review_id: str = "";          # Link to review_id if reply type
     has created_at: str = "";
 }
 
 # Semantic hints for UserProfile
-sem UserProfile.credits = "Available credits (1 credit = up to 100 reviews analyzed)";
+sem UserProfile.credits = "Available credits (1 credit = up to 100 reviews analyzed, 0.25 = 1 reply)";
 sem UserProfile.credits_used = "Lifetime total credits consumed";
 sem UserProfile.payment_customer_id = "Stripe customer ID for payment processing (dummy in this implementation)";
 sem UserProfile.last_payment_date = "ISO timestamp of most recent successful payment";
@@ -466,6 +467,48 @@ sem CreditTransaction.balance_after = "Credit balance after this transaction";
 sem CreditTransaction.package_name = "Package name if purchase: 'bronze', 'silver', 'gold', 'platinum'";
 sem CreditTransaction.description = "Human-readable description of the transaction";
 sem CreditTransaction.related_business_id = "Link to business place_id if this was a usage transaction";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REVIEW REPLY SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+node ReplyPromptConfig {
+    has tone: str = "friendly_professional";  # friendly, formal, casual, friendly_professional
+    has max_length: str = "medium";           # short, medium, long
+    has include_name: bool = True;            # Include reviewer's name in reply
+    has offer_resolution: bool = True;        # Offer resolution for negative reviews
+    has sign_off: str = "";                   # Custom sign-off (e.g., "The [Business] Team")
+    has custom_instructions: str = "";        # User's custom prompt additions
+    has created_at: str = "";
+    has updated_at: str = "";
+}
+
+sem ReplyPromptConfig = "User's configuration for AI-generated review replies";
+sem ReplyPromptConfig.tone = "Reply tone: 'friendly', 'formal', 'casual', or 'friendly_professional'";
+sem ReplyPromptConfig.max_length = "Reply length: 'short' (1-2 sentences), 'medium' (2-3 sentences), 'long' (3-4 sentences)";
+sem ReplyPromptConfig.include_name = "Whether to address the reviewer by name";
+sem ReplyPromptConfig.offer_resolution = "Whether to offer resolution/contact for negative reviews";
+sem ReplyPromptConfig.sign_off = "Custom sign-off text, leave empty to use business name";
+sem ReplyPromptConfig.custom_instructions = "Additional instructions for reply generation";
+
+node ReviewReply {
+    has reply_id: str = "";
+    has reply_text: str = "";
+    has generated_at: str = "";
+    has credits_used: float = 0.25;
+    has tone_used: str = "";                  # Tone setting when generated
+    has review_sentiment: str = "";           # Sentiment of the original review
+    has review_rating: int = 0;               # Rating of the original review
+}
+
+sem ReviewReply = "AI-generated reply to a customer review";
+sem ReviewReply.reply_id = "Unique identifier for this reply";
+sem ReviewReply.reply_text = "The generated reply text";
+sem ReviewReply.generated_at = "ISO timestamp when reply was generated";
+sem ReviewReply.credits_used = "Credits consumed for this reply (0.25)";
+sem ReviewReply.tone_used = "Tone setting used for generation";
+sem ReviewReply.review_sentiment = "Sentiment of the original review";
+sem ReviewReply.review_rating = "Star rating of the original review";
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EDGE DEFINITIONS
@@ -484,6 +527,14 @@ edge HasAnalysis {
 }
 
 edge HasReport {
+    has version: int = 1;
+}
+
+edge HasReply {
+    has generated_at: str = "";
+}
+
+edge HasReplyConfig {
     has version: int = 1;
 }
 
@@ -752,3 +803,29 @@ sem BrandAwareRecommendationResult.recommendations_short_term = "Short-term acti
 sem BrandAwareRecommendationResult.recommendations_long_term = "Long-term actions (this quarter) - typically 1-3 items";
 sem BrandAwareRecommendationResult.do_not_recommendations = "CRITICAL: Protective recommendations listing what NOT to do - typically 2-4 items";
 sem BrandAwareRecommendationResult.overall_risk_assessment = "Summary of overall risk profile of all recommendations";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REVIEW REPLY LLM OUTPUT OBJECTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+obj GeneratedReplyResult {
+    has reply_text: str;
+}
+
+sem GeneratedReplyResult = "AI-generated reply to a customer review";
+sem GeneratedReplyResult.reply_text = "The professional, contextual reply text";
+
+obj BulkReplyResult {
+    has replies: list[SingleReplyResult];
+}
+
+obj SingleReplyResult {
+    has review_id: str;
+    has reply_text: str;
+}
+
+sem BulkReplyResult = "Batch of generated replies for multiple reviews";
+sem BulkReplyResult.replies = "List of individual reply results, one per input review";
+sem SingleReplyResult = "Generated reply for a single review in a batch";
+sem SingleReplyResult.review_id = "ID of the review this reply is for";
+sem SingleReplyResult.reply_text = "The generated reply text";

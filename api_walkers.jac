@@ -314,6 +314,18 @@ walker:pub GetReviews {
         # Format output
         results = [];
         for r in limited_reviews {
+            # Check if review has a generated reply
+            replies = [r -->(`?ReviewReply)];
+            has_reply = len(replies) > 0;
+            reply_data = None;
+            if has_reply {
+                reply_data = {
+                    "reply_id": replies[0].reply_id,
+                    "reply_text": replies[0].reply_text,
+                    "generated_at": replies[0].generated_at
+                };
+            }
+
             results.append({
                 "review_id": r.review_id,
                 "author": r.author,
@@ -328,7 +340,9 @@ walker:pub GetReviews {
                 "keywords": r.keywords,
                 "emotion": r.emotion,
                 "likes": r.likes,
-                "owner_response": r.owner_response
+                "owner_response": r.owner_response,
+                "has_generated_reply": has_reply,
+                "generated_reply": reply_data
             });
         }
         
@@ -738,6 +752,947 @@ walker:pub GetStats {
                 "total_themes": total_themes,
                 "sentiment_distribution": sentiment_totals,
                 "avg_reviews_per_business": total_reviews / total_businesses if total_businesses > 0 else 0
+            }
+        };
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REVIEW REPLY SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Credit cost for reply generation
+glob REPLY_CREDIT_COST: float = 0.25;
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API: SaveReplyPromptConfig - Save/Update Reply Preferences
+# POST /walker/SaveReplyPromptConfig
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker:pub SaveReplyPromptConfig {
+    has tone: str = "friendly_professional";
+    has max_length: str = "medium";
+    has include_name: bool = True;
+    has offer_resolution: bool = True;
+    has sign_off: str = "";
+    has custom_instructions: str = "";
+
+    can start with `root entry {
+        # Check for existing config
+        existing_configs = [here -->(`?ReplyPromptConfig)];
+
+        if existing_configs {
+            # Update existing config
+            config = existing_configs[0];
+            config.tone = self.tone;
+            config.max_length = self.max_length;
+            config.include_name = self.include_name;
+            config.offer_resolution = self.offer_resolution;
+            config.sign_off = self.sign_off;
+            config.custom_instructions = self.custom_instructions;
+            config.updated_at = datetime.now().isoformat();
+
+            report {
+                "success": True,
+                "message": "Reply configuration updated",
+                "config": {
+                    "tone": config.tone,
+                    "max_length": config.max_length,
+                    "include_name": config.include_name,
+                    "offer_resolution": config.offer_resolution,
+                    "sign_off": config.sign_off,
+                    "custom_instructions": config.custom_instructions
+                }
+            };
+        } else {
+            # Create new config
+            new_config = ReplyPromptConfig(
+                tone=self.tone,
+                max_length=self.max_length,
+                include_name=self.include_name,
+                offer_resolution=self.offer_resolution,
+                sign_off=self.sign_off,
+                custom_instructions=self.custom_instructions,
+                created_at=datetime.now().isoformat(),
+                updated_at=datetime.now().isoformat()
+            );
+
+            here ++> new_config;
+
+            report {
+                "success": True,
+                "message": "Reply configuration created",
+                "config": {
+                    "tone": new_config.tone,
+                    "max_length": new_config.max_length,
+                    "include_name": new_config.include_name,
+                    "offer_resolution": new_config.offer_resolution,
+                    "sign_off": new_config.sign_off,
+                    "custom_instructions": new_config.custom_instructions
+                }
+            };
+        }
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API: GetReplyPromptConfig - Get Current Reply Configuration
+# POST /walker/GetReplyPromptConfig
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker:pub GetReplyPromptConfig {
+    can start with `root entry {
+        configs = [here -->(`?ReplyPromptConfig)];
+
+        if configs {
+            config = configs[0];
+            report {
+                "success": True,
+                "config": {
+                    "tone": config.tone,
+                    "max_length": config.max_length,
+                    "include_name": config.include_name,
+                    "offer_resolution": config.offer_resolution,
+                    "sign_off": config.sign_off,
+                    "custom_instructions": config.custom_instructions,
+                    "created_at": config.created_at,
+                    "updated_at": config.updated_at
+                }
+            };
+        } else {
+            # Return default config
+            report {
+                "success": True,
+                "config": {
+                    "tone": "friendly_professional",
+                    "max_length": "medium",
+                    "include_name": True,
+                    "offer_resolution": True,
+                    "sign_off": "",
+                    "custom_instructions": "",
+                    "created_at": None,
+                    "updated_at": None
+                },
+                "is_default": True,
+                "message": "Using default configuration. Use SaveReplyPromptConfig to customize."
+            };
+        }
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API: GenerateReviewReply - Generate Reply for Single Review
+# POST /walker/GenerateReviewReply
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker:pub GenerateReviewReply {
+    has business_id: str;
+    has review_id: str;
+
+    can start with `root entry {
+        # Get user profile for credit check
+        profiles = [here -->(`?UserProfile)];
+        if not profiles {
+            report {
+                "success": False,
+                "error": "User profile not found"
+            };
+            disengage;
+        }
+        profile = profiles[0];
+
+        # Check credits
+        if profile.credits < REPLY_CREDIT_COST {
+            report {
+                "success": False,
+                "error": f"Insufficient credits. Required: {REPLY_CREDIT_COST}, Available: {profile.credits}"
+            };
+            disengage;
+        }
+
+        # Find business
+        businesses = [here -->(`?Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            report {
+                "success": False,
+                "error": f"Business not found: {self.business_id}"
+            };
+            disengage;
+        }
+
+        # Find review
+        reviews = [target_biz -->(`?Review)];
+        target_review = None;
+        for r in reviews {
+            if r.review_id == self.review_id {
+                target_review = r;
+                break;
+            }
+        }
+
+        if target_review is None {
+            report {
+                "success": False,
+                "error": f"Review not found: {self.review_id}"
+            };
+            disengage;
+        }
+
+        # Check if reply already exists
+        existing_replies = [target_review -->(`?ReviewReply)];
+        if existing_replies {
+            report {
+                "success": False,
+                "error": "Reply already exists for this review",
+                "existing_reply": {
+                    "reply_id": existing_replies[0].reply_id,
+                    "reply_text": existing_replies[0].reply_text,
+                    "generated_at": existing_replies[0].generated_at
+                }
+            };
+            disengage;
+        }
+
+        # Get reply config (or use defaults)
+        configs = [here -->(`?ReplyPromptConfig)];
+        config = configs[0] if configs else None;
+
+        # Get business analysis for context
+        analyses = [target_biz -->(`?Analysis)];
+        analysis = analyses[0] if analyses else None;
+
+        # Build context for LLM
+        business_context = {
+            "name": target_biz.name,
+            "type": target_biz.business_type,
+            "rating": target_biz.rating,
+            "strengths": analysis.delighters if analysis else [],
+            "known_issues": analysis.pain_points if analysis else []
+        };
+
+        review_data = {
+            "author": target_review.author,
+            "rating": target_review.rating,
+            "text": target_review.text,
+            "sentiment": target_review.sentiment,
+            "themes": target_review.themes,
+            "emotion": target_review.emotion
+        };
+
+        reply_config = {
+            "tone": config.tone if config else "friendly_professional",
+            "max_length": config.max_length if config else "medium",
+            "include_name": config.include_name if config else True,
+            "offer_resolution": config.offer_resolution if config else True,
+            "sign_off": config.sign_off if config else target_biz.name,
+            "custom_instructions": config.custom_instructions if config else ""
+        };
+
+        # Generate reply using LLM
+        result = self.generate_reply(
+            business_context=business_context,
+            review_data=review_data,
+            reply_config=reply_config
+        );
+
+        # Deduct credits
+        profile.credits -= REPLY_CREDIT_COST;
+        profile.credits_used += REPLY_CREDIT_COST;
+
+        # Create and save reply node
+        reply_node = ReviewReply(
+            reply_id=str(uuid4()),
+            reply_text=result.reply_text,
+            generated_at=datetime.now().isoformat(),
+            credits_used=REPLY_CREDIT_COST,
+            tone_used=reply_config["tone"],
+            review_sentiment=target_review.sentiment,
+            review_rating=target_review.rating
+        );
+
+        target_review ++> reply_node;
+
+        # Create credit transaction record
+        txn = CreditTransaction(
+            transaction_id=str(uuid4()),
+            user_id=profile.username,
+            transaction_type="reply",
+            amount=-REPLY_CREDIT_COST,
+            balance_after=profile.credits,
+            description=f"Reply to review by {target_review.author}",
+            related_business_id=target_biz.place_id,
+            related_review_id=target_review.review_id,
+            created_at=datetime.now().isoformat()
+        );
+        here ++> txn;
+
+        report {
+            "success": True,
+            "reply": {
+                "reply_id": reply_node.reply_id,
+                "reply_text": reply_node.reply_text,
+                "generated_at": reply_node.generated_at
+            },
+            "review": {
+                "review_id": target_review.review_id,
+                "author": target_review.author,
+                "rating": target_review.rating,
+                "sentiment": target_review.sentiment
+            },
+            "credits": {
+                "used": REPLY_CREDIT_COST,
+                "remaining": profile.credits
+            }
+        };
+    }
+
+    """Generate a professional reply to a customer review.
+
+    Create a thoughtful, personalized response based on the review content,
+    business context, and configured reply style. The reply should:
+    - Address specific points mentioned in the review
+    - Match the configured tone (friendly, formal, casual, friendly_professional)
+    - Be appropriate length based on max_length setting
+    - For negative reviews: acknowledge concerns, apologize if warranted, offer resolution
+    - For positive reviews: express gratitude, highlight mentioned positives, invite return
+    - Include reviewer name if configured
+    - End with configured sign-off
+
+    Args:
+        business_context: Business name, type, strengths, and known issues
+        review_data: Review author, rating, text, sentiment, themes, emotion
+        reply_config: Tone, length, name inclusion, resolution offer, sign-off, custom instructions
+
+    Returns:
+        GeneratedReplyResult with the reply text
+    """
+    def generate_reply(
+        business_context: dict,
+        review_data: dict,
+        reply_config: dict
+    ) -> GeneratedReplyResult by llm(
+        temperature=0.7,
+        incl_info={
+            "business": business_context,
+            "review": review_data,
+            "config": reply_config,
+            "guidelines": """
+                - Be genuine and specific, not generic
+                - Reference specific details from the review
+                - For negative reviews (1-2 stars): Apologize sincerely, acknowledge specific issues, offer to make it right
+                - For neutral reviews (3 stars): Thank them, address any concerns, highlight positives
+                - For positive reviews (4-5 stars): Express genuine gratitude, reinforce what they loved, invite them back
+                - Never be defensive or dismissive
+                - Keep the response professional but warm
+                - If custom_instructions provided, incorporate them
+            """
+        }
+    );
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API: BulkGenerateReviewReplies - Generate Replies for Multiple Reviews
+# POST /walker/BulkGenerateReviewReplies
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker:pub BulkGenerateReviewReplies {
+    has business_id: str;
+    has review_ids: list[str] = [];           # Specific review IDs to reply to
+    has filter_sentiment: str = "";            # Filter: "positive", "negative", "neutral", "mixed"
+    has filter_no_reply: bool = True;          # Only reviews without existing replies
+    has max_replies: int = 10;                 # Maximum replies to generate
+
+    can start with `root entry {
+        # Get user profile for credit check
+        profiles = [here -->(`?UserProfile)];
+        if not profiles {
+            report {
+                "success": False,
+                "error": "User profile not found"
+            };
+            disengage;
+        }
+        profile = profiles[0];
+
+        # Find business
+        businesses = [here -->(`?Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            report {
+                "success": False,
+                "error": f"Business not found: {self.business_id}"
+            };
+            disengage;
+        }
+
+        # Get all reviews
+        all_reviews = [target_biz -->(`?Review)];
+
+        # Filter reviews
+        reviews_to_process = [];
+
+        if self.review_ids {
+            # Use specific review IDs
+            for r in all_reviews {
+                if r.review_id in self.review_ids {
+                    # Check if already has reply
+                    if self.filter_no_reply {
+                        existing = [r -->(`?ReviewReply)];
+                        if existing {
+                            continue;
+                        }
+                    }
+                    reviews_to_process.append(r);
+            }
+        } else {
+            # Apply filters
+            for r in all_reviews {
+                # Sentiment filter
+                if self.filter_sentiment and r.sentiment != self.filter_sentiment {
+                    continue;
+                }
+
+                # No reply filter
+                if self.filter_no_reply {
+                    existing = [r -->(`?ReviewReply)];
+                    if existing {
+                        continue;
+                    }
+                }
+
+                reviews_to_process.append(r);
+
+                if len(reviews_to_process) >= self.max_replies {
+                    break;
+                }
+            }
+        }
+
+        if not reviews_to_process {
+            report {
+                "success": True,
+                "message": "No reviews found matching criteria",
+                "replies_generated": 0
+            };
+            disengage;
+        }
+
+        # Calculate total credits needed
+        total_credits_needed = len(reviews_to_process) * REPLY_CREDIT_COST;
+
+        if profile.credits < total_credits_needed {
+            # Calculate how many we can afford
+            affordable_count = int(profile.credits / REPLY_CREDIT_COST);
+            if affordable_count == 0 {
+                report {
+                    "success": False,
+                    "error": f"Insufficient credits. Required: {total_credits_needed}, Available: {profile.credits}",
+                    "reviews_requested": len(reviews_to_process)
+                };
+                disengage;
+            }
+            # Limit to what we can afford
+            reviews_to_process = reviews_to_process[:affordable_count];
+            total_credits_needed = affordable_count * REPLY_CREDIT_COST;
+        }
+
+        # Get reply config
+        configs = [here -->(`?ReplyPromptConfig)];
+        config = configs[0] if configs else None;
+
+        # Get business analysis for context
+        analyses = [target_biz -->(`?Analysis)];
+        analysis = analyses[0] if analyses else None;
+
+        business_context = {
+            "name": target_biz.name,
+            "type": target_biz.business_type,
+            "rating": target_biz.rating,
+            "strengths": analysis.delighters if analysis else [],
+            "known_issues": analysis.pain_points if analysis else []
+        };
+
+        reply_config = {
+            "tone": config.tone if config else "friendly_professional",
+            "max_length": config.max_length if config else "medium",
+            "include_name": config.include_name if config else True,
+            "offer_resolution": config.offer_resolution if config else True,
+            "sign_off": config.sign_off if config else target_biz.name,
+            "custom_instructions": config.custom_instructions if config else ""
+        };
+
+        # Generate replies
+        generated_replies = [];
+        failed_replies = [];
+
+        for r in reviews_to_process {
+            review_data = {
+                "review_id": r.review_id,
+                "author": r.author,
+                "rating": r.rating,
+                "text": r.text,
+                "sentiment": r.sentiment,
+                "themes": r.themes,
+                "emotion": r.emotion
+            };
+
+            try {
+                result = self.generate_single_reply(
+                    business_context=business_context,
+                    review_data=review_data,
+                    reply_config=reply_config
+                );
+
+                # Deduct credits
+                profile.credits -= REPLY_CREDIT_COST;
+                profile.credits_used += REPLY_CREDIT_COST;
+
+                # Create reply node
+                reply_node = ReviewReply(
+                    reply_id=str(uuid4()),
+                    reply_text=result.reply_text,
+                    generated_at=datetime.now().isoformat(),
+                    credits_used=REPLY_CREDIT_COST,
+                    tone_used=reply_config["tone"],
+                    review_sentiment=r.sentiment,
+                    review_rating=r.rating
+                );
+
+                r ++> reply_node;
+
+                # Create credit transaction record
+                txn = CreditTransaction(
+                    transaction_id=str(uuid4()),
+                    user_id=profile.username,
+                    transaction_type="reply",
+                    amount=-REPLY_CREDIT_COST,
+                    balance_after=profile.credits,
+                    description=f"Bulk reply to review by {r.author}",
+                    related_business_id=target_biz.place_id,
+                    related_review_id=r.review_id,
+                    created_at=datetime.now().isoformat()
+                );
+                here ++> txn;
+
+                generated_replies.append({
+                    "review_id": r.review_id,
+                    "reply_id": reply_node.reply_id,
+                    "reply_text": reply_node.reply_text,
+                    "author": r.author,
+                    "rating": r.rating,
+                    "sentiment": r.sentiment
+                });
+            } except Exception as e {
+                failed_replies.append({
+                    "review_id": r.review_id,
+                    "error": str(e)
+                });
+            }
+        }
+
+        report {
+            "success": True,
+            "business": {
+                "place_id": target_biz.place_id,
+                "name": target_biz.name
+            },
+            "summary": {
+                "total_requested": len(reviews_to_process),
+                "generated": len(generated_replies),
+                "failed": len(failed_replies)
+            },
+            "credits": {
+                "used": len(generated_replies) * REPLY_CREDIT_COST,
+                "remaining": profile.credits
+            },
+            "replies": generated_replies,
+            "failures": failed_replies if failed_replies else None
+        };
+    }
+
+    """Generate a reply for a single review in bulk processing."""
+    def generate_single_reply(
+        business_context: dict,
+        review_data: dict,
+        reply_config: dict
+    ) -> GeneratedReplyResult by llm(
+        temperature=0.7,
+        incl_info={
+            "business": business_context,
+            "review": review_data,
+            "config": reply_config,
+            "guidelines": """
+                - Be genuine and specific, not generic
+                - Reference specific details from the review
+                - For negative reviews (1-2 stars): Apologize sincerely, acknowledge specific issues, offer to make it right
+                - For neutral reviews (3 stars): Thank them, address any concerns, highlight positives
+                - For positive reviews (4-5 stars): Express genuine gratitude, reinforce what they loved, invite them back
+                - Never be defensive or dismissive
+                - Keep the response professional but warm
+            """
+        }
+    );
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API: GetReviewReplies - Get Generated Replies for a Business
+# POST /walker/GetReviewReplies
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker:pub GetReviewReplies {
+    has business_id: str;
+    has limit: int = 50;
+
+    can start with `root entry {
+        # Find business
+        businesses = [here -->(`?Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            report {
+                "success": False,
+                "error": f"Business not found: {self.business_id}"
+            };
+            disengage;
+        }
+
+        # Get all reviews with replies
+        reviews = [target_biz -->(`?Review)];
+        results = [];
+        count = 0;
+
+        for r in reviews {
+            if count >= self.limit {
+                break;
+            }
+
+            replies = [r -->(`?ReviewReply)];
+            if replies {
+                reply = replies[0];
+                results.append({
+                    "review": {
+                        "review_id": r.review_id,
+                        "author": r.author,
+                        "rating": r.rating,
+                        "text": r.text[:200] + "..." if len(r.text) > 200 else r.text,
+                        "sentiment": r.sentiment,
+                        "date": r.date
+                    },
+                    "reply": {
+                        "reply_id": reply.reply_id,
+                        "reply_text": reply.reply_text,
+                        "generated_at": reply.generated_at,
+                        "tone_used": reply.tone_used,
+                        "credits_used": reply.credits_used
+                    }
+                });
+                count += 1;
+            }
+        }
+
+        # Count stats
+        total_reviews = len(reviews);
+        reviews_with_replies = len(results);
+
+        report {
+            "success": True,
+            "business": {
+                "place_id": target_biz.place_id,
+                "name": target_biz.name
+            },
+            "stats": {
+                "total_reviews": total_reviews,
+                "reviews_with_replies": reviews_with_replies,
+                "reply_coverage": f"{(reviews_with_replies / total_reviews * 100):.1f}%" if total_reviews > 0 else "0%"
+            },
+            "replies": results
+        };
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API: RegenerateReviewReply - Regenerate Reply for a Review (Replaces Existing)
+# POST /walker/RegenerateReviewReply
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker:pub RegenerateReviewReply {
+    has business_id: str;
+    has review_id: str;
+
+    can start with `root entry {
+        # Get user profile for credit check
+        profiles = [here -->(`?UserProfile)];
+        if not profiles {
+            report {
+                "success": False,
+                "error": "User profile not found"
+            };
+            disengage;
+        }
+        profile = profiles[0];
+
+        # Check credits
+        if profile.credits < REPLY_CREDIT_COST {
+            report {
+                "success": False,
+                "error": f"Insufficient credits. Required: {REPLY_CREDIT_COST}, Available: {profile.credits}"
+            };
+            disengage;
+        }
+
+        # Find business
+        businesses = [here -->(`?Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            report {
+                "success": False,
+                "error": f"Business not found: {self.business_id}"
+            };
+            disengage;
+        }
+
+        # Find review
+        reviews = [target_biz -->(`?Review)];
+        target_review = None;
+        for r in reviews {
+            if r.review_id == self.review_id {
+                target_review = r;
+                break;
+            }
+        }
+
+        if target_review is None {
+            report {
+                "success": False,
+                "error": f"Review not found: {self.review_id}"
+            };
+            disengage;
+        }
+
+        # Delete existing reply if any
+        existing_replies = [target_review -->(`?ReviewReply)];
+        old_reply_text = "";
+        for old_reply in existing_replies {
+            old_reply_text = old_reply.reply_text;
+            del old_reply;
+        }
+
+        # Get reply config (or use defaults)
+        configs = [here -->(`?ReplyPromptConfig)];
+        config = configs[0] if configs else None;
+
+        # Get business analysis for context
+        analyses = [target_biz -->(`?Analysis)];
+        analysis = analyses[0] if analyses else None;
+
+        # Build context for LLM
+        business_context = {
+            "name": target_biz.name,
+            "type": target_biz.business_type,
+            "rating": target_biz.rating,
+            "strengths": analysis.delighters if analysis else [],
+            "known_issues": analysis.pain_points if analysis else []
+        };
+
+        review_data = {
+            "author": target_review.author,
+            "rating": target_review.rating,
+            "text": target_review.text,
+            "sentiment": target_review.sentiment,
+            "themes": target_review.themes,
+            "emotion": target_review.emotion
+        };
+
+        reply_config = {
+            "tone": config.tone if config else "friendly_professional",
+            "max_length": config.max_length if config else "medium",
+            "include_name": config.include_name if config else True,
+            "offer_resolution": config.offer_resolution if config else True,
+            "sign_off": config.sign_off if config else target_biz.name,
+            "custom_instructions": config.custom_instructions if config else ""
+        };
+
+        # Generate new reply using LLM
+        result = self.generate_reply(
+            business_context=business_context,
+            review_data=review_data,
+            reply_config=reply_config
+        );
+
+        # Deduct credits
+        profile.credits -= REPLY_CREDIT_COST;
+        profile.credits_used += REPLY_CREDIT_COST;
+
+        # Create and save new reply node
+        reply_node = ReviewReply(
+            reply_id=str(uuid4()),
+            reply_text=result.reply_text,
+            generated_at=datetime.now().isoformat(),
+            credits_used=REPLY_CREDIT_COST,
+            tone_used=reply_config["tone"],
+            review_sentiment=target_review.sentiment,
+            review_rating=target_review.rating
+        );
+
+        target_review ++> reply_node;
+
+        # Create credit transaction record
+        txn = CreditTransaction(
+            transaction_id=str(uuid4()),
+            user_id=profile.username,
+            transaction_type="reply",
+            amount=-REPLY_CREDIT_COST,
+            balance_after=profile.credits,
+            description=f"Regenerate reply to review by {target_review.author}",
+            related_business_id=target_biz.place_id,
+            related_review_id=target_review.review_id,
+            created_at=datetime.now().isoformat()
+        );
+        here ++> txn;
+
+        report {
+            "success": True,
+            "regenerated": True,
+            "reply": {
+                "reply_id": reply_node.reply_id,
+                "reply_text": reply_node.reply_text,
+                "generated_at": reply_node.generated_at
+            },
+            "previous_reply": old_reply_text if old_reply_text else None,
+            "review": {
+                "review_id": target_review.review_id,
+                "author": target_review.author,
+                "rating": target_review.rating,
+                "sentiment": target_review.sentiment
+            },
+            "credits": {
+                "used": REPLY_CREDIT_COST,
+                "remaining": profile.credits
+            }
+        };
+    }
+
+    """Generate a professional reply to a customer review."""
+    def generate_reply(
+        business_context: dict,
+        review_data: dict,
+        reply_config: dict
+    ) -> GeneratedReplyResult by llm(
+        temperature=0.7,
+        incl_info={
+            "business": business_context,
+            "review": review_data,
+            "config": reply_config,
+            "guidelines": """
+                - Be genuine and specific, not generic
+                - Reference specific details from the review
+                - For negative reviews (1-2 stars): Apologize sincerely, acknowledge specific issues, offer to make it right
+                - For neutral reviews (3 stars): Thank them, address any concerns, highlight positives
+                - For positive reviews (4-5 stars): Express genuine gratitude, reinforce what they loved, invite them back
+                - Never be defensive or dismissive
+                - Keep the response professional but warm
+            """
+        }
+    );
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API: DeleteReviewReply - Delete a Generated Reply
+# POST /walker/DeleteReviewReply
+# ═══════════════════════════════════════════════════════════════════════════════
+
+walker:pub DeleteReviewReply {
+    has business_id: str;
+    has review_id: str;
+
+    can start with `root entry {
+        # Find business
+        businesses = [here -->(`?Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            report {
+                "success": False,
+                "error": f"Business not found: {self.business_id}"
+            };
+            disengage;
+        }
+
+        # Find review
+        reviews = [target_biz -->(`?Review)];
+        target_review = None;
+        for r in reviews {
+            if r.review_id == self.review_id {
+                target_review = r;
+                break;
+            }
+        }
+
+        if target_review is None {
+            report {
+                "success": False,
+                "error": f"Review not found: {self.review_id}"
+            };
+            disengage;
+        }
+
+        # Find and delete reply
+        replies = [target_review -->(`?ReviewReply)];
+        if not replies {
+            report {
+                "success": False,
+                "error": "No reply found for this review"
+            };
+            disengage;
+        }
+
+        deleted_reply_id = replies[0].reply_id;
+        deleted_reply_text = replies[0].reply_text;
+        del replies[0];
+
+        report {
+            "success": True,
+            "deleted": {
+                "reply_id": deleted_reply_id,
+                "reply_text": deleted_reply_text[:100] + "..." if len(deleted_reply_text) > 100 else deleted_reply_text
+            },
+            "review": {
+                "review_id": target_review.review_id,
+                "author": target_review.author
             }
         };
     }

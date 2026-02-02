@@ -1349,7 +1349,7 @@ walker:pub BulkGenerateReviewReplies {
         }
     );
 }
-}
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API: GetReviewReplies - Get Generated Replies for a Business

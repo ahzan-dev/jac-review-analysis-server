@@ -1158,6 +1158,7 @@ walker:pub BulkGenerateReviewReplies {
                         }
                     }
                     reviews_to_process.append(r);
+                }
             }
         } else {
             # Apply filters

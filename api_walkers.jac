@@ -1054,26 +1054,26 @@ walker:pub GenerateReviewReply {
         };
     }
 
-    """Generate a professional reply to a customer review.
+    # """Generate a professional reply to a customer review.
 
-    Create a thoughtful, personalized response based on the review content,
-    business context, and configured reply style. The reply should:
-    - Address specific points mentioned in the review
-    - Match the configured tone (friendly, formal, casual, friendly_professional)
-    - Be appropriate length based on max_length setting
-    - For negative reviews: acknowledge concerns, apologize if warranted, offer resolution
-    - For positive reviews: express gratitude, highlight mentioned positives, invite return
-    - Include reviewer name if configured
-    - End with configured sign-off
+    # Create a thoughtful, personalized response based on the review content,
+    # business context, and configured reply style. The reply should:
+    # - Address specific points mentioned in the review
+    # - Match the configured tone (friendly, formal, casual, friendly_professional)
+    # - Be appropriate length based on max_length setting
+    # - For negative reviews: acknowledge concerns, apologize if warranted, offer resolution
+    # - For positive reviews: express gratitude, highlight mentioned positives, invite return
+    # - Include reviewer name if configured
+    # - End with configured sign-off
 
-    Args:
-        business_context: Business name, type, strengths, and known issues
-        review_data: Review author, rating, text, sentiment, themes, emotion
-        reply_config: Tone, length, name inclusion, resolution offer, sign-off, custom instructions
+    # Args:
+    #     business_context: Business name, type, strengths, and known issues
+    #     review_data: Review author, rating, text, sentiment, themes, emotion
+    #     reply_config: Tone, length, name inclusion, resolution offer, sign-off, custom instructions
 
-    Returns:
-        GeneratedReplyResult with the reply text
-    """
+    # Returns:
+    #     GeneratedReplyResult with the reply text
+    # """
     def generate_reply(
         business_context: dict,
         review_data: dict,
@@ -1325,7 +1325,7 @@ walker:pub BulkGenerateReviewReplies {
         };
     }
 
-    """Generate a reply for a single review in bulk processing."""
+    # """Generate a reply for a single review in bulk processing."""
     def generate_single_reply(
         business_context: dict,
         review_data: dict,
@@ -1347,6 +1347,7 @@ walker:pub BulkGenerateReviewReplies {
             """
         }
     );
+}
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1600,7 +1601,7 @@ walker:pub RegenerateReviewReply {
         };
     }
 
-    """Generate a professional reply to a customer review."""
+    # """Generate a professional reply to a customer review."""
     def generate_reply(
         business_context: dict,
         review_data: dict,

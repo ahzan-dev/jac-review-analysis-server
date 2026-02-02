@@ -1,0 +1,625 @@
+{
+  "success": true,
+  "data_source": "stored",
+  "from_cache": true,
+  "generated_at": "2026-01-25T10:56:21.973512",
+  "business": {
+    "place_id": "0x3ae2593d26d456bf:0x972513b2d44939c8",
+    "name": "Cinnamon Lakeside Colombo",
+    "type": "Hotel",
+    "type_normalized": "HOTEL",
+    "address": "115, Sir Chittampalam A Gardiner Mawatha, 00200, Sri Lanka",
+    "phone": "+94 112 491 000",
+    "website": "https://www.cinnamonhotels.com/cinnamon-lakeside-colombo?utm_source=google&utm_medium=organic&utm_campaign=gbp",
+    "google_rating": 4.6,
+    "total_reviews": 16894,
+    "reviews_analyzed": 100,
+    "price_level": "",
+    "coordinates": {
+      "lat": 6.929170399999999,
+      "lng": 79.8492962
+    },
+    "opening_hours": {},
+    "photos_count": 10
+  },
+  "health_score": {
+    "overall": 89,
+    "grade": "A",
+    "confidence": "high",
+    "breakdown": {
+      "Service": 78,
+      "Food & Dining": 88,
+      "Room Quality": 82,
+      "Location": 81,
+      "Facilities": 93,
+      "Value": 32,
+      "Check-in/out": 20
+    },
+    "trend": "stable"
+  },
+  "sentiment": {
+    "distribution": {
+      "positive": {
+        "count": 68,
+        "percentage": 68
+      },
+      "negative": {
+        "count": 5,
+        "percentage": 5
+      },
+      "neutral": {
+        "count": 25,
+        "percentage": 25
+      }
+    },
+    "average_score": 0.579,
+    "sample_size_adequacy": "sufficient"
+  },
+  "themes": [
+    {
+      "name": "Service",
+      "mention_count": 65,
+      "sentiment_score": 0.78,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Staff Attitude",
+          "mentions": 62,
+          "sentiment": 0.83,
+          "positive_pct": 95,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Response Time",
+          "mentions": 12,
+          "sentiment": 0.2,
+          "positive_pct": 58,
+          "verdict": "needs_attention"
+        },
+        {
+          "name": "Housekeeping",
+          "mentions": 7,
+          "sentiment": 0.93,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Great 👍🏻 service Mohammed Rizwan",
+          "Always nice smile and friendly service mohammed rizwan he great experience and great communication, excellent team leader.",
+          "top class\nCinnamon Lakeside Colombo offers excellent service with warm, professional staff and a calm, well-maintained environment. Comfortable rooms ",
+          "It was really good",
+          "Loved staying  there. Great room service . Wonderful breakfast buffet . Polite service !"
+        ],
+        "negative": [
+          "Bad service\nNot refund our payment korona season",
+          "Same Issue Happened to Us Too\n\nI am writing this to support the previous complaint because the exact same thing happened to us as well. We paid an adv",
+          "I am writing this as a bride who trusted this hotel with my wedding. We paid a large advance amount for our big day, but due to COVID we had to postpo",
+          "We paid LKR 200,000 as an advance payment for our wedding to this hotel when Mr. Thalgala was the Banquet Manager.\n\nDue to COVID, we had to postpone t",
+          "අපේ කොල්ලෙක් බයික් එක Vehicle Park එකේ දාලා ගිහින් තියෙන්නෙත්. ඒත් ඇතුලට යන්න දීලා නෑ. බයික් එකක ආපු නිසා.\nසාමාන්‍යයෙන් මෙහෙම වෙන්නේ නෑ. හරි උනාම කියම"
+        ]
+      }
+    },
+    {
+      "name": "Food & Dining",
+      "mention_count": 26,
+      "sentiment_score": 0.88,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Restaurant Quality",
+          "mentions": 22,
+          "sentiment": 0.93,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Variety",
+          "mentions": 10,
+          "sentiment": 0.92,
+          "positive_pct": 100,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Breakfast",
+          "mentions": 3,
+          "sentiment": 0.57,
+          "positive_pct": 67,
+          "verdict": "good"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "Mohamed rizwan recommended, chocolate truffle cake very delicious",
+          "Loved staying  there. Great room service . Wonderful breakfast buffet . Polite service !",
+          "We had our wedding at Cinnamon Lakeside on 26th December 2025 at King’s Court, and everything was absolutely perfect. The venue was stunning, the food",
+          "Mohammed Rizwan is recommended coffee cake 🎂 very delicious",
+          "The staff at Cinnamon Lakeside is highly professional, friendly and helpful.\nA special thank you to Ms Deena of Banquets for the patience and support,"
+        ],
+        "negative": []
+      }
+    },
+    {
+      "name": "Room Quality",
+      "mention_count": 15,
+      "sentiment_score": 0.82,
+      "sentiment_label": "positive",
+      "confidence": "high",
+      "sub_themes": [
+        {
+          "name": "Cleanliness",
+          "mentions": 14,
+          "sentiment": 0.89,
+          "positive_pct": 93,
+          "verdict": "excellent"
+        },
+        {
+          "name": "Amenities",
+          "mentions": 3,
+          "sentiment": 0.73,
+          "positive_pct": 67,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "top class\nCinnamon Lakeside Colombo offers excellent service with warm, professional staff and a calm, well-maintained environment. Comfortable rooms ",
+          "Srilankan best five star, very clean place, great welcome, Very nice friendly service mohammed rizwan  he is always give the friendly service",
+          "We really enjoyed our stay at Cinnamon Lakeside. This hotel feels different compared to everything else we experienced in Sri Lanka — but then again, ",
+          "Im first time coming srilanka best five star hotel cinnamon lakeside hotel best friendly service Mohamed rizwan  very good communication, team leader ",
+          "Housekeeping are excellent clean maintion well cleaning oir eoom danuahka eolm bou thank you yoir service staff was vwry kind healpful nice view good "
+        ],
+        "negative": []
+      }
+    },
+    {
+      "name": "Location",
+      "mention_count": 9,
+      "sentiment_score": 0.81,
+      "sentiment_label": "positive",
+      "confidence": "medium",
+      "sub_themes": [
+        {
+          "name": "Accessibility",
+          "mentions": 8,
+          "sentiment": 0.79,
+          "positive_pct": 88,
+          "verdict": "excellent"
+        }
+      ],
+      "sample_quotes": {
+        "positive": [
+          "top class\nCinnamon Lakeside Colombo offers excellent service with warm, professional staff and a calm, well-maintained environment. Comfortable rooms ",
+          "Nice location",
+          "Great location and service. House keeping was excellent thanks to Nishantha and Deshan. Highly recommend!",
+          "We had our wedding at Cinnamon Lakeside on 26th December 2025 at King’s Court, and everything was absolutely perfect. The venue was stunning, the food",
+          "Srilankan best five star, very clean place, great welcome, Very nice friendly service mohammed rizwan  he is always give the friendly service"
+        ],
+        "negative": []
+      }
+    },
+    {
+      "name": "Facilities",
+      "mention_count": 5,
+      "sentiment_score": 0.93,
+      "sentiment_label": "positive",
+      "confidence": "medium",
+      "sub_themes": [],
+      "sample_quotes": {
+        "positive": [
+          "We really enjoyed our stay at Cinnamon Lakeside. This hotel feels different compared to everything else we experienced in Sri Lanka — but then again, ",
+          "Went for a business meeting. The concierge team was very helpful. Beautiful, elegant & upclass setting. They have a unique boutique with  collection o",
+          "Great place, nice air conditioner, Best excellent service Mohammed Rizwan",
+          "Creases and pleats laundry is best laundry in the city. Cloths come back very clean and neetly press. Staff is very friendly and always give excellent",
+          "Best place, very clean room and restaurant, nice cool air conditioning, always parking available, best delicious food and excellent service mohammed r"
+        ],
+        "negative": []
+      }
+    },
+    {
+      "name": "Value",
+      "mention_count": 3,
+      "sentiment_score": 0.32,
+      "sentiment_label": "positive",
+      "confidence": "low",
+      "sub_themes": [],
+      "sample_quotes": {
+        "positive": [
+          "We ordered a takeaway family meal from Cinnamon Lakeside Flavours Restaurant and were very impressed with the quality. The yellow rice meal was delici",
+          "I placed and order for lunch from Flavours . The chicken biriyani was served in a very generous portion. 6 pax shared to 10 people . The rice was flav"
+        ],
+        "negative": [
+          "Same Issue Happened to Us Too\n\nI am writing this to support the previous complaint because the exact same thing happened to us as well. We paid an adv"
+        ]
+      }
+    }
+  ],
+  "trends": {
+    "period_analyzed": "9 months",
+    "overall_trend": {
+      "direction": "stable",
+      "change": "10%"
+    },
+    "monthly_breakdown": [
+      {
+        "month": "2019-11",
+        "review_count": 1,
+        "sentiment": 0.2,
+        "avg_rating": 4
+      },
+      {
+        "month": "2023-10",
+        "review_count": 1,
+        "sentiment": 0.95,
+        "avg_rating": 5
+      },
+      {
+        "month": "2024-10",
+        "review_count": 1,
+        "sentiment": 1,
+        "avg_rating": 5
+      },
+      {
+        "month": "2025-02",
+        "review_count": 4,
+        "sentiment": 0.9,
+        "avg_rating": 5
+      },
+      {
+        "month": "2025-03",
+        "review_count": 2,
+        "sentiment": 0.93,
+        "avg_rating": 5
+      },
+      {
+        "month": "2025-04",
+        "review_count": 1,
+        "sentiment": 0.9,
+        "avg_rating": 5
+      },
+      {
+        "month": "2025-08",
+        "review_count": 2,
+        "sentiment": 0.93,
+        "avg_rating": 5
+      },
+      {
+        "month": "2025-10",
+        "review_count": 1,
+        "sentiment": 1,
+        "avg_rating": 5
+      },
+      {
+        "month": "2026-01",
+        "review_count": 87,
+        "sentiment": 0.53,
+        "avg_rating": 4.6
+      }
+    ]
+  },
+  "critical_issues": [
+    {
+      "issue": "Response time of service staff needs improvement",
+      "severity": "medium",
+      "mention_count": 12,
+      "suggested_action": "Implement training programs to enhance staff response times."
+    },
+    {
+      "issue": "Customer complaints regarding wedding booking cancellations and refunds",
+      "severity": "high",
+      "mention_count": 5,
+      "suggested_action": "Establish a clear communication protocol for handling cancellations and refunds."
+    }
+  ],
+  "swot": {
+    "strengths": [
+      {
+        "point": "Excellent service quality and staff attitude",
+        "evidence_count": 60
+      },
+      {
+        "point": "High-quality food and dining experience",
+        "evidence_count": 25
+      },
+      {
+        "point": "Clean and well-maintained rooms",
+        "evidence_count": 13
+      },
+      {
+        "point": "Great location with good accessibility",
+        "evidence_count": 8
+      },
+      {
+        "point": "Outstanding facilities and amenities",
+        "evidence_count": 5
+      }
+    ],
+    "weaknesses": [
+      {
+        "point": "Value perception is low among customers",
+        "evidence_count": 1
+      },
+      {
+        "point": "Check-in/out process needs improvement",
+        "evidence_count": 1
+      }
+    ],
+    "opportunities": [
+      {
+        "point": "Enhance value offerings to improve customer perception",
+        "evidence_count": 1
+      },
+      {
+        "point": "Address response time issues in service for better customer satisfaction",
+        "evidence_count": 12
+      }
+    ],
+    "threats": [
+      {
+        "point": "Negative experiences related to wedding bookings and refunds due to COVID-19",
+        "evidence_count": 5
+      },
+      {
+        "point": "Potential decline in customer sentiment if service issues persist",
+        "evidence_count": 5
+      }
+    ]
+  },
+  "recommendations": {
+    "brand_context": {
+      "price_positioning": "standard",
+      "brand_positioning": "premium",
+      "protected_strengths": [
+        "Service",
+        "Food & Dining",
+        "Room Quality"
+      ],
+      "brand_risks": []
+    },
+    "issue_severity_summary": "Most issues are MODERATE severity (5-15% of reviews). Immediate attention is needed to improve service response times and address customer complaints regarding wedding bookings.",
+    "immediate": [
+      {
+        "action": "Implement training programs for staff to enhance service response times.",
+        "action_type": "change",
+        "reason": "To directly address the moderate issue of slow response times, improving overall customer satisfaction.",
+        "evidence": {
+          "issue": "Response time of service staff needs improvement",
+          "mention_count": 12,
+          "mention_percentage": 12,
+          "severity": "moderate",
+          "sample_feedback": [
+            "Service was great but took too long to get help when needed.",
+            "Response time could be improved during busy hours."
+          ],
+          "customer_segments": [
+            "tourists",
+            "first-timers"
+          ]
+        },
+        "expected_impact": "Potentially increase customer satisfaction ratings by 10% within 3 months.",
+        "downside_risk": "If poorly implemented, it could lead to staff frustration and morale issues.",
+        "effort": "medium",
+        "risk_level": "medium",
+        "confidence_level": "high",
+        "priority_score": 75,
+        "caution_note": ""
+      },
+      {
+        "action": "Establish a clear communication protocol for handling wedding booking cancellations and refunds.",
+        "action_type": "change",
+        "reason": "To mitigate customer complaints and enhance trust, especially for wedding bookings.",
+        "evidence": {
+          "issue": "Customer complaints regarding wedding booking cancellations and refunds",
+          "mention_count": 5,
+          "mention_percentage": 5,
+          "severity": "moderate",
+          "sample_feedback": [
+            "Had issues with wedding booking cancellations.",
+            "Refund process was unclear and frustrating."
+          ],
+          "customer_segments": [
+            "families"
+          ]
+        },
+        "expected_impact": "Reduce booking-related complaints by 15% in the next quarter.",
+        "downside_risk": "If not communicated well, it may confuse customers further.",
+        "effort": "medium",
+        "risk_level": "medium",
+        "confidence_level": "high",
+        "priority_score": 70,
+        "caution_note": ""
+      }
+    ],
+    "short_term": [
+      {
+        "action": "Communicate enhanced service response expectations to staff and customers.",
+        "action_type": "communicate",
+        "reason": "To set clear expectations and improve customer perceptions of service speed.",
+        "evidence": {
+          "issue": "Response time of service staff needs improvement",
+          "mention_count": 12,
+          "mention_percentage": 12,
+          "severity": "moderate",
+          "sample_feedback": [
+            "Service could be quicker during peak times.",
+            "Expectation setting could help manage wait times better."
+          ],
+          "customer_segments": [
+            "tourists",
+            "regulars"
+          ]
+        },
+        "expected_impact": "Improve customer perception of service speed by 15% within one month.",
+        "downside_risk": "May lead to dissatisfaction if expectations are not met.",
+        "effort": "low",
+        "risk_level": "medium",
+        "confidence_level": "medium",
+        "priority_score": 60,
+        "caution_note": ""
+      },
+      {
+        "action": "Experiment with a special wedding package that clarifies cancellation and refund policies.",
+        "action_type": "experiment",
+        "reason": "To address customer concerns and improve the booking experience.",
+        "evidence": {
+          "issue": "Customer complaints regarding wedding booking cancellations and refunds",
+          "mention_count": 5,
+          "mention_percentage": 5,
+          "severity": "moderate",
+          "sample_feedback": [
+            "Booking process was unclear, especially around cancellations.",
+            "Need better clarity on wedding package terms."
+          ],
+          "customer_segments": [
+            "families"
+          ]
+        },
+        "expected_impact": "Attract more wedding bookings by 10% within the next quarter.",
+        "downside_risk": "Could lead to confusion if not implemented effectively.",
+        "effort": "medium",
+        "risk_level": "medium",
+        "confidence_level": "medium",
+        "priority_score": 65,
+        "caution_note": ""
+      }
+    ],
+    "long_term": [
+      {
+        "action": "Develop a value enhancement program to improve customer perceptions of value.",
+        "action_type": "change",
+        "reason": "To address the low value perception among customers.",
+        "evidence": {
+          "issue": "Value perception is low among customers",
+          "mention_count": 1,
+          "mention_percentage": 1,
+          "severity": "low",
+          "sample_feedback": [
+            "Value for money could be better.",
+            "Felt like I paid too much for the experience."
+          ],
+          "customer_segments": [
+            "first-timers",
+            "regulars"
+          ]
+        },
+        "expected_impact": "Increase positive value perception by 20% within six months.",
+        "downside_risk": "If not perceived as valuable, it may lead to further dissatisfaction.",
+        "effort": "high",
+        "risk_level": "medium",
+        "confidence_level": "medium",
+        "priority_score": 50,
+        "caution_note": ""
+      }
+    ],
+    "do_not": [
+      {
+        "area": "Service",
+        "do_not_action": "Do not reduce staff levels to cut costs.",
+        "rationale": "Positive sentiment around service quality is high; reducing staff could harm customer experience.",
+        "evidence_count": 60
+      },
+      {
+        "area": "Food & Dining",
+        "do_not_action": "Do not change the current menu pricing without substantial evidence.",
+        "rationale": "Customers appreciate the quality of food; price cuts may dilute perceived value.",
+        "evidence_count": 25
+      },
+      {
+        "area": "Room Quality",
+        "do_not_action": "Do not compromise on room cleanliness or maintenance standards.",
+        "rationale": "High satisfaction with room quality must be maintained to uphold brand reputation.",
+        "evidence_count": 13
+      },
+      {
+        "area": "Facilities",
+        "do_not_action": "Do not remove popular amenities or facilities.",
+        "rationale": "Outstanding facilities are a key strength; removing them could negatively impact customer satisfaction.",
+        "evidence_count": 5
+      }
+    ],
+    "overall_risk_assessment": "The overall risk profile is medium due to moderate issues requiring immediate attention, but protective recommendations are in place to safeguard brand strengths."
+  },
+  "recommendations_legacy": {
+    "immediate": [
+      {
+        "action": "Implement training programs to enhance staff response times.",
+        "reason": "Response time issues are a recurring theme in customer feedback.",
+        "expected_impact": "Improved customer satisfaction and reduced complaints related to service wait times.",
+        "effort": "medium",
+        "priority_score": 85
+      },
+      {
+        "action": "Establish clear communication protocols for handling cancellations and refunds.",
+        "reason": "High severity of complaints regarding wedding booking cancellations highlights a need for better management.",
+        "expected_impact": "Increased customer trust and reduced negative feedback related to booking issues.",
+        "effort": "medium",
+        "priority_score": 90
+      }
+    ],
+    "short_term": [
+      {
+        "action": "Enhance value offerings to improve customer perception.",
+        "reason": "Low value perception among customers can deter repeat business.",
+        "expected_impact": "Higher customer retention and satisfaction ratings.",
+        "effort": "medium",
+        "priority_score": 80
+      },
+      {
+        "action": "Conduct regular training sessions for staff focusing on customer engagement and response.",
+        "reason": "High-quality service is a strength, but response time is lacking.",
+        "expected_impact": "Better service delivery and overall customer experience.",
+        "effort": "high",
+        "priority_score": 75
+      }
+    ],
+    "long_term": [
+      {
+        "action": "Revamp pricing strategy to align with customer expectations of value.",
+        "reason": "Addressing the low perception of value can enhance overall brand reputation.",
+        "expected_impact": "Increased bookings and improved rating metrics over time.",
+        "effort": "high",
+        "priority_score": 70
+      },
+      {
+        "action": "Develop a customer feedback loop to continually assess service areas and adapt strategies accordingly.",
+        "reason": "Dynamic adaptation to customer needs will foster loyalty and positive sentiment.",
+        "expected_impact": "Sustained high ratings and proactive issue management.",
+        "effort": "medium",
+        "priority_score": 65
+      }
+    ]
+  },
+  "executive_summary": {
+    "headline": "Cinnamon Lakeside Colombo: Insights & Recommendations",
+    "one_liner": "Strong service quality amidst critical response time issues.",
+    "key_metric": "Overall Health Score: 89/100",
+    "full_summary": "Cinnamon Lakeside Colombo maintains a commendable Google Maps rating of 4.6 from a total of 16,894 reviews, reflecting a robust customer satisfaction level. The business has a health score of 89, indicative of its strong operational performance, particularly in service quality and dining experience. However, critical issues have been identified, particularly in staff response times and handling customer complaints regarding bookings. Addressing these will be crucial for sustaining growth and enhancing value perception among customers.\n\nDespite a generally stable trend in sentiment, with a positive sentiment score of 0.579 and 68% of reviews categorized as positive, there remains a significant opportunity for the hotel to enhance its value offerings and improve customer perceptions, especially given the low evidence count concerning value perception. The following report synthesizes key findings and actionable recommendations to optimize performance based on comprehensive review analysis."
+  },
+  "key_findings": [
+    "Excellent service quality is highlighted with a 95% positive sentiment on staff attitude.",
+    "High-quality food and dining experiences received a sentiment score of 0.88, with 100% positive reviews for restaurant quality.",
+    "While room cleanliness scored highly, the perception of value is notably low, indicating a disconnect between service quality and perceived value.",
+    "Response times for services require immediate attention, with only 58% of reviews reflecting satisfaction in this area.",
+    "Critical complaints regarding wedding booking cancellations necessitate clear communication protocols."
+  ],
+  "statistics": {
+    "reviews_analyzed": 100,
+    "date_range": {
+      "from": "2019-11",
+      "to": "2026-01"
+    },
+    "rating_distribution": {
+      "1": 5,
+      "2": 1,
+      "3": 1,
+      "4": 8,
+      "5": 85
+    },
+    "avg_review_length": 28,
+    "reviews_with_photos": 0,
+    "response_rate": "84.0%"
+  }
+}

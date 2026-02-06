@@ -8,8 +8,8 @@
 import from datetime { datetime }
 import from uuid { uuid4 }
 
-include models;
-include walkers;
+include services.models;
+include services.walkers;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # NOTE: AnalyzeUrl walker is defined in main.jac

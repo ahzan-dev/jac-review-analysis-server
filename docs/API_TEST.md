@@ -23,13 +23,13 @@ curl -X POST "$API/user/register" \
 ```bash
 curl -X POST "$API/user/login" \
   -H "Content-Type: application/json" \
-  -d '{"username": "mf.farhanahzan@gmail.com", "password": "mf.farhanahzan@gmail.com"}'
+  -d '{"username": "test@example.com", "password": "test123"}'
 ```
 
 Save the token:
 
 ```bash
-export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1mLmZhcmhhbmFoemFuQGdtYWlsLmNvbSIsImV4cCI6MTc3MDYwOTU4OCwiaWF0IjoxNzcwMDA0Nzg4LjA0OTYzMX0.wa3AoEzT5HFHqqverLbk122b7MhXP21vUBJ8UubCtpo"
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RAZXhhbXBsZS5jb20iLCJleHAiOjE3NzA5OTg3OTksImlhdCI6MTc3MDM5Mzk5OS41NTQ2Mjh9.88qkyoTWw2Om5Ly3ao4XL_w9QPrClrZZI6NhnmhpU8U"
 ```
 
 ---

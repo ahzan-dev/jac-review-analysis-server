@@ -25,7 +25,7 @@ glob llm = Model(
     api_key=OPENAI_API_KEY
 );
 
-include models;
+include services.models;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELPER FUNCTIONS
@@ -349,7 +349,8 @@ walker DataFetcherAgent {
                 data_id=parsed["data_id"],
                 name=parsed["place_name"] if parsed["place_name"] else "Unknown Business",
                 original_url=self.url,
-                status="fetching"
+                status="fetching",
+                created_at=datetime.now().isoformat()
             );
             print(f"   ➕ Creating new business node");
         }
@@ -373,6 +374,12 @@ walker DataFetcherAgent {
         # Update status
         self.business[0].status = "fetched";
         self.business[0].fetched_at = datetime.now().isoformat();
+
+        # Fallback: if total_reviews wasn't set from place details, use fetched count
+        if self.business[0].total_reviews == 0 and self.reviews_fetched > 0 {
+            self.business[0].total_reviews = self.reviews_fetched;
+        }
+
         self.status = "completed";
         
         print(f"   ✅ Fetched {self.reviews_fetched} reviews for {self.business[0].name}");

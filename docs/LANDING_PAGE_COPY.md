@@ -384,7 +384,236 @@ Total: Under 2 minutes
 
 ---
 
-## 5. PRICING SECTION
+## 5. INTERACTIVE DEMO SECTION
+
+### Section Headline Options
+- **Option 1 (Recommended):** "See a Real Analysis in Action"
+- **Option 2:** "What You'll Get: Live Demo"
+
+### Demo Introduction
+```
+Don't take our word for it—see exactly what you'll get.
+
+Below is a REAL analysis of Cinnamon Lakeside Colombo, a 5-star hotel in Sri Lanka.
+This is actual AI-generated output, not a mockup. Explore the data yourself.
+```
+
+---
+
+### Demo Data Source
+
+**Business:** Cinnamon Lakeside Colombo
+**Type:** Hotel (5-star, Sri Lanka)
+**Data File:** `/output/Cinnamon Lakeside Colombo_report.json`
+
+**Key Metrics:**
+- Health Score: **89** (Grade **A**)
+- Google Rating: 4.6 stars
+- Reviews Analyzed: 100 of 16,894 total
+- Confidence Level: High
+- Trend: Stable
+
+---
+
+### Interactive Tabs/Sections
+
+#### Tab 1: Overview
+**Display Elements:**
+- Health Score circular gauge (0-100) with **89** prominently displayed
+- Letter grade badge: **A** (large, colored indicator)
+- Google rating: 4.6 stars
+- Business info card: Name, address, type, phone, website
+- Quick stats: 100 reviews analyzed, high confidence, stable trend
+
+**Sentiment Summary:**
+```
+Positive:  68% (68 reviews)  ████████████████████░░░░░░░░░░
+Negative:   5% (5 reviews)   ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+Neutral:   25% (25 reviews)  ████████░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**Average Sentiment Score:** 0.579 (moderately positive)
+
+---
+
+#### Tab 2: Themes
+**Display Elements:**
+- Theme bars with scores and sentiment indicators
+- Expandable sub-themes for each category
+
+**Theme Breakdown:**
+
+| Theme | Score | Mentions | Sentiment |
+|-------|-------|----------|-----------|
+| Facilities | 93 | 5 | Positive |
+| Food & Dining | 88 | 26 | Positive |
+| Room Quality | 82 | 15 | Positive |
+| Location | 81 | 9 | Positive |
+| Service | 78 | 65 | Positive |
+| Value | 32 | 3 | Mixed |
+| Check-in/out | 20 | - | Needs Attention |
+
+**Sub-Theme Example (Service):**
+- Staff Attitude: 95% positive, 62 mentions → "Excellent"
+- Response Time: 58% positive, 12 mentions → "Needs Attention"
+- Housekeeping: 100% positive, 7 mentions → "Excellent"
+
+**Sample Quotes Carousel:**
+> "Always nice smile and friendly service... excellent team leader."
+
+> "Wonderful breakfast buffet. Polite service!"
+
+> "The venue was stunning, the food was exceptional."
+
+---
+
+#### Tab 3: SWOT Analysis
+**Display Elements:**
+- 4-quadrant SWOT grid with evidence counts
+
+**Strengths (with evidence counts):**
+- Excellent service quality and staff attitude (60 reviews)
+- High-quality food and dining experience (25 reviews)
+- Clean and well-maintained rooms (13 reviews)
+- Great location with good accessibility (8 reviews)
+- Outstanding facilities and amenities (5 reviews)
+
+**Weaknesses:**
+- Value perception is low among customers (1 review)
+- Check-in/out process needs improvement (1 review)
+
+**Opportunities:**
+- Enhance value offerings to improve customer perception (1 review)
+- Address response time issues in service (12 reviews)
+
+**Threats:**
+- Negative experiences related to wedding bookings/refunds (5 reviews)
+- Potential decline in sentiment if service issues persist (5 reviews)
+
+---
+
+#### Tab 4: Recommendations (PARTIALLY BLURRED)
+**Visible Teaser:**
+- Immediate Actions: 2 items (blurred details)
+- Short-term Actions: 2 items (blurred details)
+- Long-term Actions: 1 item (blurred details)
+- "Do NOT" List: 4 protected areas (blurred details)
+
+**Blur Overlay Message:**
+```
+🔒 Full recommendations available in your report
+
+See specific actions, expected impact, risk assessments,
+and priority scores when you analyze YOUR business.
+```
+
+**CTA Button:** "Analyze My Business to Unlock - $5"
+
+---
+
+#### Tab 5: Critical Issues
+**Display Elements:**
+- Issue cards with severity badges
+
+**Issue 1:** Response time of service staff needs improvement
+- Severity: **Medium** (yellow badge)
+- Mentions: 12 reviews
+- Suggested Action: "Implement training programs to enhance staff response times."
+
+**Issue 2:** Customer complaints regarding wedding booking cancellations and refunds
+- Severity: **High** (red badge)
+- Mentions: 5 reviews
+- Suggested Action: "Establish a clear communication protocol for handling cancellations and refunds."
+
+---
+
+### Visual Elements Specification
+
+**Health Score Gauge:**
+- Circular progress indicator, 0-100 scale
+- Color gradient: Red (0-40) → Yellow (41-70) → Green (71-100)
+- Large number in center: "89"
+- Grade badge below: "A" in green circle
+
+**Sentiment Distribution:**
+- Horizontal bar chart or pie chart
+- Colors: Green (positive), Gray (neutral), Red (negative)
+- Percentages and counts displayed
+
+**Theme Bars:**
+- Horizontal progress bars (0-100)
+- Color-coded by sentiment
+- Mention count badges
+- Expandable to show sub-themes
+
+**Trend Indicator:**
+- Arrow icon: ↑ (improving), → (stable), ↓ (declining)
+- For this demo: → Stable (neutral color)
+
+**Sample Quotes Carousel:**
+- Auto-rotating quotes
+- Manual navigation dots
+- Attribution: "— Google Maps Review"
+
+---
+
+### Call-to-Action Within Demo
+
+**Persistent CTA Banner (sticky at bottom of demo section):**
+```
+This is real data from a real business.
+See what AI reveals about YOUR business.
+
+[Analyze My Business - $5]
+```
+
+**Alternative CTA Text Options:**
+- "This is what you'll get. Ready to see your own data?"
+- "Real insights. Real data. Try it on your business."
+
+---
+
+### Blur Strategy Summary
+
+| Element | Visibility |
+|---------|------------|
+| Health Score | ✅ Fully visible |
+| Sentiment Distribution | ✅ Fully visible |
+| Theme Breakdown | ✅ Fully visible |
+| Sub-themes | ✅ Fully visible |
+| Sample Quotes | ✅ Fully visible |
+| SWOT Analysis | ✅ Fully visible |
+| Critical Issues | ✅ Fully visible |
+| Recommendations (detailed) | 🔒 Blurred with teaser |
+| "Do NOT" List (detailed) | 🔒 Blurred with teaser |
+| Priority Scores | 🔒 Blurred |
+| Expected Impact | 🔒 Blurred |
+
+**Blur Message:** "Full recommendations available in your report"
+
+---
+
+### Implementation Notes
+
+**Data Source:**
+- Demo uses static data from `/output/Cinnamon Lakeside Colombo_report.json`
+- Not a live API call—pre-loaded for performance
+- Data represents actual AI analysis output
+
+**Interactivity:**
+- Tabs should switch smoothly (no page reload)
+- Quote carousel auto-advances every 5 seconds
+- Theme bars can expand/collapse for sub-themes
+- Mobile: Tabs become accordion or swipeable cards
+
+**Performance:**
+- Lazy-load demo section (below fold)
+- Pre-render visible tab, lazy-load others
+- Optimize images and animations
+
+---
+
+## 6. PRICING SECTION
 
 ### Section Headline
 "Simple Credit-Based Pricing"
@@ -519,7 +748,7 @@ A: Yes. Re-analysis of cached data is free. Fetching new reviews costs credits.
 
 ---
 
-## 6. FAQ SECTION
+## 7. FAQ SECTION
 
 ### Section Headline
 "Questions? We Have Answers."
@@ -609,7 +838,7 @@ A: No. Buy credits once, use them on your schedule. No recurring charges unless 
 
 ---
 
-## 7. FINAL CTA SECTION
+## 8. FINAL CTA SECTION
 
 ### Section Headline
 "Ready to Understand Your Customers?"
@@ -640,7 +869,7 @@ If it helps, buy more credits. If not, you're out $5.
 
 ---
 
-## 8. TONE & VOICE GUIDELINES
+## 9. TONE & VOICE GUIDELINES
 
 ### What We Sound Like
 
@@ -678,7 +907,7 @@ If it helps, buy more credits. If not, you're out $5.
 
 ---
 
-## 9. NOTES FOR IMPLEMENTATION
+## 10. NOTES FOR IMPLEMENTATION
 
 ### What This Copy Assumes
 - User lands on page, understands the product quickly

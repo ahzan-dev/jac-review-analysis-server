@@ -9,8 +9,8 @@ import from datetime { datetime }
 
 import os;
 
-include models;
-include errors;
+include services.models;
+include services.errors;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # WALKER 1: Create Profile
@@ -67,6 +67,9 @@ walker:pub get_user_profile {
 
         profile = profiles[0];
 
+        # Dynamically count businesses from the graph (more reliable than stored counter)
+        actual_business_count = len([here -->(`?Business)]);
+
         report {
             "success": True,
             "role": profile.role.value,
@@ -74,7 +77,7 @@ walker:pub get_user_profile {
                 "available": profile.credits,
                 "used": profile.credits_used
             },
-            "businesses_count": profile.current_business_count,
+            "businesses_count": actual_business_count,
             "is_active": profile.is_active
         };
     }

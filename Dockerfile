@@ -46,7 +46,7 @@ ENV LLM_MODEL=gpt-4o-mini
 EXPOSE 8000
 
 # Health check - uses the health_check walker endpoint
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=80s --retries=3 \
     CMD curl -f -X POST http://localhost:8000/walker/health_check \
         -H "Content-Type: application/json" \
         -d '{}' || exit 1

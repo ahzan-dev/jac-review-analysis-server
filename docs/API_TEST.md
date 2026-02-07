@@ -3,7 +3,7 @@
 Base URL: `http://localhost:8000` (local) or `https://review-analysis-server.trynewways.com` (production)
 
 ```bash
-API="http://localhost:8000"
+export API="http://localhost:8000"
 ```
 
 ---

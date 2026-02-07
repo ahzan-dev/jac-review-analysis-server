@@ -829,3 +829,378 @@ sem BulkReplyResult.replies = "List of individual reply results, one per input r
 sem SingleReplyResult = "Generated reply for a single review in a batch";
 sem SingleReplyResult.review_id = "ID of the review this reply is for";
 sem SingleReplyResult.reply_text = "The generated reply text";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTENT GENERATION EDGES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+edge HasSocialMediaPost {
+    has created_at: str = "";
+}
+
+edge HasActionPlan {
+    has version: int = 1;
+}
+
+edge HasMarketingCopy {
+    has created_at: str = "";
+}
+
+edge HasBlogPost {
+    has created_at: str = "";
+}
+
+edge HasResponseTemplate {
+    has category: str = "";
+}
+
+edge HasSocialMediaPostConfig {
+    has version: int = 1;
+}
+
+edge HasMarketingCopyConfig {
+    has version: int = 1;
+}
+
+edge HasBlogPostConfig {
+    has version: int = 1;
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RESPONSE TEMPLATE LIBRARY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+node ResponseTemplate {
+    has template_id: str = "";
+    has name: str = "";
+    has category: str = "";
+    has scenario: str = "";
+    has business_type: str = "GENERIC";
+    has template_text: str = "";
+    has placeholders: list[str] = [];
+    has tone: str = "friendly_professional";
+    has is_system: bool = False;
+    has usage_count: int = 0;
+    has created_at: str = "";
+    has updated_at: str = "";
+}
+
+sem ResponseTemplate = "Pre-built or user-created reply template with customizable placeholders";
+sem ResponseTemplate.template_id = "Unique identifier for this template";
+sem ResponseTemplate.name = "Human-readable template name (e.g., 'Thank You - General Positive')";
+sem ResponseTemplate.category = "Sentiment category: 'positive', 'negative', 'neutral', 'mixed'";
+sem ResponseTemplate.scenario = "Specific scenario: 'praise', 'complaint_service', 'complaint_quality', 'suggestion', 'question', 'return_visit', 'first_visit', 'detailed_feedback'";
+sem ResponseTemplate.business_type = "Business type: 'RESTAURANT', 'HOTEL', 'RETAIL', etc. or 'GENERIC'";
+sem ResponseTemplate.template_text = "Template text with {placeholder} markers for customization";
+sem ResponseTemplate.placeholders = "List of placeholder names used in template_text";
+sem ResponseTemplate.is_system = "Whether this is a system-provided template (true) or user-created (false)";
+sem ResponseTemplate.usage_count = "Number of times this template has been used";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SOCIAL MEDIA POST GENERATOR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+node SocialMediaPostConfig {
+    has brand_name: str = "";
+    has brand_voice: str = "professional";
+    has default_hashtags: list[str] = [];
+    has include_star_rating: bool = True;
+    has include_review_quote: bool = True;
+    has include_call_to_action: bool = True;
+    has call_to_action_text: str = "";
+    has created_at: str = "";
+    has updated_at: str = "";
+}
+
+sem SocialMediaPostConfig = "User's branding preferences for social media post generation";
+sem SocialMediaPostConfig.brand_voice = "Brand voice: 'professional', 'casual', 'playful', 'authoritative'";
+sem SocialMediaPostConfig.default_hashtags = "Default hashtags to append to posts";
+sem SocialMediaPostConfig.include_star_rating = "Whether to include star rating emoji/text";
+sem SocialMediaPostConfig.include_call_to_action = "Whether to include a call-to-action at the end";
+
+node SocialMediaPost {
+    has post_id: str = "";
+    has platform: str = "";
+    has post_text: str = "";
+    has hashtags: list[str] = [];
+    has review_quote: str = "";
+    has review_author: str = "";
+    has review_rating: int = 0;
+    has character_count: int = 0;
+    has credits_used: float = 0.0;
+    has generated_at: str = "";
+}
+
+sem SocialMediaPost = "Generated social media post featuring customer review highlights";
+sem SocialMediaPost.platform = "Target platform: 'twitter' (280 chars), 'facebook' (longer), 'instagram' (visual-ready), 'linkedin' (professional)";
+sem SocialMediaPost.post_text = "The complete post text ready for publishing";
+sem SocialMediaPost.hashtags = "Relevant hashtags for the post";
+sem SocialMediaPost.review_quote = "Excerpt from the customer review used in the post";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACTION PLAN GENERATOR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+node ActionPlan {
+    has plan_id: str = "";
+    has title: str = "";
+    has overview: str = "";
+    has timeframe: str = "";
+    has total_action_items: int = 0;
+    has immediate_actions: list[dict] = [];
+    has short_term_actions: list[dict] = [];
+    has medium_term_actions: list[dict] = [];
+    has kpis: list[dict] = [];
+    has expected_outcomes: list[str] = [];
+    has risk_factors: list[str] = [];
+    has based_on_health_score: int = 0;
+    has based_on_review_count: int = 0;
+    has key_issues_addressed: list[str] = [];
+    has credits_used: float = 0.0;
+    has generated_at: str = "";
+}
+
+sem ActionPlan = "Structured improvement roadmap derived from review analysis data";
+sem ActionPlan.title = "Descriptive plan title (e.g., 'Service Excellence Recovery Plan')";
+sem ActionPlan.overview = "2-3 sentence executive summary of the plan's goals and approach";
+sem ActionPlan.timeframe = "Plan duration: '30_day', '60_day', or '90_day'";
+sem ActionPlan.immediate_actions = "Actions for days 1-7 with action, owner_role, kpi, effort, expected_impact, source_issue";
+sem ActionPlan.short_term_actions = "Actions for days 8-30 with same structure";
+sem ActionPlan.medium_term_actions = "Actions for days 31-90 with same structure";
+sem ActionPlan.kpis = "Measurable KPIs with name, current_value, target_value, measurement_method";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MARKETING COPY GENERATOR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+node MarketingCopyConfig {
+    has brand_name: str = "";
+    has brand_tagline: str = "";
+    has target_audience: str = "";
+    has unique_selling_points: list[str] = [];
+    has tone: str = "persuasive";
+    has created_at: str = "";
+    has updated_at: str = "";
+}
+
+sem MarketingCopyConfig = "User's branding preferences for marketing copy generation";
+sem MarketingCopyConfig.target_audience = "Primary target audience for ads";
+sem MarketingCopyConfig.unique_selling_points = "Key USPs to highlight in copy";
+sem MarketingCopyConfig.tone = "Ad tone: 'persuasive', 'informational', 'emotional', 'urgent'";
+
+node MarketingCopy {
+    has copy_id: str = "";
+    has ad_format: str = "";
+    has headline: str = "";
+    has body_text: str = "";
+    has call_to_action: str = "";
+    has variant_label: str = "";
+    has character_counts: dict = {};
+    has source_delighters: list[str] = [];
+    has source_quotes: list[str] = [];
+    has credits_used: float = 0.0;
+    has generated_at: str = "";
+}
+
+sem MarketingCopy = "Generated advertising copy based on customer review highlights";
+sem MarketingCopy.ad_format = "Ad format: 'google_search', 'google_display', 'facebook_ad', 'instagram_ad', 'email_subject', 'email_body'";
+sem MarketingCopy.headline = "Ad headline text";
+sem MarketingCopy.body_text = "Ad body/description text";
+sem MarketingCopy.call_to_action = "Call-to-action text";
+sem MarketingCopy.variant_label = "A/B variant label for testing (A, B, or C)";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BLOG POST GENERATOR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+node BlogPostConfig {
+    has author_name: str = "";
+    has brand_name: str = "";
+    has writing_style: str = "informative";
+    has target_word_count: int = 800;
+    has include_data_visualizations: bool = True;
+    has seo_focus: bool = True;
+    has created_at: str = "";
+    has updated_at: str = "";
+}
+
+sem BlogPostConfig = "User's preferences for blog content generation";
+sem BlogPostConfig.writing_style = "Style: 'informative', 'storytelling', 'data_driven', 'conversational'";
+sem BlogPostConfig.target_word_count = "Target word count for generated posts (600-2000)";
+sem BlogPostConfig.include_data_visualizations = "Whether to include data callout suggestions";
+
+node BlogPost {
+    has post_id: str = "";
+    has content_type: str = "";
+    has title: str = "";
+    has meta_description: str = "";
+    has slug: str = "";
+    has introduction: str = "";
+    has body_sections: list[dict] = [];
+    has conclusion: str = "";
+    has seo_keywords: list[str] = [];
+    has word_count: int = 0;
+    has data_points_referenced: list[dict] = [];
+    has credits_used: float = 0.0;
+    has generated_at: str = "";
+}
+
+sem BlogPost = "AI-generated blog post derived from review analysis insights";
+sem BlogPost.content_type = "Content format: 'improvement_story', 'customer_spotlight', 'insights_listicle', 'case_study', 'trend_analysis'";
+sem BlogPost.title = "SEO-optimized blog post title";
+sem BlogPost.meta_description = "SEO meta description (150-160 characters)";
+sem BlogPost.body_sections = "List of sections with heading, content, and supporting data_points";
+sem BlogPost.seo_keywords = "Target SEO keywords for the post";
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTENT GENERATION LLM OUTPUT OBJECTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# --- Social Media Post Generation ---
+
+obj SocialMediaPostResult {
+    has posts: list[SingleSocialPost];
+}
+
+obj SingleSocialPost {
+    has platform: str;
+    has post_text: str;
+    has hashtags: list[str];
+    has review_quote: str;
+    has character_count: int;
+}
+
+sem SocialMediaPostResult = "Batch of generated social media posts for multiple platforms";
+sem SocialMediaPostResult.posts = "List of platform-specific posts";
+sem SingleSocialPost = "A single social media post for a specific platform";
+sem SingleSocialPost.platform = "Target platform: 'twitter', 'facebook', 'instagram', 'linkedin'";
+sem SingleSocialPost.post_text = "Complete post text optimized for the platform's character limits and style";
+sem SingleSocialPost.hashtags = "Relevant hashtags (3-5 for Twitter/Instagram, 1-3 for LinkedIn/Facebook)";
+sem SingleSocialPost.review_quote = "The exact customer quote excerpt used in the post";
+sem SingleSocialPost.character_count = "Total character count of the post text";
+
+# --- Action Plan Generation ---
+
+obj ActionPlanItem {
+    has action: str;
+    has owner_role: str;
+    has kpi: str;
+    has effort: str;
+    has expected_impact: str;
+    has source_issue: str;
+    has timeline_days: int;
+}
+
+sem ActionPlanItem = "A single action item in the improvement plan";
+sem ActionPlanItem.action = "Specific, verb-driven action to take";
+sem ActionPlanItem.owner_role = "Role responsible: 'manager', 'staff', 'owner', 'marketing', 'operations'";
+sem ActionPlanItem.kpi = "Measurable KPI to track success of this action";
+sem ActionPlanItem.effort = "Effort level: 'low', 'medium', 'high'";
+sem ActionPlanItem.expected_impact = "Expected business impact of completing this action";
+sem ActionPlanItem.source_issue = "The specific review issue/pain point this addresses";
+sem ActionPlanItem.timeline_days = "Number of days to complete this action";
+
+obj ActionPlanKPI {
+    has name: str;
+    has current_value: str;
+    has target_value: str;
+    has measurement_method: str;
+    has review_frequency: str;
+}
+
+sem ActionPlanKPI = "Key Performance Indicator for tracking plan progress";
+sem ActionPlanKPI.name = "KPI name (e.g., 'Average response time', 'Customer satisfaction score')";
+sem ActionPlanKPI.current_value = "Current baseline value derived from review data";
+sem ActionPlanKPI.target_value = "Target value to achieve within the plan timeframe";
+sem ActionPlanKPI.measurement_method = "How to measure this KPI";
+sem ActionPlanKPI.review_frequency = "How often to check: 'daily', 'weekly', 'monthly'";
+
+obj ActionPlanResult {
+    has title: str;
+    has overview: str;
+    has immediate_actions: list[ActionPlanItem];
+    has short_term_actions: list[ActionPlanItem];
+    has medium_term_actions: list[ActionPlanItem];
+    has kpis: list[ActionPlanKPI];
+    has expected_outcomes: list[str];
+    has risk_factors: list[str];
+}
+
+sem ActionPlanResult = "Complete improvement action plan with prioritized items and KPIs";
+sem ActionPlanResult.title = "Plan title that captures the primary improvement objective";
+sem ActionPlanResult.overview = "2-3 sentence executive summary of the plan";
+sem ActionPlanResult.immediate_actions = "3-5 actions for this week (days 1-7)";
+sem ActionPlanResult.short_term_actions = "3-5 actions for this month (days 8-30)";
+sem ActionPlanResult.medium_term_actions = "2-4 actions for months 2-3 (days 31-90)";
+sem ActionPlanResult.kpis = "4-6 measurable KPIs to track plan success";
+sem ActionPlanResult.expected_outcomes = "3-5 expected outcomes if the plan is executed";
+sem ActionPlanResult.risk_factors = "2-3 risk factors that could derail the plan";
+
+# --- Marketing Copy Generation ---
+
+obj MarketingCopyVariant {
+    has headline: str;
+    has body_text: str;
+    has call_to_action: str;
+    has variant_label: str;
+}
+
+sem MarketingCopyVariant = "A single ad copy variant for A/B testing";
+sem MarketingCopyVariant.headline = "Ad headline optimized for the format's character limits";
+sem MarketingCopyVariant.body_text = "Ad body text with persuasive messaging based on review data";
+sem MarketingCopyVariant.call_to_action = "Compelling call-to-action text";
+sem MarketingCopyVariant.variant_label = "Variant label: 'A', 'B', or 'C'";
+
+obj MarketingCopyResult {
+    has variants: list[MarketingCopyVariant];
+    has source_delighters: list[str];
+    has source_quotes: list[str];
+}
+
+sem MarketingCopyResult = "Set of ad copy variants generated from review highlights";
+sem MarketingCopyResult.variants = "2-3 variants for A/B testing";
+sem MarketingCopyResult.source_delighters = "Customer delighters used as the basis for copy";
+sem MarketingCopyResult.source_quotes = "Paraphrased customer quotes referenced in copy";
+
+# --- Blog Post Generation ---
+
+obj BlogSection {
+    has heading: str;
+    has content: str;
+    has data_points: list[str];
+}
+
+sem BlogSection = "A single section of a blog post";
+sem BlogSection.heading = "Section heading (H2 level)";
+sem BlogSection.content = "Section body text (2-4 paragraphs)";
+sem BlogSection.data_points = "Supporting data points or statistics cited in this section";
+
+obj BlogPostResult {
+    has title: str;
+    has meta_description: str;
+    has slug: str;
+    has introduction: str;
+    has body_sections: list[BlogSection];
+    has conclusion: str;
+    has seo_keywords: list[str];
+    has word_count: int;
+}
+
+sem BlogPostResult = "Complete blog post with SEO optimization";
+sem BlogPostResult.title = "SEO-optimized blog title (50-60 characters)";
+sem BlogPostResult.meta_description = "Meta description for search engines (150-160 characters)";
+sem BlogPostResult.slug = "URL-friendly slug derived from title";
+sem BlogPostResult.introduction = "Engaging introduction paragraph (100-150 words)";
+sem BlogPostResult.body_sections = "3-5 structured body sections with headings and data";
+sem BlogPostResult.conclusion = "Conclusion with summary and call-to-action (100-150 words)";
+sem BlogPostResult.seo_keywords = "5-10 target SEO keywords";
+sem BlogPostResult.word_count = "Total word count of the generated post";
+
+# --- Response Template Customization ---
+
+obj CustomizedTemplateResult {
+    has reply_text: str;
+}
+
+sem CustomizedTemplateResult = "A template-based reply customized with actual review data";
+sem CustomizedTemplateResult.reply_text = "The customized reply text with placeholders filled in";

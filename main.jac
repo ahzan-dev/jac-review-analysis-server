@@ -21,6 +21,7 @@ include services.auth_walkers;
 include services.payment_walkers;
 include services.credit_walkers;
 include services.errors;
+include services.content_walkers;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API WALKER: AnalyzeUrl

@@ -217,6 +217,30 @@ When running `jac start main.jac`, the API is available at `http://localhost:800
 - `POST /walker/GetReviewReplies` - Get all generated replies for a business
 - `POST /walker/DeleteReviewReply` - Delete a generated reply
 
+### Content Generation
+- `POST /walker/GetResponseTemplates` - Browse/filter response templates (FREE)
+- `POST /walker/CreateResponseTemplate` - Create custom response template (FREE)
+- `POST /walker/ApplyTemplate` - AI-customize template for a review (0.25 credits)
+- `POST /walker/DeleteResponseTemplate` - Delete user-created template (FREE)
+- `POST /walker/GenerateActionPlan` - Generate improvement roadmap (0.5 credits)
+- `POST /walker/GetActionPlans` - Get action plans for a business
+- `POST /walker/DeleteActionPlan` - Delete an action plan
+- `POST /walker/SaveSocialMediaPostConfig` - Save social media branding preferences
+- `POST /walker/GetSocialMediaPostConfig` - Get current social media config
+- `POST /walker/GenerateSocialMediaPosts` - Generate social posts from reviews (0.25 credits/batch)
+- `POST /walker/GetSocialMediaPosts` - Get generated posts for business
+- `POST /walker/DeleteSocialMediaPost` - Delete a generated post
+- `POST /walker/SaveMarketingCopyConfig` - Save brand/ad preferences
+- `POST /walker/GetMarketingCopyConfig` - Get current marketing config
+- `POST /walker/GenerateMarketingCopy` - Generate ad copy variants (0.25 credits/batch)
+- `POST /walker/GetMarketingCopies` - Get generated copy for business
+- `POST /walker/DeleteMarketingCopy` - Delete generated copy
+- `POST /walker/SaveBlogPostConfig` - Save writing preferences
+- `POST /walker/GetBlogPostConfig` - Get current blog config
+- `POST /walker/GenerateBlogPost` - Generate a blog post (1.0 credits)
+- `POST /walker/GetBlogPosts` - Get blog posts for business
+- `POST /walker/DeleteBlogPost` - Delete a blog post
+
 ### Utilities
 - `POST /walker/DeleteBusiness` - Delete a business and all related data
 - `POST /walker/health_check` - Health check endpoint
@@ -275,6 +299,27 @@ Replies are generated using:
 1. **Review data**: text, rating, sentiment, themes, emotion
 2. **Business context**: name, type, strengths (delighters), known issues (pain points)
 3. **User config**: tone, length, and custom instructions
+
+## Content Generation System
+
+The system includes 5 content generation features in `services/content_walkers.jac`:
+
+### Credit Costs
+- **Response Template Library**: FREE (browse/create), 0.25 credits (AI customization)
+- **Action Plan Generator**: 0.5 credits per plan
+- **Social Media Post Generator**: 0.25 credits per batch (up to 5 posts)
+- **Marketing Copy Generator**: 0.25 credits per batch (up to 3 A/B variants)
+- **Blog Post Generator**: 1.0 credits per post
+
+### Graph Extensions
+```
+root ──> ResponseTemplate (system + user-created templates)
+root ──> SocialMediaPostConfig / MarketingCopyConfig / BlogPostConfig
+Business ──> ActionPlan / SocialMediaPost / MarketingCopy / BlogPost
+```
+
+### File
+- `services/content_walkers.jac` - All 22 content generation walker definitions
 
 ## Important Notes
 

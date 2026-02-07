@@ -136,3 +136,23 @@ def insufficient_credits_error(required: int, available: int) -> dict {
         }
     );
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTENT GENERATION VALIDATION FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def validate_timeframe(timeframe: str) -> bool {
+    return timeframe in ["30_day", "60_day", "90_day"];
+}
+
+def validate_ad_format(format: str) -> bool {
+    return format in ["google_search", "google_display", "facebook_ad", "instagram_ad", "email_subject", "email_body"];
+}
+
+def validate_content_type(ctype: str) -> bool {
+    return ctype in ["improvement_story", "customer_spotlight", "insights_listicle", "case_study", "trend_analysis"];
+}
+
+def validate_platform(platform: str) -> bool {
+    return platform in ["twitter", "facebook", "instagram", "linkedin"];
+}

@@ -24,7 +24,6 @@ glob ACTION_PLAN_CREDIT_COST: float = 0.5;
 glob SOCIAL_POST_CREDIT_COST: float = 0.25;
 glob MARKETING_COPY_CREDIT_COST: float = 0.25;
 glob BLOG_POST_CREDIT_COST: float = 1.0;
-glob TEMPLATE_APPLY_CREDIT_COST: float = 0.25;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SYSTEM TEMPLATE DEFINITIONS
@@ -294,7 +293,7 @@ walker:pub CreateResponseTemplate {
     }
 }
 
-# ── ApplyTemplate (AI customization, 0.25 credits) ──────────────────────────
+# ── ApplyTemplate (FREE, rule-based placeholder filling, stores ReviewReply) ──
 
 walker:pub ApplyTemplate {
     has template_id: str;
@@ -302,18 +301,13 @@ walker:pub ApplyTemplate {
     has review_id: str;
 
     can start with `root entry {
-        # 1. Validate profile and credits
+        # 1. Validate profile
         profiles = [here -->(`?UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             disengage;
         }
         profile = profiles[0];
-
-        if profile.credits < TEMPLATE_APPLY_CREDIT_COST {
-            report insufficient_credits_error(TEMPLATE_APPLY_CREDIT_COST, profile.credits);
-            disengage;
-        }
 
         # 2. Find template
         templates = [here -->(`?ResponseTemplate)];
@@ -360,103 +354,78 @@ walker:pub ApplyTemplate {
             disengage;
         }
 
-        # 5. Get analysis context
+        # 5. Check if review already has a reply
+        existing_replies = [target_review -->(`?ReviewReply)];
+        if existing_replies {
+            report {
+                "success": False,
+                "error": "Review already has a reply. Delete the existing reply first."
+            };
+            disengage;
+        }
+
+        # 6. Get analysis context for placeholder filling
         analyses = [target_biz -->(`?Analysis)];
         analysis = analyses[0] if analyses else None;
 
-        # 6. AI fills placeholders
-        result = self.customize_template(
-            template_text=target_template.template_text,
-            placeholders=target_template.placeholders,
-            review_data={
-                "author": target_review.author,
-                "rating": target_review.rating,
-                "text": target_review.text,
-                "sentiment": target_review.sentiment,
-                "themes": target_review.themes,
-                "emotion": target_review.emotion
-            },
-            business_context={
-                "name": target_biz.name,
-                "type": target_biz.business_type,
-                "strengths": analysis.delighters if analysis else [],
-                "known_issues": analysis.pain_points if analysis else []
-            }
+        # 7. Rule-based placeholder filling
+        placeholder_map = {
+            "reviewer_name": target_review.author if target_review.author else "valued customer",
+            "business_name": target_biz.name if target_biz.name else "our business",
+            "specific_mention": target_review.themes[0] if target_review.themes else "your experience",
+            "business_strength": analysis.delighters[0] if (analysis and analysis.delighters) else "our service",
+            "specific_issue": target_review.themes[0] if (target_review.sentiment == "negative" and target_review.themes) else "your concern",
+            "area_for_improvement": analysis.pain_points[0] if (analysis and analysis.pain_points) else "the areas you mentioned",
+            "positive_aspect": target_review.themes[0] if (target_review.sentiment == "positive" and target_review.themes) else "the things you enjoyed",
+            "sign_off": (target_biz.name + " Team") if target_biz.name else "The Team",
+            "contact_info": "our customer service team"
+        };
+
+        filled_text = target_template.template_text;
+        for key, value in placeholder_map.items() {
+            filled_text = filled_text.replace("{" + key + "}", str(value));
+        }
+
+        # 8. Create ReviewReply node (FREE - no credit deduction)
+        now_ts = datetime.now().isoformat();
+        reply_node = ReviewReply(
+            reply_id=str(uuid4()),
+            reply_text=filled_text,
+            generated_at=now_ts,
+            credits_used=0.0,
+            tone_used=target_template.tone,
+            review_sentiment=target_review.sentiment,
+            review_rating=target_review.rating,
+            source="template",
+            template_id=target_template.template_id
         );
+        target_review ++> reply_node;
 
-        # 7. Deduct credits
-        profile.credits -= TEMPLATE_APPLY_CREDIT_COST;
-        profile.credits_used += TEMPLATE_APPLY_CREDIT_COST;
-
-        # 8. Track usage
+        # 9. Track template usage
         target_template.usage_count += 1;
-
-        # 9. Create CreditTransaction
-        txn = CreditTransaction(
-            transaction_id=str(uuid4()),
-            user_id=profile.username,
-            transaction_type="template_apply",
-            amount=-TEMPLATE_APPLY_CREDIT_COST,
-            balance_after=profile.credits,
-            description=f"Template-based reply for review by {target_review.author}",
-            related_business_id=target_biz.place_id,
-            related_review_id=target_review.review_id,
-            created_at=datetime.now().isoformat()
-        );
-        here ++> txn;
 
         report {
             "success": True,
-            "reply_text": result.reply_text,
+            "reply": {
+                "reply_id": reply_node.reply_id,
+                "reply_text": reply_node.reply_text,
+                "generated_at": reply_node.generated_at,
+                "source": "template",
+                "template_id": target_template.template_id
+            },
             "template_used": target_template.name,
+            "review": {
+                "review_id": target_review.review_id,
+                "author": target_review.author,
+                "rating": target_review.rating,
+                "sentiment": target_review.sentiment
+            },
             "credits": {
-                "used": TEMPLATE_APPLY_CREDIT_COST,
+                "used": 0,
                 "remaining": profile.credits
             }
         };
     }
-
-    """Customize a response template by intelligently filling placeholders
-    based on review content and business context.
-
-    Fill each {placeholder} with contextually appropriate text:
-    - {reviewer_name}: The reviewer's name
-    - {business_name}: The business name
-    - {specific_mention}: Something specific the reviewer mentioned
-    - {business_strength}: A known strength of the business
-    - {specific_issue}: The main issue raised in a negative review
-    - {area_for_improvement}: Something mentioned that could be better
-    - {positive_aspect}: Something positive from a mixed/neutral review
-    - {sign_off}: Business name or "The Team"
-    - {contact_info}: "our team" (generic, since we don't have actual contact)
-
-    Maintain the template's overall tone and structure while making
-    the filled text feel natural and specific to this review.
-
-    Args:
-        template_text: The template with {placeholder} markers
-        placeholders: List of placeholder names to fill
-        review_data: Review author, rating, text, sentiment, themes, emotion
-        business_context: Business name, type, strengths, known issues
-
-    Returns:
-        CustomizedTemplateResult with the completed reply text
-    """
-    def customize_template(
-        template_text: str,
-        placeholders: list,
-        review_data: dict,
-        business_context: dict
-    ) -> CustomizedTemplateResult by llm(
-        temperature=0.7,
-        incl_info={
-            "template": template_text,
-            "placeholders_to_fill": placeholders,
-            "review": review_data,
-            "business": business_context,
-            "instructions": "Fill each {placeholder} with specific, natural text based on the review and business context. Return the complete reply with all placeholders replaced."
-        }
-    );
 }
 
 # ── DeleteResponseTemplate ───────────────────────────────────────────────────
@@ -490,6 +459,100 @@ walker:pub DeleteResponseTemplate {
         report {
             "success": True,
             "deleted": {"template_id": self.template_id, "name": deleted_name}
+        };
+    }
+}
+
+# ── GetSuggestedTemplates (FREE, suggests templates matching a review) ────────
+
+walker:pub GetSuggestedTemplates {
+    has business_id: str;
+    has review_id: str;
+
+    can start with `root entry {
+        # 1. Find business
+        businesses = [here -->(`?Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            report not_found_error("business", self.business_id);
+            disengage;
+        }
+
+        # 2. Find review
+        reviews = [target_biz -->(`?Review)];
+        target_review = None;
+        for r in reviews {
+            if r.review_id == self.review_id {
+                target_review = r;
+                break;
+            }
+        }
+
+        if target_review is None {
+            report {"success": False, "error": f"Review not found: {self.review_id}"};
+            disengage;
+        }
+
+        # 3. Map rating/sentiment to template category
+        if target_review.rating >= 4 {
+            target_category = "positive";
+        } elif target_review.rating <= 2 {
+            target_category = "negative";
+        } else {
+            target_category = "neutral";
+        }
+
+        # 4. Get all templates and filter by category + business_type
+        templates = [here -->(`?ResponseTemplate)];
+        biz_type = target_biz.business_type if target_biz.business_type else "GENERIC";
+        matched = [];
+
+        for t in templates {
+            category_match = (t.category == target_category or t.category == "mixed");
+            type_match = (t.business_type == biz_type or t.business_type == "GENERIC");
+            if category_match and type_match {
+                matched.append(t);
+            }
+        }
+
+        # 5. Sort by usage_count descending (most popular first)
+        matched.sort(key=lambda t: t.usage_count, reverse=True);
+
+        # 6. Build response
+        suggestions = [];
+        for t in matched {
+            suggestions.append({
+                "template_id": t.template_id,
+                "name": t.name,
+                "category": t.category,
+                "scenario": t.scenario,
+                "business_type": t.business_type,
+                "template_text": t.template_text,
+                "placeholders": t.placeholders,
+                "tone": t.tone,
+                "is_system": t.is_system,
+                "usage_count": t.usage_count
+            });
+        }
+
+        report {
+            "success": True,
+            "review": {
+                "review_id": target_review.review_id,
+                "author": target_review.author,
+                "rating": target_review.rating,
+                "sentiment": target_review.sentiment
+            },
+            "matched_category": target_category,
+            "templates": suggestions,
+            "total": len(suggestions)
         };
     }
 }

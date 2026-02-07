@@ -322,7 +322,9 @@ walker:pub GetReviews {
                 reply_data = {
                     "reply_id": replies[0].reply_id,
                     "reply_text": replies[0].reply_text,
-                    "generated_at": replies[0].generated_at
+                    "generated_at": replies[0].generated_at,
+                    "source": replies[0].source,
+                    "template_id": replies[0].template_id
                 };
             }
 
@@ -1406,7 +1408,9 @@ walker:pub GetReviewReplies {
                         "reply_text": reply.reply_text,
                         "generated_at": reply.generated_at,
                         "tone_used": reply.tone_used,
-                        "credits_used": reply.credits_used
+                        "credits_used": reply.credits_used,
+                        "source": reply.source,
+                        "template_id": reply.template_id
                     }
                 });
                 count += 1;

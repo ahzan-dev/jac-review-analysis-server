@@ -220,7 +220,8 @@ When running `jac start main.jac`, the API is available at `http://localhost:800
 ### Content Generation
 - `POST /walker/GetResponseTemplates` - Browse/filter response templates (FREE)
 - `POST /walker/CreateResponseTemplate` - Create custom response template (FREE)
-- `POST /walker/ApplyTemplate` - AI-customize template for a review (0.25 credits)
+- `POST /walker/ApplyTemplate` - Apply template to a review with rule-based placeholder filling (FREE, stores ReviewReply)
+- `POST /walker/GetSuggestedTemplates` - Get templates matching a review's sentiment/rating (FREE)
 - `POST /walker/DeleteResponseTemplate` - Delete user-created template (FREE)
 - `POST /walker/GenerateActionPlan` - Generate improvement roadmap (0.5 credits)
 - `POST /walker/GetActionPlans` - Get action plans for a business
@@ -305,7 +306,7 @@ Replies are generated using:
 The system includes 5 content generation features in `services/content_walkers.jac`:
 
 ### Credit Costs
-- **Response Template Library**: FREE (browse/create), 0.25 credits (AI customization)
+- **Response Template Library**: FREE (browse/create/apply with rule-based placeholder filling)
 - **Action Plan Generator**: 0.5 credits per plan
 - **Social Media Post Generator**: 0.25 credits per batch (up to 5 posts)
 - **Marketing Copy Generator**: 0.25 credits per batch (up to 3 A/B variants)

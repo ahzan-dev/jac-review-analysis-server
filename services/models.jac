@@ -499,16 +499,20 @@ node ReviewReply {
     has tone_used: str = "";                  # Tone setting when generated
     has review_sentiment: str = "";           # Sentiment of the original review
     has review_rating: int = 0;               # Rating of the original review
+    has source: str = "ai";                   # "ai" or "template"
+    has template_id: str = "";                # template_id if source="template"
 }
 
-sem ReviewReply = "AI-generated reply to a customer review";
+sem ReviewReply = "AI-generated or template-based reply to a customer review";
 sem ReviewReply.reply_id = "Unique identifier for this reply";
 sem ReviewReply.reply_text = "The generated reply text";
 sem ReviewReply.generated_at = "ISO timestamp when reply was generated";
-sem ReviewReply.credits_used = "Credits consumed for this reply (0.25)";
+sem ReviewReply.credits_used = "Credits consumed for this reply (0.25 for AI, 0 for template)";
 sem ReviewReply.tone_used = "Tone setting used for generation";
 sem ReviewReply.review_sentiment = "Sentiment of the original review";
 sem ReviewReply.review_rating = "Star rating of the original review";
+sem ReviewReply.source = "Source of the reply: 'ai' for LLM-generated, 'template' for template-based";
+sem ReviewReply.template_id = "Template ID if source is 'template', empty string otherwise";
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EDGE DEFINITIONS
@@ -1196,11 +1200,3 @@ sem BlogPostResult.conclusion = "Conclusion with summary and call-to-action (100
 sem BlogPostResult.seo_keywords = "5-10 target SEO keywords";
 sem BlogPostResult.word_count = "Total word count of the generated post";
 
-# --- Response Template Customization ---
-
-obj CustomizedTemplateResult {
-    has reply_text: str;
-}
-
-sem CustomizedTemplateResult = "A template-based reply customized with actual review data";
-sem CustomizedTemplateResult.reply_text = "The customized reply text with placeholders filled in";

@@ -382,8 +382,8 @@ walker:pub ApplyTemplate {
         };
 
         filled_text = target_template.template_text;
-        for key, value in placeholder_map.items() {
-            filled_text = filled_text.replace("{" + key + "}", str(value));
+        for key in placeholder_map.keys() {
+            filled_text = filled_text.replace("{" + key + "}", str(placeholder_map[key]));
         }
 
         # 8. Create ReviewReply node (FREE - no credit deduction)
@@ -522,8 +522,16 @@ walker:pub GetSuggestedTemplates {
             }
         }
 
-        # 5. Sort by usage_count descending (most popular first)
-        matched.sort(key=lambda t: t.usage_count, reverse=True);
+        # 5. Sort by usage_count descending (most popular first) - bubble sort
+        for i in range(len(matched)) {
+            for j in range(i + 1, len(matched)) {
+                if matched[j].usage_count > matched[i].usage_count {
+                    temp = matched[i];
+                    matched[i] = matched[j];
+                    matched[j] = temp;
+                }
+            }
+        }
 
         # 6. Build response
         suggestions = [];

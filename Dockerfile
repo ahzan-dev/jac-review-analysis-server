@@ -18,8 +18,11 @@ RUN pip install --no-cache-dir jaseci==2.2.8 requests python-dotenv
 COPY main.jac jac.toml ./
 COPY services/ ./services/
 
-# Create data and cache directories
-RUN mkdir -p /app/data /app/.jac/cache
+# Create data, cache, and persistent DB directories
+RUN mkdir -p /app/data /app/.jac/cache /app/jaseci_db
+
+# Declare volumes so data survives redeployment
+VOLUME ["/app/data", "/app/jaseci_db"]
 
 # ==========================================
 # CRITICAL: Compile .jac files to bytecode

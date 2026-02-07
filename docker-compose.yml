@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   review-analyzer:
@@ -12,15 +12,29 @@ services:
       - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
       - PORT=8000
     volumes:
-      - ./data:/app/data
+      - review_data:/app/data
+      - jaseci_db:/app/jaseci_db
       # Cache not mounted - allows fresh bytecode compilation on each deploy
       # - ./.jac:/app/.jac
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/walker/health_check", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{}"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:8000/walker/health_check",
+          "-X",
+          "POST",
+          "-H",
+          "Content-Type: application/json",
+          "-d",
+          "{}",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
 
 volumes:
   review_data:
+  jaseci_db:

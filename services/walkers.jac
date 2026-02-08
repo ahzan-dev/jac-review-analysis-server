@@ -664,7 +664,7 @@ walker DataFetcherAgent {
             self.reviews_fetched += 1;
         }
     }
-}
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # AGENT 2: SENTIMENT ANALYZER (Batch Processing)

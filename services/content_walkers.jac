@@ -11,7 +11,12 @@
 
 import from datetime { datetime }
 import from uuid { uuid4 }
-import re;
+import re, os;
+
+# LLM Setup
+import from byllm.lib { Model }
+glob OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY', '');
+glob LLM_MODEL: str = os.getenv('LLM_MODEL', 'gpt-4o-mini');
 
 include services.models;
 include services.errors;

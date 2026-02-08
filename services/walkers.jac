@@ -12,7 +12,7 @@
 
 import from datetime { datetime }
 import from uuid { uuid4 }
-import re, json, os, requests;
+import re, json, os, time, requests;
 
 # LLM Setup
 import from byllm.lib { Model }
@@ -394,75 +394,105 @@ walker DataFetcherAgent {
     }
     
     def fetch_real_place_details(parsed: dict) {
-        try {
-            # Construct the 'data' parameter in the format Google Maps API expects
-            # Format: !4m5!3m4!1s{data_id}!8m2!3d{lat}!4d{lng}
-            data_id = parsed["data_id"];
-            data_param = f"!4m5!3m4!1s{data_id}!8m2!3d0!4d0!16s";
+        max_retries = 3;
+        retry_count = 0;
 
-            # Get API key from environment
-            api_key = os.environ.get("SERPAPI_KEY", "");
+        while retry_count < max_retries {
+            try {
+                # Construct the 'data' parameter in the format Google Maps API expects
+                # Format: !4m5!3m4!1s{data_id}!8m2!3d{lat}!4d{lng}
+                data_id = parsed["data_id"];
+                data_param = f"!4m5!3m4!1s{data_id}!8m2!3d0!4d0!16s";
 
-            params = {
-                "engine": "google_maps",
-                "type": "place",
-                "data": data_param,
-                "api_key": api_key,
-                "hl": "en"
-            };
+                # Get API key from environment
+                api_key = os.environ.get("SERPAPI_KEY", "");
 
-            response = requests.get("https://serpapi.com/search", params=params, timeout=30);
-            data = response.json();
+                params = {
+                    "engine": "google_maps",
+                    "type": "place",
+                    "data": data_param,
+                    "api_key": api_key,
+                    "hl": "en"
+                };
 
-            if "place_results" in data {
-                place = data["place_results"];
+                response = requests.get("https://serpapi.com/search", params=params, timeout=30);
+                data = response.json();
 
-                # Basic info
-                self.business[0].name = place.get("title", self.business[0].name);
-                self.business[0].address = place.get("address", "");
-                self.business[0].phone = place.get("phone", "");
-                self.business[0].website = place.get("website", "");
-                self.business[0].rating = float(place.get("rating", 0));
-                self.business[0].total_reviews = int(place.get("reviews", 0));
-                self.business[0].price_level = place.get("price", "");
-
-                # Business type - API returns array like ["Coffee shop", "Cafe", ...]
-                type_list = place.get("type", []);
-                if isinstance(type_list, list) and type_list {
-                    self.business[0].business_type = ", ".join(type_list);
-                } elif isinstance(type_list, str) {
-                    self.business[0].business_type = type_list;
-                }
-
-                # GPS coordinates
-                gps = place.get("gps_coordinates", {});
-                self.business[0].latitude = gps.get("latitude", 0.0);
-                self.business[0].longitude = gps.get("longitude", 0.0);
-
-                # Opening hours - API uses "hours" key with array of day objects
-                if "hours" in place {
-                    hours_dict = {};
-                    for day_obj in place["hours"] {
-                        for (day, time) in day_obj.items() {
-                            hours_dict[day] = time;
-                        }
+                # Check for API error responses
+                if "error" in data {
+                    retry_count += 1;
+                    print(f"      ⚠️ Place details API error: {data['error']} (retry {retry_count}/{max_retries})");
+                    if retry_count < max_retries {
+                        time.sleep(2 * retry_count);
                     }
-                    self.business[0].opening_hours = hours_dict;
+                    continue;
                 }
 
-                # Photos count
-                if "images" in place {
-                    self.business[0].photos_count = len(place.get("images", []));
-                }
+                if "place_results" in data {
+                    place = data["place_results"];
 
-                # Popular times (if available)
-                if "popular_times" in place {
-                    self.business[0].popular_times = place["popular_times"];
+                    # Basic info
+                    self.business[0].name = place.get("title", self.business[0].name);
+                    self.business[0].address = place.get("address", "");
+                    self.business[0].phone = place.get("phone", "");
+                    self.business[0].website = place.get("website", "");
+                    self.business[0].rating = float(place.get("rating", 0));
+                    self.business[0].total_reviews = int(place.get("reviews", 0));
+                    self.business[0].price_level = place.get("price", "");
+
+                    # Business type - API returns array like ["Coffee shop", "Cafe", ...]
+                    type_list = place.get("type", []);
+                    if isinstance(type_list, list) and type_list {
+                        self.business[0].business_type = ", ".join(type_list);
+                    } elif isinstance(type_list, str) {
+                        self.business[0].business_type = type_list;
+                    }
+
+                    # GPS coordinates
+                    gps = place.get("gps_coordinates", {});
+                    self.business[0].latitude = gps.get("latitude", 0.0);
+                    self.business[0].longitude = gps.get("longitude", 0.0);
+
+                    # Opening hours - API uses "hours" key with array of day objects
+                    if "hours" in place {
+                        hours_dict = {};
+                        for day_obj in place["hours"] {
+                            for (day, time_val) in day_obj.items() {
+                                hours_dict[day] = time_val;
+                            }
+                        }
+                        self.business[0].opening_hours = hours_dict;
+                    }
+
+                    # Photos count
+                    if "images" in place {
+                        self.business[0].photos_count = len(place.get("images", []));
+                    }
+
+                    # Popular times (if available)
+                    if "popular_times" in place {
+                        self.business[0].popular_times = place["popular_times"];
+                    }
+                    return;
+                } else {
+                    # No place_results in response, retry
+                    retry_count += 1;
+                    print(f"      ⚠️ Place details: no results in response (retry {retry_count}/{max_retries})");
+                    if retry_count < max_retries {
+                        time.sleep(2 * retry_count);
+                    }
+                    continue;
+                }
+            } except Exception as e {
+                retry_count += 1;
+                print(f"      ⚠️ Place details error: {str(e)} (retry {retry_count}/{max_retries})");
+                if retry_count < max_retries {
+                    time.sleep(2 * retry_count);
                 }
             }
-        } except Exception as e {
-            print(f"      ⚠️ Place details warning: {str(e)}");
         }
+        print(f"      ❌ Place details failed after {max_retries} retries, using defaults");
+    }
     }
     
     def use_mock_place_details(parsed: dict) {
@@ -497,63 +527,100 @@ walker DataFetcherAgent {
         next_page_token = None;
         total_fetched = 0;
         page = 1;
+        max_retries = 3;
 
         # Get API key from environment
         api_key = os.environ.get("SERPAPI_KEY", "");
 
         while total_fetched < self.max_reviews {
-            try {
-                params = {
-                    "engine": "google_maps_reviews",
-                    "data_id": parsed["data_id"],
-                    "api_key": api_key,
-                    "sort_by": "newestFirst"
-                };
-                
-                if next_page_token {
-                    params["num"] = 20;
-                    params["next_page_token"] = next_page_token;
-                }
-                
-                response = requests.get("https://serpapi.com/search", params=params, timeout=30);
-                data = response.json();
-                
-                reviews = data.get("reviews", []);
-                print(f"      Page {page}: {len(reviews)} reviews");
-                
-                for rev in reviews {
-                    if total_fetched >= self.max_reviews {
-                        break;
-                    }
-                    
-                    self.business[0] ++> Review(
-                        review_id=rev.get("review_id", str(uuid4())),
-                        author=rev.get("user", {}).get("name", "Anonymous"),
-                        author_image=rev.get("user", {}).get("thumbnail", ""),
-                        review_link=rev.get("link", ""),
-                        rating=int(rev.get("rating", 3)),
-                        text=rev.get("extracted_snippet", {}).get("original", rev.get("snippet", "")),
-                        date=rev.get("iso_date", rev.get("date", "")),
-                        relative_date=rev.get("date", ""),
-                        likes=int(rev.get("likes", 0)),
-                        owner_response=rev.get("response", {}).get("extracted_snippet", {}).get("original", rev.get("response", {}).get("snippet", "")) if rev.get("response") else ""
+            retry_count = 0;
+            page_success = False;
 
-                    );
-                    total_fetched += 1;
+            while retry_count < max_retries and not page_success {
+                try {
+                    params = {
+                        "engine": "google_maps_reviews",
+                        "data_id": parsed["data_id"],
+                        "api_key": api_key,
+                        "sort_by": "newestFirst"
+                    };
+
+                    if next_page_token {
+                        params["num"] = 20;
+                        params["next_page_token"] = next_page_token;
+                    }
+
+                    response = requests.get("https://serpapi.com/search", params=params, timeout=30);
+                    data = response.json();
+
+                    # Check for API error responses
+                    if "error" in data {
+                        retry_count += 1;
+                        print(f"      ⚠️ Page {page} API error: {data['error']} (retry {retry_count}/{max_retries})");
+                        if retry_count < max_retries {
+                            time.sleep(2 * retry_count);
+                        }
+                        continue;
+                    }
+
+                    reviews = data.get("reviews", []);
+
+                    # If we got 0 reviews but expect more, treat as transient failure and retry
+                    if len(reviews) == 0 and page > 1 and total_fetched < self.max_reviews {
+                        retry_count += 1;
+                        print(f"      ⚠️ Page {page}: 0 reviews (retry {retry_count}/{max_retries})");
+                        if retry_count < max_retries {
+                            time.sleep(2 * retry_count);
+                        }
+                        continue;
+                    }
+
+                    print(f"      Page {page}: {len(reviews)} reviews");
+
+                    for rev in reviews {
+                        if total_fetched >= self.max_reviews {
+                            break;
+                        }
+
+                        self.business[0] ++> Review(
+                            review_id=rev.get("review_id", str(uuid4())),
+                            author=rev.get("user", {}).get("name", "Anonymous"),
+                            author_image=rev.get("user", {}).get("thumbnail", ""),
+                            review_link=rev.get("link", ""),
+                            rating=int(rev.get("rating", 3)),
+                            text=rev.get("extracted_snippet", {}).get("original", rev.get("snippet", "")),
+                            date=rev.get("iso_date", rev.get("date", "")),
+                            relative_date=rev.get("date", ""),
+                            likes=int(rev.get("likes", 0)),
+                            owner_response=rev.get("response", {}).get("extracted_snippet", {}).get("original", rev.get("response", {}).get("snippet", "")) if rev.get("response") else ""
+
+                        );
+                        total_fetched += 1;
+                    }
+
+                    next_page_token = data.get("serpapi_pagination", {}).get("next_page_token");
+                    page_success = True;
+
+                } except Exception as e {
+                    retry_count += 1;
+                    print(f"      ⚠️ Page {page} fetch error: {str(e)} (retry {retry_count}/{max_retries})");
+                    if retry_count < max_retries {
+                        time.sleep(2 * retry_count);
+                    }
                 }
-                
-                next_page_token = data.get("serpapi_pagination", {}).get("next_page_token");
-                if not next_page_token {
-                    break;
-                }
-                page += 1;
-                
-            } except Exception as e {
-                print(f"      ⚠️ Review fetch error: {str(e)}");
+            }
+
+            if not page_success {
+                print(f"      ❌ Page {page} failed after {max_retries} retries, continuing with {total_fetched} reviews");
                 break;
             }
+
+            if not next_page_token {
+                break;
+            }
+            page += 1;
         }
-        
+
         self.reviews_fetched = total_fetched;
     }
     
@@ -1738,6 +1805,12 @@ walker FullPipelineAgent {
             business_id=self.business_id,
             report_type=self.report_type
         );
+
+        if reporter.status == "failed" or reporter.report is None {
+            self.error = "Report generation failed";
+            self.status = "failed";
+            disengage;
+        }
         self.stages_completed.append("report");
 
         # Stage 5: Brand-Aware Recommendations
@@ -1751,7 +1824,23 @@ walker FullPipelineAgent {
 
         # Store brand-aware recommendations in Report node (to avoid re-generating)
         brand_recs = recommender.recommendations;
-        report_node = reporter.report[0];
+
+        # Get the Report node from the business
+        biz_nodes = [here -->(`?Business)];
+        target_biz_node = None;
+        for b in biz_nodes {
+            if b.place_id == self.business_id {
+                target_biz_node = b;
+                break;
+            }
+        }
+        report_nodes = [target_biz_node -->(`?Report)] if target_biz_node else [];
+        if not report_nodes {
+            self.error = "Report node not found after generation";
+            self.status = "failed";
+            disengage;
+        }
+        report_node = report_nodes[0];
 
         # Convert and store brand-aware recommendations
         report_node.brand_context = {
@@ -2006,6 +2095,12 @@ walker ReanalyzePipeline {
             business_id=self.business_id,
             report_type=self.report_type
         );
+
+        if reporter.status == "failed" or reporter.report is None {
+            self.error = "Report generation failed";
+            self.status = "failed";
+            disengage;
+        }
         self.stages_completed.append("report");
 
         # Stage 5: Brand-Aware Recommendations
@@ -2016,7 +2111,15 @@ walker ReanalyzePipeline {
 
         # Store brand-aware recommendations in Report node (to avoid re-generating)
         brand_recs = recommender.recommendations;
-        report_node = reporter.report[0];
+
+        # Get the Report node from the business
+        report_nodes = [target_biz -->(`?Report)];
+        if not report_nodes {
+            self.error = "Report node not found after generation";
+            self.status = "failed";
+            disengage;
+        }
+        report_node = report_nodes[0];
 
         # Convert and store brand-aware recommendations
         report_node.brand_context = {

@@ -18,6 +18,12 @@ import from byllm.lib { Model }
 glob OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY', '');
 glob LLM_MODEL: str = os.getenv('LLM_MODEL', 'gpt-4o-mini');
 
+glob llm = Model(
+    model_name=LLM_MODEL,
+    config={"verbose": False},
+    api_key=OPENAI_API_KEY
+);
+
 include services.models;
 include services.errors;
 

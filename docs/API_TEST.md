@@ -476,7 +476,7 @@ curl -X POST "$API/walker/GenerateActionPlan" \
   -H "Content-Type: application/json" \
   -d '{
     "business_id": "'$BIZ_ID'",
-    "timeframe": "90_day"
+    "timeframe": "30_day"
   }'
 ```
 

@@ -125,7 +125,7 @@ curl -X POST "$API/walker/AnalyzeUrl" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.google.com/maps/place/ARCADIA+Cafe+%26+Restaurant/@6.8867309,79.882027,18211m/data=!3m1!1e3!4m6!3m5!1s0x3ae251deb488530d:0xdf3d65a2ccd0d047!8m2!3d6.880648!4d79.9345356!16s%2Fg%2F11rd2z6bnz?entry=ttu&g_ep=EgoyMDI2MDEyOC4wIKXMDSoASAFQAw%3D%3D",
-    "max_reviews": 100
+    "max_reviews": 20
   }'
 ```
 

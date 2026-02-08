@@ -493,7 +493,7 @@ walker DataFetcherAgent {
         }
         print(f"      ❌ Place details failed after {max_retries} retries, using defaults");
     }
-    }
+    
     
     def use_mock_place_details(parsed: dict) {
         self.business[0].name = parsed["place_name"] if parsed["place_name"] else "Demo Business";
@@ -665,7 +665,7 @@ walker DataFetcherAgent {
         }
     }
 
-
+}
 # ═══════════════════════════════════════════════════════════════════════════════
 # AGENT 2: SENTIMENT ANALYZER (Batch Processing)
 # ═══════════════════════════════════════════════════════════════════════════════

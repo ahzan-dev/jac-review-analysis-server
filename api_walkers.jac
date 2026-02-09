@@ -20,23 +20,23 @@ include walkers;
 # POST /walker/GetBusinesses
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub GetBusinesses {
+walker :pub GetBusinesses {
     has limit: int = 20;
     has status_filter: str = "";  # "pending", "fetched", "analyzed", "completed"
 
     
 
-    can start with `root entry {
+    can start with Root entry {
         # SECURITY: With isolated roots, user only sees their own businesses automatically
         # No need for username parameter or owner filtering
 
         # Check if user is admin (from their own profile)
-        profiles = [-->(`?UserProfile)];
+        profiles = [-->(?:UserProfile)];
         is_admin = profiles and profiles[0].role == UserRole.ADMIN;
 
         # Get businesses from authenticated user's root
         # With isolated roots, this automatically returns only the user's businesses
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
 
         results = [];
         count = 0;
@@ -52,9 +52,9 @@ walker:pub GetBusinesses {
             }
 
             # Get counts
-            review_count = len([biz -->(`?Review)]);
-            has_analysis = len([biz -->(`?Analysis)]) > 0;
-            has_report = len([biz -->(`?Report)]) > 0;
+            review_count = len([biz -->(?:Review)]);
+            has_analysis = len([biz -->(?:Analysis)]) > 0;
+            has_report = len([biz -->(?:Report)]) > 0;
 
             results.append({
                 "place_id": biz.place_id,
@@ -88,12 +88,12 @@ walker:pub GetBusinesses {
 # POST /walker/GetReport
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub GetReport {
+walker :pub GetReport {
     has business_id: str;
 
-    can start with `root entry {
+    can start with Root entry {
         # Find the business on authenticated user's root
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
 
         for biz in businesses {
@@ -112,7 +112,7 @@ walker:pub GetReport {
         }
 
         # Get the report
-        reports = [target_biz -->(`?Report)];
+        reports = [target_biz -->(?:Report)];
         if not reports {
             report {
                 "success": False,
@@ -123,7 +123,7 @@ walker:pub GetReport {
         r = reports[0];
 
         # Get the analysis
-        analyses = [target_biz -->(`?Analysis)];
+        analyses = [target_biz -->(?:Analysis)];
         if not analyses {
             report {
                 "success": False,
@@ -134,7 +134,7 @@ walker:pub GetReport {
         a = analyses[0];
 
         # Get themes
-        themes = [target_biz -->(`?Theme)];
+        themes = [target_biz -->(?:Theme)];
 
         # Build full output (same structure as AnalyzeUrl but from stored data)
         report {
@@ -259,7 +259,7 @@ walker:pub GetReport {
 # POST /walker/GetReviews
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub GetReviews {
+walker :pub GetReviews {
     has business_id: str;
     has limit: int = 50;
     has sentiment_filter: str = "";  # "positive", "negative", "neutral", "mixed"
@@ -269,9 +269,9 @@ walker:pub GetReviews {
 
     
 
-    can start with `root entry {
+    can start with Root entry {
         # Find the business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         
         for biz in businesses {
@@ -290,7 +290,7 @@ walker:pub GetReviews {
         }
         
         # Get all reviews
-        all_reviews = [target_biz -->(`?Review)];
+        all_reviews = [target_biz -->(?:Review)];
         
         # Apply filters
         filtered_reviews = [];
@@ -315,7 +315,7 @@ walker:pub GetReviews {
         results = [];
         for r in limited_reviews {
             # Check if review has a generated reply
-            replies = [r -->(`?ReviewReply)];
+            replies = [r -->(?:ReviewReply)];
             has_reply = len(replies) > 0;
             reply_data = None;
             if has_reply {
@@ -380,14 +380,14 @@ walker:pub GetReviews {
 # POST /walker/Reanalyze
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub Reanalyze {
+walker :pub Reanalyze {
     has business_id: str;
     has report_type: str = "deep";
     has force_sentiment: bool = False;  # Re-run sentiment analysis too
 
-    can start with `root entry {
+    can start with Root entry {
         # Find the business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
 
         for biz in businesses {
@@ -406,14 +406,14 @@ walker:pub Reanalyze {
         }
 
         stages = [];
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         print(f"\n🔄 Reanalyzing business: {target_biz.name}");
         print(f"   📦 Using {len(reviews)} existing reviews");
 
         # Delete old analysis artifacts to prevent duplicates
-        old_themes = [target_biz -->(`?Theme)];
-        old_analyses = [target_biz -->(`?Analysis)];
-        old_reports = [target_biz -->(`?Report)];
+        old_themes = [target_biz -->(?:Theme)];
+        old_analyses = [target_biz -->(?:Analysis)];
+        old_reports = [target_biz -->(?:Report)];
 
         for theme in old_themes {
             del theme;
@@ -488,7 +488,7 @@ walker:pub Reanalyze {
         output = self.build_full_output(
             target_biz,
             patterns.analysis[0],
-            [target_biz -->(`?Theme)],
+            [target_biz -->(?:Theme)],
             report_node,
             brand_recs,
             stages
@@ -657,14 +657,14 @@ walker:pub Reanalyze {
 # POST /walker/DeleteBusiness
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub DeleteBusiness {
+walker :pub DeleteBusiness {
     has business_id: str;
 
     
 
-    can start with `root entry {
+    can start with Root entry {
         # Find the business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         
         for biz in businesses {
@@ -683,10 +683,10 @@ walker:pub DeleteBusiness {
         }
         
         # Count what we're deleting
-        reviews_count = len([target_biz -->(`?Review)]);
-        themes_count = len([target_biz -->(`?Theme)]);
-        analyses_count = len([target_biz -->(`?Analysis)]);
-        reports_count = len([target_biz -->(`?Report)]);
+        reviews_count = len([target_biz -->(?:Review)]);
+        themes_count = len([target_biz -->(?:Theme)]);
+        analyses_count = len([target_biz -->(?:Analysis)]);
+        reports_count = len([target_biz -->(?:Report)]);
         
         business_name = target_biz.name;
         
@@ -712,11 +712,11 @@ walker:pub DeleteBusiness {
 # POST /walker/GetStats
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub GetStats {
+walker :pub GetStats {
     
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         
         total_businesses = len(businesses);
         total_reviews = 0;
@@ -727,9 +727,9 @@ walker:pub GetStats {
         sentiment_totals = {"positive": 0, "negative": 0, "neutral": 0, "mixed": 0};
         
         for biz in businesses {
-            reviews = [biz -->(`?Review)];
+            reviews = [biz -->(?:Review)];
             total_reviews += len(reviews);
-            total_themes += len([biz -->(`?Theme)]);
+            total_themes += len([biz -->(?:Theme)]);
             
             if biz.status == "completed" {
                 completed_count += 1;
@@ -771,7 +771,7 @@ glob REPLY_CREDIT_COST: float = 0.25;
 # POST /walker/SaveReplyPromptConfig
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub SaveReplyPromptConfig {
+walker :pub SaveReplyPromptConfig {
     has tone: str = "friendly_professional";
     has max_length: str = "medium";
     has include_name: bool = True;
@@ -779,9 +779,9 @@ walker:pub SaveReplyPromptConfig {
     has sign_off: str = "";
     has custom_instructions: str = "";
 
-    can start with `root entry {
+    can start with Root entry {
         # Check for existing config
-        existing_configs = [here -->(`?ReplyPromptConfig)];
+        existing_configs = [here -->(?:ReplyPromptConfig)];
 
         if existing_configs {
             # Update existing config
@@ -842,9 +842,9 @@ walker:pub SaveReplyPromptConfig {
 # POST /walker/GetReplyPromptConfig
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub GetReplyPromptConfig {
-    can start with `root entry {
-        configs = [here -->(`?ReplyPromptConfig)];
+walker :pub GetReplyPromptConfig {
+    can start with Root entry {
+        configs = [here -->(?:ReplyPromptConfig)];
 
         if configs {
             config = configs[0];
@@ -887,13 +887,13 @@ walker:pub GetReplyPromptConfig {
 # POST /walker/GenerateReviewReply
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub GenerateReviewReply {
+walker :pub GenerateReviewReply {
     has business_id: str;
     has review_id: str;
 
-    can start with `root entry {
+    can start with Root entry {
         # Get user profile for credit check
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report {
                 "success": False,
@@ -913,7 +913,7 @@ walker:pub GenerateReviewReply {
         }
 
         # Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -931,7 +931,7 @@ walker:pub GenerateReviewReply {
         }
 
         # Find review
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         target_review = None;
         for r in reviews {
             if r.review_id == self.review_id {
@@ -949,7 +949,7 @@ walker:pub GenerateReviewReply {
         }
 
         # Check if reply already exists
-        existing_replies = [target_review -->(`?ReviewReply)];
+        existing_replies = [target_review -->(?:ReviewReply)];
         if existing_replies {
             report {
                 "success": False,
@@ -964,11 +964,11 @@ walker:pub GenerateReviewReply {
         }
 
         # Get reply config (or use defaults)
-        configs = [here -->(`?ReplyPromptConfig)];
+        configs = [here -->(?:ReplyPromptConfig)];
         config = configs[0] if configs else None;
 
         # Get business analysis for context
-        analyses = [target_biz -->(`?Analysis)];
+        analyses = [target_biz -->(?:Analysis)];
         analysis = analyses[0] if analyses else None;
 
         # Build context for LLM
@@ -1105,16 +1105,16 @@ walker:pub GenerateReviewReply {
 # POST /walker/BulkGenerateReviewReplies
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub BulkGenerateReviewReplies {
+walker :pub BulkGenerateReviewReplies {
     has business_id: str;
     has review_ids: list[str] = [];           # Specific review IDs to reply to
     has filter_sentiment: str = "";            # Filter: "positive", "negative", "neutral", "mixed"
     has filter_no_reply: bool = True;          # Only reviews without existing replies
     has max_replies: int = 10;                 # Maximum replies to generate
 
-    can start with `root entry {
+    can start with Root entry {
         # Get user profile for credit check
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report {
                 "success": False,
@@ -1125,7 +1125,7 @@ walker:pub BulkGenerateReviewReplies {
         profile = profiles[0];
 
         # Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1143,7 +1143,7 @@ walker:pub BulkGenerateReviewReplies {
         }
 
         # Get all reviews
-        all_reviews = [target_biz -->(`?Review)];
+        all_reviews = [target_biz -->(?:Review)];
 
         # Filter reviews
         reviews_to_process = [];
@@ -1154,7 +1154,7 @@ walker:pub BulkGenerateReviewReplies {
                 if r.review_id in self.review_ids {
                     # Check if already has reply
                     if self.filter_no_reply {
-                        existing = [r -->(`?ReviewReply)];
+                        existing = [r -->(?:ReviewReply)];
                         if existing {
                             continue;
                         }
@@ -1172,7 +1172,7 @@ walker:pub BulkGenerateReviewReplies {
 
                 # No reply filter
                 if self.filter_no_reply {
-                    existing = [r -->(`?ReviewReply)];
+                    existing = [r -->(?:ReviewReply)];
                     if existing {
                         continue;
                     }
@@ -1215,11 +1215,11 @@ walker:pub BulkGenerateReviewReplies {
         }
 
         # Get reply config
-        configs = [here -->(`?ReplyPromptConfig)];
+        configs = [here -->(?:ReplyPromptConfig)];
         config = configs[0] if configs else None;
 
         # Get business analysis for context
-        analyses = [target_biz -->(`?Analysis)];
+        analyses = [target_biz -->(?:Analysis)];
         analysis = analyses[0] if analyses else None;
 
         business_context = {
@@ -1358,13 +1358,13 @@ walker:pub BulkGenerateReviewReplies {
 # POST /walker/GetReviewReplies
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub GetReviewReplies {
+walker :pub GetReviewReplies {
     has business_id: str;
     has limit: int = 50;
 
-    can start with `root entry {
+    can start with Root entry {
         # Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1382,7 +1382,7 @@ walker:pub GetReviewReplies {
         }
 
         # Get all reviews with replies
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         results = [];
         count = 0;
 
@@ -1391,7 +1391,7 @@ walker:pub GetReviewReplies {
                 break;
             }
 
-            replies = [r -->(`?ReviewReply)];
+            replies = [r -->(?:ReviewReply)];
             if replies {
                 reply = replies[0];
                 results.append({
@@ -1442,13 +1442,13 @@ walker:pub GetReviewReplies {
 # POST /walker/RegenerateReviewReply
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub RegenerateReviewReply {
+walker :pub RegenerateReviewReply {
     has business_id: str;
     has review_id: str;
 
-    can start with `root entry {
+    can start with Root entry {
         # Get user profile for credit check
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report {
                 "success": False,
@@ -1468,7 +1468,7 @@ walker:pub RegenerateReviewReply {
         }
 
         # Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1486,7 +1486,7 @@ walker:pub RegenerateReviewReply {
         }
 
         # Find review
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         target_review = None;
         for r in reviews {
             if r.review_id == self.review_id {
@@ -1504,7 +1504,7 @@ walker:pub RegenerateReviewReply {
         }
 
         # Delete existing reply if any
-        existing_replies = [target_review -->(`?ReviewReply)];
+        existing_replies = [target_review -->(?:ReviewReply)];
         old_reply_text = "";
         for old_reply in existing_replies {
             old_reply_text = old_reply.reply_text;
@@ -1512,11 +1512,11 @@ walker:pub RegenerateReviewReply {
         }
 
         # Get reply config (or use defaults)
-        configs = [here -->(`?ReplyPromptConfig)];
+        configs = [here -->(?:ReplyPromptConfig)];
         config = configs[0] if configs else None;
 
         # Get business analysis for context
-        analyses = [target_biz -->(`?Analysis)];
+        analyses = [target_biz -->(?:Analysis)];
         analysis = analyses[0] if analyses else None;
 
         # Build context for LLM
@@ -1635,13 +1635,13 @@ walker:pub RegenerateReviewReply {
 # POST /walker/DeleteReviewReply
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub DeleteReviewReply {
+walker :pub DeleteReviewReply {
     has business_id: str;
     has review_id: str;
 
-    can start with `root entry {
+    can start with Root entry {
         # Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1659,7 +1659,7 @@ walker:pub DeleteReviewReply {
         }
 
         # Find review
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         target_review = None;
         for r in reviews {
             if r.review_id == self.review_id {
@@ -1677,7 +1677,7 @@ walker:pub DeleteReviewReply {
         }
 
         # Find and delete reply
-        replies = [target_review -->(`?ReviewReply)];
+        replies = [target_review -->(?:ReviewReply)];
         if not replies {
             report {
                 "success": False,

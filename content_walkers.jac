@@ -173,19 +173,19 @@ glob SYSTEM_TEMPLATES: list[dict] = [
 
 # ── GetResponseTemplates ─────────────────────────────────────────────────────
 
-walker:pub GetResponseTemplates {
+walker :pub GetResponseTemplates {
     has category: str = "";
     has scenario: str = "";
     has business_type: str = "";
 
-    can start with `root entry {
+    can start with Root entry {
         # Get all templates from user's root
-        all_templates = [here -->(`?ResponseTemplate)];
+        all_templates = [here -->(?:ResponseTemplate)];
 
         # If no templates exist, seed system templates
         if not all_templates {
             self.seed_system_templates(here);
-            all_templates = [here -->(`?ResponseTemplate)];
+            all_templates = [here -->(?:ResponseTemplate)];
         }
 
         # Apply filters
@@ -255,7 +255,7 @@ walker:pub GetResponseTemplates {
 
 # ── CreateResponseTemplate ───────────────────────────────────────────────────
 
-walker:pub CreateResponseTemplate {
+walker :pub CreateResponseTemplate {
     has name: str;
     has category: str;
     has scenario: str;
@@ -263,7 +263,7 @@ walker:pub CreateResponseTemplate {
     has template_text: str="";
     has tone: str = "friendly_professional";
 
-    can start with `root entry {
+    can start with Root entry {
         # Validate template text length
         if len(self.template_text) > 2000 {
             report validation_error("template_text", "Template text must be under 2000 characters");
@@ -306,14 +306,14 @@ walker:pub CreateResponseTemplate {
 
 # ── ApplyTemplate (FREE, rule-based placeholder filling, stores ReviewReply) ──
 
-walker:pub ApplyTemplate {
+walker :pub ApplyTemplate {
     has template_id: str;
     has business_id: str;
     has review_id: str;
 
-    can start with `root entry {
+    can start with Root entry {
         # 1. Validate profile
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             disengage;
@@ -321,7 +321,7 @@ walker:pub ApplyTemplate {
         profile = profiles[0];
 
         # 2. Find template
-        templates = [here -->(`?ResponseTemplate)];
+        templates = [here -->(?:ResponseTemplate)];
         target_template = None;
         for t in templates {
             if t.template_id == self.template_id {
@@ -336,7 +336,7 @@ walker:pub ApplyTemplate {
         }
 
         # 3. Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -351,7 +351,7 @@ walker:pub ApplyTemplate {
         }
 
         # 4. Find review
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         target_review = None;
         for r in reviews {
             if r.review_id == self.review_id {
@@ -366,7 +366,7 @@ walker:pub ApplyTemplate {
         }
 
         # 5. Check if review already has a reply
-        existing_replies = [target_review -->(`?ReviewReply)];
+        existing_replies = [target_review -->(?:ReviewReply)];
         if existing_replies {
             report {
                 "success": False,
@@ -376,7 +376,7 @@ walker:pub ApplyTemplate {
         }
 
         # 6. Get analysis context for placeholder filling
-        analyses = [target_biz -->(`?Analysis)];
+        analyses = [target_biz -->(?:Analysis)];
         analysis = analyses[0] if analyses else None;
 
         # 7. Rule-based placeholder filling
@@ -441,11 +441,11 @@ walker:pub ApplyTemplate {
 
 # ── DeleteResponseTemplate ───────────────────────────────────────────────────
 
-walker:pub DeleteResponseTemplate {
+walker :pub DeleteResponseTemplate {
     has template_id: str;
 
-    can start with `root entry {
-        templates = [here -->(`?ResponseTemplate)];
+    can start with Root entry {
+        templates = [here -->(?:ResponseTemplate)];
         target = None;
         for t in templates {
             if t.template_id == self.template_id {
@@ -476,13 +476,13 @@ walker:pub DeleteResponseTemplate {
 
 # ── GetSuggestedTemplates (FREE, suggests templates matching a review) ────────
 
-walker:pub GetSuggestedTemplates {
+walker :pub GetSuggestedTemplates {
     has business_id: str;
     has review_id: str;
 
-    can start with `root entry {
+    can start with Root entry {
         # 1. Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -497,7 +497,7 @@ walker:pub GetSuggestedTemplates {
         }
 
         # 2. Find review
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         target_review = None;
         for r in reviews {
             if r.review_id == self.review_id {
@@ -521,7 +521,7 @@ walker:pub GetSuggestedTemplates {
         }
 
         # 4. Get all templates and filter by category + business_type
-        templates = [here -->(`?ResponseTemplate)];
+        templates = [here -->(?:ResponseTemplate)];
         biz_type = target_biz.business_type if target_biz.business_type else "GENERIC";
         matched = [];
 
@@ -582,12 +582,12 @@ walker:pub GetSuggestedTemplates {
 
 # ── GenerateActionPlan ───────────────────────────────────────────────────────
 
-walker:pub GenerateActionPlan {
+walker :pub GenerateActionPlan {
     has business_id: str;
     has timeframe: str = "90_day";
     has focus_areas: list[str] = [];
 
-    can start with `root entry {
+    can start with Root entry {
         # Validate timeframe
         if not validate_timeframe(self.timeframe) {
             report validation_error("timeframe", "Must be '30_day', '60_day', or '90_day'");
@@ -601,7 +601,7 @@ walker:pub GenerateActionPlan {
         }
 
         # 1. Validate profile and credits
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             disengage;
@@ -614,7 +614,7 @@ walker:pub GenerateActionPlan {
         }
 
         # 2. Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -629,9 +629,9 @@ walker:pub GenerateActionPlan {
         }
 
         # 3. Gather analysis data
-        analyses = [target_biz -->(`?Analysis)];
-        reports = [target_biz -->(`?Report)];
-        themes = [target_biz -->(`?Theme)];
+        analyses = [target_biz -->(?:Analysis)];
+        reports = [target_biz -->(?:Report)];
+        themes = [target_biz -->(?:Theme)];
 
         if not analyses or not reports {
             report {"success": False, "error": "Analysis or report not found. Run analysis first."};
@@ -909,11 +909,11 @@ RULES:
 
 # ── GetActionPlans ───────────────────────────────────────────────────────────
 
-walker:pub GetActionPlans {
+walker :pub GetActionPlans {
     has business_id: str;
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -927,7 +927,7 @@ walker:pub GetActionPlans {
             disengage;
         }
 
-        plans = [target_biz -->(`?ActionPlan)];
+        plans = [target_biz -->(?:ActionPlan)];
         results = [];
         for p in plans {
             results.append({
@@ -962,12 +962,12 @@ walker:pub GetActionPlans {
 
 # ── DeleteActionPlan ─────────────────────────────────────────────────────────
 
-walker:pub DeleteActionPlan {
+walker :pub DeleteActionPlan {
     has business_id: str;
     has plan_id: str;
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -981,7 +981,7 @@ walker:pub DeleteActionPlan {
             disengage;
         }
 
-        plans = [target_biz -->(`?ActionPlan)];
+        plans = [target_biz -->(?:ActionPlan)];
         target_plan = None;
         for p in plans {
             if p.plan_id == self.plan_id {
@@ -1011,7 +1011,7 @@ walker:pub DeleteActionPlan {
 
 # ── SaveSocialMediaPostConfig ────────────────────────────────────────────────
 
-walker:pub SaveSocialMediaPostConfig {
+walker :pub SaveSocialMediaPostConfig {
     has brand_name: str = "";
     has brand_voice: str = "professional";
     has default_hashtags: list[str] = [];
@@ -1020,8 +1020,8 @@ walker:pub SaveSocialMediaPostConfig {
     has include_call_to_action: bool = True;
     has call_to_action_text: str = "";
 
-    can start with `root entry {
-        configs = [here -->(`?SocialMediaPostConfig)];
+    can start with Root entry {
+        configs = [here -->(?:SocialMediaPostConfig)];
 
         if configs {
             # Update existing config
@@ -1068,10 +1068,10 @@ walker:pub SaveSocialMediaPostConfig {
 
 # ── GetSocialMediaPostConfig ─────────────────────────────────────────────────
 
-walker:pub GetSocialMediaPostConfig {
+walker :pub GetSocialMediaPostConfig {
 
-    can start with `root entry {
-        configs = [here -->(`?SocialMediaPostConfig)];
+    can start with Root entry {
+        configs = [here -->(?:SocialMediaPostConfig)];
 
         if not configs {
             report {
@@ -1100,13 +1100,13 @@ walker:pub GetSocialMediaPostConfig {
 
 # ── GenerateSocialMediaPosts ─────────────────────────────────────────────────
 
-walker:pub GenerateSocialMediaPosts {
+walker :pub GenerateSocialMediaPosts {
     has business_id: str;
     has review_id: str = "";
     has platforms: list[str] = ["twitter", "facebook", "instagram", "linkedin"];
     has count: int = 1;
 
-    can start with `root entry {
+    can start with Root entry {
         # Validate platforms
         for p in self.platforms {
             if not validate_platform(p) {
@@ -1116,7 +1116,7 @@ walker:pub GenerateSocialMediaPosts {
         }
 
         # 1. Validate credits
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             disengage;
@@ -1129,7 +1129,7 @@ walker:pub GenerateSocialMediaPosts {
         }
 
         # 2. Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1144,7 +1144,7 @@ walker:pub GenerateSocialMediaPosts {
         }
 
         # 3. Select reviews to feature
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         selected = [];
 
         if self.review_id {
@@ -1172,11 +1172,11 @@ walker:pub GenerateSocialMediaPosts {
         }
 
         # 4. Get config
-        configs = [here -->(`?SocialMediaPostConfig)];
+        configs = [here -->(?:SocialMediaPostConfig)];
         config = configs[0] if configs else None;
 
         # 5. Get analysis for context
-        analyses = [target_biz -->(`?Analysis)];
+        analyses = [target_biz -->(?:Analysis)];
         analysis = analyses[0] if analyses else None;
 
         # 6. Deduct credits before LLM call
@@ -1329,12 +1329,12 @@ walker:pub GenerateSocialMediaPosts {
 
 # ── GetSocialMediaPosts ──────────────────────────────────────────────────────
 
-walker:pub GetSocialMediaPosts {
+walker :pub GetSocialMediaPosts {
     has business_id: str;
     has platform: str = "";
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1348,7 +1348,7 @@ walker:pub GetSocialMediaPosts {
             disengage;
         }
 
-        posts = [target_biz -->(`?SocialMediaPost)];
+        posts = [target_biz -->(?:SocialMediaPost)];
         results = [];
         for post in posts {
             if self.platform and post.platform != self.platform {
@@ -1378,12 +1378,12 @@ walker:pub GetSocialMediaPosts {
 
 # ── DeleteSocialMediaPost ────────────────────────────────────────────────────
 
-walker:pub DeleteSocialMediaPost {
+walker :pub DeleteSocialMediaPost {
     has business_id: str;
     has post_id: str;
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1397,7 +1397,7 @@ walker:pub DeleteSocialMediaPost {
             disengage;
         }
 
-        posts = [target_biz -->(`?SocialMediaPost)];
+        posts = [target_biz -->(?:SocialMediaPost)];
         target_post = None;
         for p in posts {
             if p.post_id == self.post_id {
@@ -1426,15 +1426,15 @@ walker:pub DeleteSocialMediaPost {
 
 # ── SaveMarketingCopyConfig ──────────────────────────────────────────────────
 
-walker:pub SaveMarketingCopyConfig {
+walker :pub SaveMarketingCopyConfig {
     has brand_name: str = "";
     has brand_tagline: str = "";
     has target_audience: str = "";
     has unique_selling_points: list[str] = [];
     has tone: str = "persuasive";
 
-    can start with `root entry {
-        configs = [here -->(`?MarketingCopyConfig)];
+    can start with Root entry {
+        configs = [here -->(?:MarketingCopyConfig)];
 
         if configs {
             config = configs[0];
@@ -1473,10 +1473,10 @@ walker:pub SaveMarketingCopyConfig {
 
 # ── GetMarketingCopyConfig ───────────────────────────────────────────────────
 
-walker:pub GetMarketingCopyConfig {
+walker :pub GetMarketingCopyConfig {
 
-    can start with `root entry {
-        configs = [here -->(`?MarketingCopyConfig)];
+    can start with Root entry {
+        configs = [here -->(?:MarketingCopyConfig)];
 
         if not configs {
             report {
@@ -1503,12 +1503,12 @@ walker:pub GetMarketingCopyConfig {
 
 # ── GenerateMarketingCopy ────────────────────────────────────────────────────
 
-walker:pub GenerateMarketingCopy {
+walker :pub GenerateMarketingCopy {
     has business_id: str;
     has ad_format: str = "google_search";
     has num_variants: int = 3;
 
-    can start with `root entry {
+    can start with Root entry {
         # Validate ad_format
         if not validate_ad_format(self.ad_format) {
             report validation_error("ad_format", f"Invalid format: {self.ad_format}. Must be google_search, google_display, facebook_ad, instagram_ad, email_subject, or email_body");
@@ -1524,7 +1524,7 @@ walker:pub GenerateMarketingCopy {
         }
 
         # 1. Validate credits
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             disengage;
@@ -1537,7 +1537,7 @@ walker:pub GenerateMarketingCopy {
         }
 
         # 2. Find business + gather data
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1551,9 +1551,9 @@ walker:pub GenerateMarketingCopy {
             disengage;
         }
 
-        analyses = [target_biz -->(`?Analysis)];
-        reports = [target_biz -->(`?Report)];
-        themes = [target_biz -->(`?Theme)];
+        analyses = [target_biz -->(?:Analysis)];
+        reports = [target_biz -->(?:Report)];
+        themes = [target_biz -->(?:Theme)];
 
         if not analyses {
             report {"success": False, "error": "Analysis not found. Run analysis first."};
@@ -1574,7 +1574,7 @@ walker:pub GenerateMarketingCopy {
         }
 
         # Get config
-        configs = [here -->(`?MarketingCopyConfig)];
+        configs = [here -->(?:MarketingCopyConfig)];
         config = configs[0] if configs else None;
 
         # Character limits by format
@@ -1751,12 +1751,12 @@ walker:pub GenerateMarketingCopy {
 
 # ── GetMarketingCopies ───────────────────────────────────────────────────────
 
-walker:pub GetMarketingCopies {
+walker :pub GetMarketingCopies {
     has business_id: str;
     has ad_format: str = "";
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1770,7 +1770,7 @@ walker:pub GetMarketingCopies {
             disengage;
         }
 
-        copies = [target_biz -->(`?MarketingCopy)];
+        copies = [target_biz -->(?:MarketingCopy)];
         results = [];
         for c in copies {
             if self.ad_format and c.ad_format != self.ad_format {
@@ -1801,12 +1801,12 @@ walker:pub GetMarketingCopies {
 
 # ── DeleteMarketingCopy ──────────────────────────────────────────────────────
 
-walker:pub DeleteMarketingCopy {
+walker :pub DeleteMarketingCopy {
     has business_id: str;
     has copy_id: str;
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1820,7 +1820,7 @@ walker:pub DeleteMarketingCopy {
             disengage;
         }
 
-        copies = [target_biz -->(`?MarketingCopy)];
+        copies = [target_biz -->(?:MarketingCopy)];
         target_copy = None;
         for c in copies {
             if c.copy_id == self.copy_id {
@@ -1849,7 +1849,7 @@ walker:pub DeleteMarketingCopy {
 
 # ── SaveBlogPostConfig ───────────────────────────────────────────────────────
 
-walker:pub SaveBlogPostConfig {
+walker :pub SaveBlogPostConfig {
     has author_name: str = "";
     has brand_name: str = "";
     has writing_style: str = "informative";
@@ -1857,7 +1857,7 @@ walker:pub SaveBlogPostConfig {
     has include_data_visualizations: bool = True;
     has seo_focus: bool = True;
 
-    can start with `root entry {
+    can start with Root entry {
         # Validate word count
         if self.target_word_count < 600 {
             self.target_word_count = 600;
@@ -1866,7 +1866,7 @@ walker:pub SaveBlogPostConfig {
             self.target_word_count = 2000;
         }
 
-        configs = [here -->(`?BlogPostConfig)];
+        configs = [here -->(?:BlogPostConfig)];
 
         if configs {
             config = configs[0];
@@ -1908,10 +1908,10 @@ walker:pub SaveBlogPostConfig {
 
 # ── GetBlogPostConfig ────────────────────────────────────────────────────────
 
-walker:pub GetBlogPostConfig {
+walker :pub GetBlogPostConfig {
 
-    can start with `root entry {
-        configs = [here -->(`?BlogPostConfig)];
+    can start with Root entry {
+        configs = [here -->(?:BlogPostConfig)];
 
         if not configs {
             report {
@@ -1939,12 +1939,12 @@ walker:pub GetBlogPostConfig {
 
 # ── GenerateBlogPost ─────────────────────────────────────────────────────────
 
-walker:pub GenerateBlogPost {
+walker :pub GenerateBlogPost {
     has business_id: str;
     has content_type: str = "insights_listicle";
     has focus_theme: str = "";
 
-    can start with `root entry {
+    can start with Root entry {
         # Validate content_type
         if not validate_content_type(self.content_type) {
             report validation_error("content_type", f"Invalid type: {self.content_type}. Must be improvement_story, customer_spotlight, insights_listicle, case_study, or trend_analysis");
@@ -1952,7 +1952,7 @@ walker:pub GenerateBlogPost {
         }
 
         # 1. Validate credits
-        profiles = [here -->(`?UserProfile)];
+        profiles = [here -->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             disengage;
@@ -1965,7 +1965,7 @@ walker:pub GenerateBlogPost {
         }
 
         # 2. Find business + gather comprehensive data
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -1979,9 +1979,9 @@ walker:pub GenerateBlogPost {
             disengage;
         }
 
-        analyses = [target_biz -->(`?Analysis)];
-        reports = [target_biz -->(`?Report)];
-        themes = [target_biz -->(`?Theme)];
+        analyses = [target_biz -->(?:Analysis)];
+        reports = [target_biz -->(?:Report)];
+        themes = [target_biz -->(?:Theme)];
 
         if not analyses or not reports {
             report {"success": False, "error": "Analysis or report not found. Run analysis first."};
@@ -2005,7 +2005,7 @@ walker:pub GenerateBlogPost {
         }
 
         # Get config
-        configs = [here -->(`?BlogPostConfig)];
+        configs = [here -->(?:BlogPostConfig)];
         config = configs[0] if configs else None;
 
         # 3. Deduct credits before LLM call
@@ -2215,12 +2215,12 @@ walker:pub GenerateBlogPost {
 
 # ── GetBlogPosts ─────────────────────────────────────────────────────────────
 
-walker:pub GetBlogPosts {
+walker :pub GetBlogPosts {
     has business_id: str;
     has content_type: str = "";
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -2234,7 +2234,7 @@ walker:pub GetBlogPosts {
             disengage;
         }
 
-        posts = [target_biz -->(`?BlogPost)];
+        posts = [target_biz -->(?:BlogPost)];
         results = [];
         for p in posts {
             if self.content_type and p.content_type != self.content_type {
@@ -2266,12 +2266,12 @@ walker:pub GetBlogPosts {
 
 # ── DeleteBlogPost ───────────────────────────────────────────────────────────
 
-walker:pub DeleteBlogPost {
+walker :pub DeleteBlogPost {
     has business_id: str;
     has post_id: str;
 
-    can start with `root entry {
-        businesses = [here -->(`?Business)];
+    can start with Root entry {
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -2285,7 +2285,7 @@ walker:pub DeleteBlogPost {
             disengage;
         }
 
-        posts = [target_biz -->(`?BlogPost)];
+        posts = [target_biz -->(?:BlogPost)];
         target_post = None;
         for p in posts {
             if p.post_id == self.post_id {

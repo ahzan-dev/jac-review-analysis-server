@@ -347,7 +347,7 @@ walker DataFetcherAgent {
     has data_source: str = "";
     has is_refresh: bool = False;
 
-    can start with `root entry {
+    can start with Root entry {
         print(f"\n🚀 DataFetcherAgent starting...");
 
         # Get API key from key rotation manager
@@ -381,7 +381,7 @@ walker DataFetcherAgent {
 
         if self.existing_business_id {
             # Explicit refresh mode - find the business
-            businesses = [here -->(`?Business)];
+            businesses = [here -->(?:Business)];
             for biz in businesses {
                 if biz.place_id == self.existing_business_id {
                     existing_biz = biz;
@@ -390,7 +390,7 @@ walker DataFetcherAgent {
             }
         } else {
             # Check if business already exists by place_id
-            businesses = [here -->(`?Business)];
+            businesses = [here -->(?:Business)];
             for biz in businesses {
                 if biz.place_id == business_id {
                     existing_biz = biz;
@@ -407,10 +407,10 @@ walker DataFetcherAgent {
             print(f"   🔄 REFRESH MODE: Updating existing business: {existing_biz.name}");
 
             # Clear old reviews, themes, analysis, and reports
-            old_reviews = [existing_biz -->(`?Review)];
-            old_themes = [existing_biz -->(`?Theme)];
-            old_analyses = [existing_biz -->(`?Analysis)];
-            old_reports = [existing_biz -->(`?Report)];
+            old_reviews = [existing_biz -->(?:Review)];
+            old_themes = [existing_biz -->(?:Theme)];
+            old_analyses = [existing_biz -->(?:Analysis)];
+            old_reports = [existing_biz -->(?:Report)];
 
             print(f"   🗑️  Clearing {len(old_reviews)} old reviews, {len(old_themes)} themes, {len(old_analyses)} analyses, {len(old_reports)} reports");
 
@@ -786,9 +786,9 @@ walker SentimentAnalyzerAgent {
     has all_themes: dict = {};
     has status: str = "pending";
     
-    can start with `root entry {
+    can start with Root entry {
         print("\n🔍 SentimentAnalyzerAgent starting...");
-        visit [-->(`?Business)];
+        visit [-->(?:Business)];
     }
     
     can analyze with Business entry {
@@ -803,7 +803,7 @@ walker SentimentAnalyzerAgent {
         allowed_themes = list(theme_defs.keys());
         
         # Get unanalyzed reviews
-        reviews = [here -->(`?Review)];
+        reviews = [here -->(?:Review)];
         unanalyzed = [];
         for r in reviews {
             if not r.analyzed {
@@ -938,9 +938,9 @@ walker PatternAnalyzerAgent {
     has themes_created: int = 0;
     has status: str = "pending";
     
-    can start with `root entry {
+    can start with Root entry {
         print("\n🎯 PatternAnalyzerAgent starting...");
-        visit [-->(`?Business)];
+        visit [-->(?:Business)];
     }
     
     can analyze with Business entry {
@@ -951,7 +951,7 @@ walker PatternAnalyzerAgent {
         
         print(f"   Finding patterns for: {here.name}");
         
-        reviews = [here -->(`?Review)];
+        reviews = [here -->(?:Review)];
         if not reviews {
             print("   ❌ No reviews found");
             self.status = "failed";
@@ -1354,9 +1354,9 @@ walker ReportGeneratorAgent {
     has report: Report = None;
     has status: str = "pending";
     
-    can start with `root entry {
+    can start with Root entry {
         print("\n📝 ReportGeneratorAgent starting...");
-        visit [-->(`?Business)];
+        visit [-->(?:Business)];
     }
     
     can generate with Business entry {
@@ -1368,7 +1368,7 @@ walker ReportGeneratorAgent {
         print(f"   Generating report for: {here.name}");
         
         # Get analysis
-        analyses = [here -->(`?Analysis)];
+        analyses = [here -->(?:Analysis)];
         if not analyses {
             print("   ❌ No analysis found");
             self.status = "failed";
@@ -1376,7 +1376,7 @@ walker ReportGeneratorAgent {
         }
         
         analysis = analyses[0];
-        themes = [here -->(`?Theme)];
+        themes = [here -->(?:Theme)];
         
         # Generate report content
         content = self.generate_report_content(
@@ -1513,9 +1513,9 @@ walker RecommendationAgent {
     has recommendations: BrandAwareRecommendationResult = None;
     has status: str = "pending";
 
-    can start with `root entry {
+    can start with Root entry {
         print("\n💡 RecommendationAgent starting...");
-        visit [-->(`?Business)];
+        visit [-->(?:Business)];
     }
 
     can generate with Business entry {
@@ -1527,7 +1527,7 @@ walker RecommendationAgent {
         print(f"   Generating brand-aware recommendations for: {here.name}");
 
         # Get analysis and themes
-        analyses = [here -->(`?Analysis)];
+        analyses = [here -->(?:Analysis)];
         if not analyses {
             print("   ❌ No analysis found");
             self.status = "failed";
@@ -1535,8 +1535,8 @@ walker RecommendationAgent {
         }
 
         analysis = analyses[0];
-        themes = [here -->(`?Theme)];
-        reviews = [here -->(`?Review)];
+        themes = [here -->(?:Theme)];
+        reviews = [here -->(?:Review)];
 
         # Calculate severity metrics
         severity_data = self.calculate_severity_metrics(analysis, themes, len(reviews));
@@ -1858,7 +1858,7 @@ walker FullPipelineAgent {
     has output: dict = {};
     has error: str = "";
     
-    can start with `root entry {
+    can start with Root entry {
         print("\n" + "═" * 65);
         print("   REVIEW ANALYZER V2 - DEEP ANALYSIS PIPELINE");
         print("═" * 65);
@@ -1932,7 +1932,7 @@ walker FullPipelineAgent {
         brand_recs = recommender.recommendations;
 
         # Get the Report node from the business
-        biz_nodes = [here -->(`?Business)];
+        biz_nodes = [here -->(?:Business)];
         target_biz_node = None;
         for b in biz_nodes {
             if b.place_id == self.business_id {
@@ -1940,7 +1940,7 @@ walker FullPipelineAgent {
                 break;
             }
         }
-        report_nodes = [target_biz_node -->(`?Report)] if target_biz_node else [];
+        report_nodes = [target_biz_node -->(?:Report)] if target_biz_node else [];
         if not report_nodes {
             self.error = "Report node not found after generation";
             self.status = "failed";
@@ -1968,7 +1968,7 @@ walker FullPipelineAgent {
         self.output = self.build_output(
             fetcher.business[0],
             patterns.analysis[0],
-            [fetcher.business[0] -->(`?Theme)],
+            [fetcher.business[0] -->(?:Theme)],
             report_node,
             brand_recs
         );
@@ -2155,7 +2155,7 @@ walker ReanalyzePipeline {
     has output: dict = {};
     has error: str = "";
 
-    can start with `root entry {
+    can start with Root entry {
         print("\n" + "═" * 65);
         print("   🔄 REANALYZE PIPELINE (Using Cached Data)");
         print("═" * 65);
@@ -2163,7 +2163,7 @@ walker ReanalyzePipeline {
         print("═" * 65);
 
         # Find business
-        businesses = [here -->(`?Business)];
+        businesses = [here -->(?:Business)];
         target_biz = None;
         for biz in businesses {
             if biz.place_id == self.business_id {
@@ -2179,7 +2179,7 @@ walker ReanalyzePipeline {
             disengage;
         }
 
-        reviews = [target_biz -->(`?Review)];
+        reviews = [target_biz -->(?:Review)];
         print(f"   📦 Using {len(reviews)} cached reviews for: {target_biz.name}");
 
         # Stage 2: Sentiment Analysis
@@ -2219,7 +2219,7 @@ walker ReanalyzePipeline {
         brand_recs = recommender.recommendations;
 
         # Get the Report node from the business
-        report_nodes = [target_biz -->(`?Report)];
+        report_nodes = [target_biz -->(?:Report)];
         if not report_nodes {
             self.error = "Report node not found after generation";
             self.status = "failed";
@@ -2250,7 +2250,7 @@ walker ReanalyzePipeline {
         self.output = self.build_output(
             target_biz,
             patterns.analysis[0],
-            [target_biz -->(`?Theme)],
+            [target_biz -->(?:Theme)],
             report_node,
             brand_recs
         );

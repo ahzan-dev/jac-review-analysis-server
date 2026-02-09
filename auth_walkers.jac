@@ -17,11 +17,11 @@ include errors;
 # ═══════════════════════════════════════════════════════════════════════════════
 # Creates a UserProfile node with 0 credits (users purchase packages)
 
-walker:pub create_profile {
+walker :pub create_profile {
 
-    can create with `root entry {
+    can create with Root entry {
         # Check if profile already exists
-        existing = [-->(`?UserProfile)];
+        existing = [-->(?:UserProfile)];
         if existing {
             report {
                 "success": False,
@@ -51,11 +51,11 @@ walker:pub create_profile {
 # ═══════════════════════════════════════════════════════════════════════════════
 # Retrieves the authenticated user's profile and credit balance
 
-walker:pub get_user_profile {
+walker :pub get_user_profile {
 
-    can fetch_profile with `root entry {
+    can fetch_profile with Root entry {
         # Get profile from authenticated user's root
-        profiles = [-->(`?UserProfile)];
+        profiles = [-->(?:UserProfile)];
 
         if not profiles {
             report {
@@ -68,7 +68,7 @@ walker:pub get_user_profile {
         profile = profiles[0];
 
         # Dynamically count businesses from the graph (more reliable than stored counter)
-        actual_business_count = len([here -->(`?Business)]);
+        actual_business_count = len([here -->(?:Business)]);
 
         report {
             "success": True,
@@ -92,7 +92,7 @@ walker:pub get_user_profile {
 walker create_admin {
     has secret_key: str = "";
 
-    can setup_admin with `root entry {
+    can setup_admin with Root entry {
         # Check secret key from environment
         admin_secret = os.getenv('ADMIN_SETUP_SECRET', '');
         if not admin_secret {
@@ -108,7 +108,7 @@ walker create_admin {
         }
 
         # Get the authenticated user's profile
-        existing = [-->(`?UserProfile)];
+        existing = [-->(?:UserProfile)];
 
         if existing {
             # Upgrade existing profile to admin

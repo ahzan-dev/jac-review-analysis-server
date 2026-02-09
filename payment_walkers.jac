@@ -16,9 +16,9 @@ include errors;
 # ═══════════════════════════════════════════════════════════════════════════════
 # Returns available credit packages with pricing
 
-walker:pub get_credit_packages {
+walker :pub get_credit_packages {
 
-    can fetch with `root entry {
+    can fetch with Root entry {
         packages = [];
         for (key, pkg) in CREDIT_PACKAGES.items() {
             per_credit = round(pkg["price"] / pkg["credits"], 2);
@@ -56,13 +56,13 @@ walker:pub get_credit_packages {
 # ═══════════════════════════════════════════════════════════════════════════════
 # Processes payment for a credit package and grants credits
 
-walker:pub purchase_credit_package {
+walker :pub purchase_credit_package {
     has package: str;  # "bronze", "silver", "gold", "platinum"
     has payment_method: dict;  # {card_number, exp_month, exp_year, cvc}
 
-    can purchase with `root entry {
+    can purchase with Root entry {
         # Get user profile
-        profiles = [-->(`?UserProfile)];
+        profiles = [-->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             return;
@@ -151,19 +151,19 @@ walker:pub purchase_credit_package {
 # ═══════════════════════════════════════════════════════════════════════════════
 # Returns purchase history for the authenticated user
 
-walker:pub get_payment_history {
+walker :pub get_payment_history {
     has limit: int = 20;
     has offset: int = 0;
 
-    can fetch with `root entry {
-        profiles = [-->(`?UserProfile)];
+    can fetch with Root entry {
+        profiles = [-->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             return;
         }
 
         # Get all credit transactions that are purchases
-        all_transactions = [-->(`?CreditTransaction)];
+        all_transactions = [-->(?:CreditTransaction)];
         purchases = [];
         for txn in all_transactions {
             if txn.transaction_type == "purchase" {

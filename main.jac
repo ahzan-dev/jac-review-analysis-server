@@ -28,7 +28,7 @@ include content_walkers;
 # Main entry point for analysis - called by external services
 # ═══════════════════════════════════════════════════════════════════════════════
 
-walker:pub AnalyzeUrl {
+walker :pub AnalyzeUrl {
     # Input parameters
     has url: str;
     has max_reviews: int = 100;
@@ -43,10 +43,10 @@ walker:pub AnalyzeUrl {
     has output: dict = {};
     has error: str = "";
 
-    can start with `root entry {
+    can start with Root entry {
 
         # SECURITY: Get user profile from authenticated user's root
-        profiles = [-->(`?UserProfile)];
+        profiles = [-->(?:UserProfile)];
         if not profiles {
             report {
                 "error": "User profile not found. Create profile first using create_profile walker"
@@ -187,9 +187,9 @@ walker:pub AnalyzeUrl {
         }
     }
 
-    def find_existing_business(root_node: `root, business_id: str) -> Business | None {
+    def find_existing_business(root_node: Root, business_id: str) -> Business | None {
         # """Find existing business by place_id in user's root."""
-        businesses = [root_node -->(`?Business)];
+        businesses = [root_node -->(?:Business)];
         for biz in businesses {
             if biz.place_id == business_id {
                 return biz;
@@ -237,8 +237,8 @@ walker:pub AnalyzeUrl {
 # ═══════════════════════════════════════════════════════════════════════════════
 # HEALTH CHECK ENDPOINT
 # ═══════════════════════════════════════════════════════════════════════════════
-walker:pub health_check {
-    can check with `root entry {
+walker :pub health_check {
+    can check with Root entry {
         report {"status": "healthy", "service": "review-analyzer", "version": "2.0"} ;
     }
 }
@@ -249,10 +249,10 @@ walker:pub health_check {
 # Verifies that all dependencies are configured and accessible
 # Used by Docker/Kubernetes to determine when service can receive requests
 
-walker:pub ready {
+walker :pub ready {
     # """Readiness probe - checks if service is ready to accept traffic."""
 
-    can check with `root entry {
+    can check with Root entry {
         # Check critical environment variables
         openai_key = os.getenv("OPENAI_API_KEY");
         serpapi_key = os.getenv("SERPAPI_KEY");
@@ -283,9 +283,9 @@ walker:pub ready {
 walker diagnostics {
     
 
-    can check with `root entry {
+    can check with Root entry {
         # SECURITY: Admin-only endpoint - check from authenticated user's own profile
-        profiles = [-->(`?UserProfile)];
+        profiles = [-->(?:UserProfile)];
         if not profiles or profiles[0].role != UserRole.ADMIN {
             report error_response(ErrorCode.INSUFFICIENT_PERMISSIONS, "Admin access required", {});
             return;

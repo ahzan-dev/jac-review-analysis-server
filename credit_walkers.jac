@@ -18,10 +18,10 @@ include errors;
 # ═══════════════════════════════════════════════════════════════════════════════
 # Returns current credit balance and usage statistics
 
-walker:pub get_credit_balance {
+walker :pub get_credit_balance {
 
-    can fetch with `root entry {
-        profiles = [-->(`?UserProfile)];
+    can fetch with Root entry {
+        profiles = [-->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             return;
@@ -49,9 +49,9 @@ walker grant_credits {
     has amount: float;
     has reason: str = "Admin grant";
 
-    can grant with `root entry {
+    can grant with Root entry {
         # Check admin permission
-        my_profiles = [-->(`?UserProfile)];
+        my_profiles = [-->(?:UserProfile)];
         if not my_profiles or my_profiles[0].role != UserRole.ADMIN {
             report unauthorized_error("Admin access required");
             return;
@@ -64,7 +64,7 @@ walker grant_credits {
         }
 
         # Find target user
-        target_profiles = [-->(`?UserProfile)](?username == self.target_username);
+        target_profiles = [-->(?:UserProfile)](?username == self.target_username);
         if not target_profiles {
             report not_found_error("user", self.target_username);
             return;
@@ -103,20 +103,20 @@ walker grant_credits {
 # ═══════════════════════════════════════════════════════════════════════════════
 # Returns credit transaction history for the authenticated user
 
-walker:pub get_credit_history {
+walker :pub get_credit_history {
     has limit: int = 20;
     has offset: int = 0;
     has transaction_type: str = "";  # Optional filter: "purchase", "usage", "grant", "refund"
 
-    can fetch with `root entry {
-        profiles = [-->(`?UserProfile)];
+    can fetch with Root entry {
+        profiles = [-->(?:UserProfile)];
         if not profiles {
             report not_found_error("profile", "user");
             return;
         }
 
         # Get all credit transactions
-        all_transactions = [-->(`?CreditTransaction)];
+        all_transactions = [-->(?:CreditTransaction)];
 
         # Filter by transaction type if specified
         if self.transaction_type and self.transaction_type in ["purchase", "usage", "grant", "refund"] {

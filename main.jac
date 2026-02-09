@@ -14,14 +14,14 @@ import from datetime {
 import from math { ceil }
 import json, os;
 
-include services.models;
-include services.walkers;
-include services.api_walkers;
-include services.auth_walkers;
-include services.payment_walkers;
-include services.credit_walkers;
-include services.errors;
-include services.content_walkers;
+include models;
+include walkers;
+include api_walkers;
+include auth_walkers;
+include payment_walkers;
+include credit_walkers;
+include errors;
+include content_walkers;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API WALKER: AnalyzeUrl

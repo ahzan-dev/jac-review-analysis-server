@@ -25,7 +25,7 @@ glob llm = Model(
     api_key=OPENAI_API_KEY
 );
 
-include services.models;
+include models;
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERPAPI KEY ROTATION

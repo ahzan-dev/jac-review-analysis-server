@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir jaseci==2.2.13 requests python-dotenv
 
 # Copy JAC application files
-COPY main.jac jac.toml ./
-COPY services/ ./services/
+COPY main.jac api_walkers.jac auth_walkers.jac payment_walkers.jac credit_walkers.jac content_walkers.jac walkers.jac models.jac errors.jac jac.toml ./
+
 
 # Create data, cache, and persistent DB directories
 RUN mkdir -p /app/data /app/.jac/cache /app/jaseci_db

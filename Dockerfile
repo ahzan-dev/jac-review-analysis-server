@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN pip install --no-cache-dir jaseci==2.2.13 requests python-dotenv
+RUN pip install --no-cache-dir jaseci==2.2.8 requests python-dotenv
 
 # Copy JAC application files
 COPY main.jac api_walkers.jac auth_walkers.jac payment_walkers.jac credit_walkers.jac content_walkers.jac walkers.jac models.jac errors.jac jac.toml ./

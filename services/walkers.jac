@@ -661,14 +661,24 @@ walker DataFetcherAgent {
 
                     reviews = data.get("reviews", []);
 
-                    # If we got 0 reviews but expect more, treat as transient failure and retry
-                    if len(reviews) == 0 and page > 1 and total_fetched < self.max_reviews {
+                    # If page 1 returns 0 reviews, try switching key before retrying
+                    # (SerpAPI can return inconsistent results across different keys)
+                    if len(reviews) == 0 and page == 1 and total_fetched == 0 {
                         retry_count += 1;
-                        print(f"      ⚠️ Page {page}: 0 reviews (retry {retry_count}/{max_retries})");
+                        print(f"      ⚠️ Page 1: 0 reviews with key {api_key[:6]}... (retry {retry_count}/{max_retries})");
+                        # Try next key - might give different results
+                        mark_serpapi_key_exhausted(api_key);
                         if retry_count < max_retries {
-                            time.sleep(2 * retry_count);
+                            time.sleep(1);
                         }
                         continue;
+                    }
+
+                    # If subsequent page returns 0, treat as pagination end
+                    if len(reviews) == 0 and page > 1 {
+                        page_success = True;
+                        next_page_token = None;
+                        break;
                     }
 
                     print(f"      Page {page}: {len(reviews)} reviews");

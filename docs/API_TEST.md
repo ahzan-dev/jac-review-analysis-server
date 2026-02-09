@@ -124,7 +124,7 @@ curl -X POST "$API/walker/AnalyzeUrl" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://www.google.com/maps/place/AI-MAAS+INDIAN+RESTAURANT/@6.7160694,79.9763923,4554m/data=!3m1!1e3!4m12!1m5!8m4!1e1!2s107299918444079730486!3m1!1e1!3m5!1s0x3ae249007804bdbd:0x3b31b06976ff4220!8m2!3d6.7095833!4d79.9908889!16s%2Fg%2F11y6t3t4kh?hl=en-US&entry=ttu&g_ep=EgoyMDI2MDIwNC4wIKXMDSoASAFQAw%3D%3D",
+    "url": "https://www.google.com/maps/place/JOLLYBEEZ/@8.0143405,79.8239798,4541m/data=!3m1!1e3!4m9!1m2!2m1!1sice+talk+family+restaurant!3m5!1s0x3afd1725d93fd7dd:0xbbae942ddf90ad44!8m2!3d8.0263214!4d79.8357705!16s%2Fg%2F11s17kwkzc?hl=en-US&entry=ttu&g_ep=EgoyMDI2MDIwNC4wIKXMDSoASAFQAw%3D%3D",
     "max_reviews": 100
   }'
 ```

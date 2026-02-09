@@ -13,12 +13,11 @@ services:
       - SERPAPI_KEY_3=${SERPAPI_KEY_3:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - MONGODB_URI=${MONGODB_URI:-}
+      - REDIS_URL=${REDIS_URL:-}
+      - JWT_SECRET=${JWT_SECRET:-supersecretkey}
+      - JWT_EXP_DELTA_DAYS=${JWT_EXP_DELTA_DAYS:-7}
       - PORT=8000
-    volumes:
-      - review_data:/app/data
-      - jaseci_db:/app/jaseci_db
-      # Cache not mounted - allows fresh bytecode compilation on each deploy
-      # - ./.jac:/app/.jac
     restart: unless-stopped
     healthcheck:
       test:
@@ -37,7 +36,3 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-volumes:
-  review_data:
-  jaseci_db:

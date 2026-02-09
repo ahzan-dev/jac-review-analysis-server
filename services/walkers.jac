@@ -28,6 +28,90 @@ glob llm = Model(
 include services.models;
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SERPAPI KEY ROTATION
+# ═══════════════════════════════════════════════════════════════════════════════
+# Loads all SERPAPI_KEY* env vars, rotates to next key when quota is exhausted.
+
+def _load_serpapi_keys() -> list {
+    keys: list = [];
+    # Primary key
+    primary = os.environ.get("SERPAPI_KEY", "");
+    if primary and len(primary) > 10 {
+        keys.append(primary);
+    }
+    # Numbered keys: SERPAPI_KEY_1, SERPAPI_KEY_2, ...
+    i = 1;
+    while True {
+        key = os.environ.get(f"SERPAPI_KEY_{i}", "");
+        if not key or len(key) < 10 {
+            break;
+        }
+        if key not in keys {
+            keys.append(key);
+        }
+        i += 1;
+    }
+    return keys;
+}
+
+glob _serpapi_keys: list = _load_serpapi_keys();
+# Using list wrapper for mutability from within functions
+glob _serpapi_state: dict = {"index": 0, "exhausted": {}};
+
+def get_serpapi_key() -> str {
+    # """Get the current active SerpAPI key, skipping exhausted ones."""
+    if not _serpapi_keys {
+        return "";
+    }
+    cur_idx = _serpapi_state["index"];
+    exhausted = _serpapi_state["exhausted"];
+    # Find first non-exhausted key starting from current index
+    for _i in range(len(_serpapi_keys)) {
+        idx = (cur_idx + _i) % len(_serpapi_keys);
+        if _serpapi_keys[idx] not in exhausted {
+            return _serpapi_keys[idx];
+        }
+    }
+    # All keys exhausted - reset and try first key (quota may have refreshed)
+    _serpapi_state["exhausted"] = {};
+    return _serpapi_keys[0];
+}
+
+def mark_serpapi_key_exhausted(key: str) -> bool {
+    # """Mark a key as exhausted and rotate to the next one.
+    # Returns True if there are remaining keys, False if all exhausted."""
+    _serpapi_state["exhausted"][key] = True;
+    masked = key[:6] + "..." + key[-4:];
+    remaining = len(_serpapi_keys) - len(_serpapi_state["exhausted"]);
+    print(f"      🔑 Key {masked} exhausted, {remaining} key(s) remaining");
+
+    if remaining > 0 {
+        cur_idx = _serpapi_state["index"];
+        # Advance index to next non-exhausted key
+        for _i in range(len(_serpapi_keys)) {
+            idx = (cur_idx + _i + 1) % len(_serpapi_keys);
+            if _serpapi_keys[idx] not in _serpapi_state["exhausted"] {
+                _serpapi_state["index"] = idx;
+                new_masked = _serpapi_keys[idx][:6] + "..." + _serpapi_keys[idx][-4:];
+                print(f"      🔑 Switched to key {new_masked}");
+                return True;
+            }
+        }
+    }
+    print(f"      ❌ All SerpAPI keys exhausted!");
+    return False;
+}
+
+def is_serpapi_quota_error(error_msg: str) -> bool {
+    # """Check if an API error indicates quota exhaustion."""
+    lower = error_msg.lower();
+    return "run out of searches" in lower
+        or "rate limit" in lower
+        or "quota" in lower
+        or "exceeded" in lower;
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # HELPER FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -266,14 +350,14 @@ walker DataFetcherAgent {
     can start with `root entry {
         print(f"\n🚀 DataFetcherAgent starting...");
 
-        # Get API key from environment (not stored as property to avoid exposure)
-        serp_api_key = os.environ.get("SERPAPI_KEY", "");
+        # Get API key from key rotation manager
+        serp_api_key = get_serpapi_key();
 
         # Determine data source
         if serp_api_key and len(serp_api_key) > 10 {
             self.data_source = "serpapi";
             masked = serp_api_key[:6] + "..." + serp_api_key[-4:];
-            print(f"   🌐 DATA SOURCE: SERP API (key: {masked})");
+            print(f"   🌐 DATA SOURCE: SERP API (key: {masked}, {len(_serpapi_keys)} keys available)");
         } else {
             self.data_source = "mock";
             print("   📦 DATA SOURCE: MOCK (no API key)");
@@ -399,13 +483,10 @@ walker DataFetcherAgent {
 
         while retry_count < max_retries {
             try {
-                # Construct the 'data' parameter in the format Google Maps API expects
-                # Format: !4m5!3m4!1s{data_id}!8m2!3d{lat}!4d{lng}
                 data_id = parsed["data_id"];
                 data_param = f"!4m5!3m4!1s{data_id}!8m2!3d0!4d0!16s";
 
-                # Get API key from environment
-                api_key = os.environ.get("SERPAPI_KEY", "");
+                api_key = get_serpapi_key();
 
                 params = {
                     "engine": "google_maps",
@@ -420,8 +501,16 @@ walker DataFetcherAgent {
 
                 # Check for API error responses
                 if "error" in data {
+                    error_msg = str(data['error']);
+                    # If quota exhausted, rotate key and retry without incrementing retry_count
+                    if is_serpapi_quota_error(error_msg) {
+                        has_more = mark_serpapi_key_exhausted(api_key);
+                        if has_more {
+                            continue;
+                        }
+                    }
                     retry_count += 1;
-                    print(f"      ⚠️ Place details API error: {data['error']} (retry {retry_count}/{max_retries})");
+                    print(f"      ⚠️ Place details API error: {error_msg} (retry {retry_count}/{max_retries})");
                     if retry_count < max_retries {
                         time.sleep(2 * retry_count);
                     }
@@ -529,15 +618,14 @@ walker DataFetcherAgent {
         page = 1;
         max_retries = 3;
 
-        # Get API key from environment
-        api_key = os.environ.get("SERPAPI_KEY", "");
-
         while total_fetched < self.max_reviews {
             retry_count = 0;
             page_success = False;
 
             while retry_count < max_retries and not page_success {
                 try {
+                    api_key = get_serpapi_key();
+
                     params = {
                         "engine": "google_maps_reviews",
                         "data_id": parsed["data_id"],
@@ -555,8 +643,16 @@ walker DataFetcherAgent {
 
                     # Check for API error responses
                     if "error" in data {
+                        error_msg = str(data['error']);
+                        # If quota exhausted, rotate key and retry without incrementing retry_count
+                        if is_serpapi_quota_error(error_msg) {
+                            has_more = mark_serpapi_key_exhausted(api_key);
+                            if has_more {
+                                continue;
+                            }
+                        }
                         retry_count += 1;
-                        print(f"      ⚠️ Page {page} API error: {data['error']} (retry {retry_count}/{max_retries})");
+                        print(f"      ⚠️ Page {page} API error: {error_msg} (retry {retry_count}/{max_retries})");
                         if retry_count < max_retries {
                             time.sleep(2 * retry_count);
                         }

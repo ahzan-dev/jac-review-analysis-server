@@ -8,6 +8,9 @@ services:
     environment:
       - DEBUG=${DEBUG:-false}
       - SERPAPI_KEY=${SERPAPI_KEY}
+      - SERPAPI_KEY_1=${SERPAPI_KEY_1:-}
+      - SERPAPI_KEY_2=${SERPAPI_KEY_2:-}
+      - SERPAPI_KEY_3=${SERPAPI_KEY_3:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
       - PORT=8000

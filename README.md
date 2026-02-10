@@ -1,360 +1,230 @@
-# Review Analyzer POC - Jac/OSP vs NestJS Comparison
+# Review Analyzer
 
-## 🎯 What This POC Demonstrates
+AI-powered Google Maps review analysis platform built with [Jaclang (JAC)](https://github.com/Jaseci-Labs/jaseci). Analyzes business reviews using a multi-agent pipeline and generates detailed intelligence reports, AI review replies, social media posts, marketing copy, blog posts, and action plans.
 
-This proof-of-concept shows how **Jac/OSP dramatically simplifies** a multi-agent review analysis system compared to the traditional NestJS + n8n approach.
+**Production API**: https://review-analysis-server.trynewways.com/
 
-### The Pipeline: URL → Fetch → Analyze → Report
+## Architecture
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  DataFetch  │────►│  Sentiment  │────►│   Pattern   │────►│   Report    │
-│   Agent     │     │   Analyzer  │     │   Analyzer  │     │  Generator  │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-      │                   │                   │                   │
-      ▼                   ▼                   ▼                   ▼
-   Business            Reviews             Analysis             Report
-    Node              Analyzed              Node                 Node
-                      (themes,            (SWOT,              (findings,
-                     sentiment)          insights)           recommendations)
-```
-
----
-
-## 📊 Side-by-Side Comparison
-
-### File Count & Lines of Code
-
-| Metric             | NestJS + n8n | Jac/OSP    | Reduction           |
-| ------------------ | ------------ | ---------- | ------------------- |
-| **Files**          | 7+ files     | 3 files    | **57% fewer**       |
-| **Lines of Code**  | ~400+ lines  | ~400 lines | Similar LOC but...  |
-| **Boilerplate**    | ~200 lines   | ~0 lines   | **100% eliminated** |
-| **Business Logic** | ~200 lines   | ~400 lines | **2x more logic**   |
-
-### What's Eliminated in Jac
-
-| NestJS Boilerplate                                       | Jac Equivalent                         |
-| -------------------------------------------------------- | -------------------------------------- |
-| `@Module()`, `@Controller()`, `@Injectable()` decorators | Not needed                             |
-| DTOs with validation decorators                          | `obj` types with auto-validation       |
-| BullMQ queue setup & job processors                      | Walker traversal handles orchestration |
-| Supabase client setup & queries                          | Auto-persistence to root graph         |
-| UUID generation, timestamps                              | Built-in, automatic                    |
-| Error handling boilerplate                               | Standard try/catch, simpler            |
-| Service injection & DI                                   | Direct includes                        |
-
-### LLM Integration Comparison
-
-**NestJS (typical pattern):**
-
-```typescript
-@Injectable()
-export class AnalysisService {
-  constructor(private openai: OpenAIService) {}
-
-  async analyzeSentiment(review: string): Promise<SentimentResult> {
-    const prompt = `Analyze the sentiment of this review...
-    
-    Review: ${review}
-    
-    Return JSON with:
-    - sentiment: "positive" | "negative" | "neutral"
-    - score: number between -1 and 1
-    - themes: array of themes
-    ...`;
-
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-    });
-
-    try {
-      return JSON.parse(response.choices[0].message.content);
-    } catch (e) {
-      throw new Error("Failed to parse LLM response");
-    }
-  }
-}
-```
-
-**~25-30 lines per LLM call**
-
-**Jac (with `by llm`):**
-
-```jac
-def analyze_review_sentiment(
-    review_text: str,
-    star_rating: int
-) -> ReviewSentiment by llm();
-```
-
-**3 lines per LLM call!**
-
-The `by llm` operator:
-
-- Automatically extracts function name, parameters, and return type
-- Generates optimal prompts from semantic information
-- Handles JSON parsing and type validation
-- No prompt engineering required!
-
----
-
-## 🗂️ File Structure Comparison
-
-### NestJS Structure
+### Multi-Agent Analysis Pipeline
 
 ```
-scrape-module/
-├── index.ts                    # Exports
-├── scrape.constants.ts         # Constants & types
-├── scrape.controller.ts        # HTTP endpoints
-├── scrape.dto.ts               # Data transfer objects
-├── scrape.module.ts            # Module definition
-├── scrape.service.ts           # Business logic
-├── url-parser.service.ts       # URL parsing
-├── [bull processor]            # Job processor
-├── [supabase config]           # Database setup
-└── [analysis service]          # AI analysis
+Google Maps URL
+       │
+       ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  DataFetcher │───>│  Sentiment   │───>│   Pattern    │───>│    Report    │───>│Recommendation│
+│    Agent     │    │   Analyzer   │    │   Analyzer   │    │  Generator   │    │    Agent     │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+       │                   │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼                   ▼
+   Business            Reviews             Themes              Analysis             Report
+    Node              Analyzed          Created/Updated          Node                Node
 ```
 
-**7-10 files, complex dependencies**
+1. **DataFetcherAgent** — Fetches business data and reviews from SERP API
+2. **SentimentAnalyzerAgent** — Analyzes sentiment, themes, keywords, and emotions via LLM
+3. **PatternAnalyzerAgent** — Identifies patterns, sub-themes, and metrics across reviews
+4. **ReportGeneratorAgent** — Generates SWOT analysis, trends, and health scores
+5. **RecommendationAgent** — Creates actionable recommendations
 
-### Jac Structure
+### Graph-Based Data Model
+
+JAC uses a graph database paradigm where **nodes** are data entities, **edges** are relationships, and **walkers** are agents that traverse the graph. Nodes connected to `root` are automatically persisted. Each authenticated user has an isolated root node — all data is scoped to the user's graph.
+
+### File Structure
 
 ```
-review-analyzer-poc/
-├── main.jac                    # Entry point + API walkers
-├── models.jac                  # Nodes, edges, types
-└── walkers.jac                 # Agent walkers
+jac-review-analysis/
+├── main.jac               # Entry point, AnalyzeUrl walker, health checks
+├── models.jac             # Nodes, edges, enums, LLM output objects
+├── walkers.jac            # 5-stage analysis pipeline agents
+├── api_walkers.jac        # Data retrieval & management API endpoints
+├── auth_walkers.jac       # Authentication & user management
+├── payment_walkers.jac    # Payment & subscription handling
+├── credit_walkers.jac     # Credit system management
+├── content_walkers.jac    # Content generation (22 walkers)
+├── errors.jac             # Error helpers & validation functions
+├── jac.toml               # Project configuration
+├── Dockerfile             # Production container (jac-scale)
+└── docker-compose.yml     # Local development environment
 ```
 
-**3 files, self-contained**
-
----
-
-## 🚀 Running the POC
+## Getting Started
 
 ### Prerequisites
 
+- Python 3.12+
+- [Jaclang](https://github.com/Jaseci-Labs/jaseci) v0.10.0+
+
 ```bash
-pip install jaclang
+pip install jaclang==0.10.0 jac-scale==0.1.7 byllm==0.4.18 requests python-dotenv
 ```
 
-### Demo Mode (Mock Data)
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `SERPAPI_KEY` | Yes | — | SerpAPI key for Google Maps data |
+| `OPENAI_API_KEY` | Yes | — | OpenAI API key for LLM operations |
+| `LLM_MODEL` | No | `gpt-4o-mini` | OpenAI model to use |
+| `JWT_SECRET` | No | `supersecretkey` | JWT signing secret |
+| `JWT_EXP_DELTA_DAYS` | No | `7` | JWT token expiry in days |
+| `MONGODB_URI` | No | — | MongoDB connection string |
+| `REDIS_URL` | No | — | Redis connection string |
+| `PORT` | No | `8000` | Server port |
+| `DEBUG` | No | `false` | Enable debug mode |
+
+### Running Locally
 
 ```bash
-cd review-analyzer-poc
+# Start the API server (recommended)
+jac start main.jac --port 8000
+
+# Interactive mode (for testing/debugging)
 jac run main.jac
+
+# Compile to bytecode
+jac build main.jac
 ```
 
-### With Real SERP API
+API docs are auto-generated at `http://localhost:8000/docs` (Swagger UI).
+
+### Docker Deployment
 
 ```bash
-export SERPAPI_KEY="your_serpapi_key_here"
-export OPENAI_API_KEY="your_openai_key_here"
-jac run main.jac
+# Build and run with docker-compose
+docker-compose up --build
+
+# Or build and run manually
+docker build -t review-analyzer .
+docker run -p 8000:8000 \
+  -e SERPAPI_KEY=your_key \
+  -e OPENAI_API_KEY=your_key \
+  review-analyzer
 ```
 
-```bash
-curl --get https://serpapi.com/search \
- -d engine="google_maps" \
- -d type="place" \
- -d data_id="0x3ae37fae838233f3:0xf8ef06b31a14819e" \
- -d api_key="your_serpapi_key_here"
-```
+## Features
 
-### As REST API
+### Review Analysis
 
-```bash
-jac serve main.jac
+Submit any Google Maps business URL and the system runs the full 5-agent pipeline: fetching reviews via SERP API, analyzing sentiment/themes/emotions per review, identifying cross-review patterns and sub-themes, generating a comprehensive report (SWOT analysis, health scores, trends), and producing prioritized recommendations. Results are cached with configurable freshness — subsequent requests for the same business skip the fetch stage and re-run analysis only. Costs **1 credit per 100 reviews**.
 
-# Then call endpoints:
-# POST /walker/AnalyzeUrl
-# GET /walker/GetBusinesses
-# GET /walker/GetReport
-# GET /walker/GetAnalysis
-# POST /walker/Reanalyze
-```
+The system auto-detects business types from Google Maps categories (Restaurant, Hotel, Retail, Salon, Healthcare, Entertainment, Auto Service, Gym) and tailors sub-theme analysis accordingly — e.g., "Food Quality" and "Ambiance" for restaurants, "Room Quality" and "Facilities" for hotels.
 
----
+### AI Review Reply Generation
 
-## 🔧 API Endpoints (when served)
+Generate context-aware replies to customer reviews using LLM. Each reply considers the review text, star rating, sentiment, themes, and emotion alongside the business name, type, strengths (delighters), and known issues (pain points). Replies can be generated individually or in bulk, and regenerated with updated settings.
 
-### 1. Analyze URL (Full Pipeline)
+Configurable options:
+- **Tone**: friendly, formal, casual, or friendly professional
+- **Length**: short (1-2 sentences), medium (2-3), or long (3-4)
+- **Personalization**: include reviewer's name, offer resolution for negative reviews, custom sign-off
+- **Custom instructions**: additional LLM guidance for brand-specific phrasing
 
-```bash
-POST /walker/AnalyzeUrl
-{
-    "url": "https://www.google.com/maps/place/...",
-    "max_reviews": 100,
-    "report_type": "executive",
-    "api_key": "YOUR_SERPAPI_KEY_HERE"
-}
-```
+Costs **0.25 credits per reply**.
 
-### 2. List Businesses
+### Response Template Library
 
-```bash
-POST /walker/GetBusinesses
-{
-    "limit": 10
-}
-```
+A collection of pre-built and user-created reply templates with customizable placeholders. Templates are categorized by sentiment (positive, negative, neutral, mixed) and scenario (praise, complaint, suggestion, question, etc.), and can be filtered by business type. Applying a template to a review fills placeholders using rule-based logic (reviewer name, business name, themes) — no LLM call required.
 
-### 3. Get Report
+**FREE** — no credits consumed.
 
-```bash
-POST /walker/GetReport
-{
-    "business_id": "0x89c25a197c06b7af:0x40a06c78f79e5de6"
-}
-```
+### Action Plan Generator
 
-### 4. Get Analysis Details
+Generates a structured improvement roadmap derived from the business's review analysis data. Plans include immediate, short-term, and medium-term action items, KPIs to track, expected outcomes, and risk factors. Each plan is grounded in the business's actual health score, review count, and key issues identified during analysis.
 
-```bash
-POST /walker/GetAnalysis
-{
-    "business_id": "0x89c25a197c06b7af:0x40a06c78f79e5de6"
-}
-```
+Costs **0.5 credits per plan**.
 
-### 5. Get Reviews
+### Social Media Post Generator
 
-```bash
-POST /walker/GetReviews
-{
-    "business_id": "...",
-    "limit": 20,
-    "sentiment_filter": "negative"
-}
-```
+Turns customer reviews into publish-ready social media content. Every post follows a **Hook-Story-CTA** framework with platform-specific formatting (character limits, emoji counts, hashtag targets).
 
-### 6. Reanalyze Existing Data
+- **Platforms**: Twitter, Facebook, Instagram, LinkedIn, TikTok, Google Business Profile
+- **Post types**: testimonial, question engagement, tips-based, milestone celebration, aggregate insight, story narrative, before/after
+- **Hook styles**: auto, bold statement, curiosity, social proof, question, quote first, data point
+- **A/B variants**: generate 1-3 variants per request with different hooks and angles
+- **Visual suggestions**: each post includes a suggested image description and graphic type (photo, text overlay, carousel, video, reel)
 
-```bash
-POST /walker/Reanalyze
-{
-    "business_id": "...",
-    "report_type": "detailed"
-}
-```
+Brand voice is fully configurable — brand personality traits, target audience, industry keywords, words to avoid, tone examples, and output language (supports transcreation, not just translation). A free auto-suggest endpoint analyzes existing business data to recommend smart defaults for all config fields.
 
----
+Costs **0.25 credits per batch** (up to 5 posts with variants).
 
-## 🧠 Key Jac/OSP Concepts Used
+### Marketing Copy Generator
 
-### 1. Nodes = Data Entities
+Generates advertising copy variants grounded in real customer review highlights. Outputs include headline, body text, and call-to-action tailored to specific ad formats: Google Search, Google Display, Facebook Ad, Instagram Ad, email subject lines, and email body. Supports up to 3 A/B variants per generation, each referencing actual customer quotes and business delighters.
+
+Configurable brand settings: name, tagline, target audience, unique selling points, and tone (persuasive, informational, emotional, urgent).
+
+Costs **0.25 credits per batch**.
+
+### Blog Post Generator
+
+Generates SEO-optimized blog posts from review analysis insights. Content types include improvement stories, customer spotlights, insights listicles, case studies, and trend analyses. Each post includes a title, meta description, slug, structured body sections with supporting data points, and SEO keywords.
+
+Configurable writing preferences: author name, writing style (informative, storytelling, data-driven, conversational), target word count (600-2000), data visualization callouts, and SEO focus.
+
+Costs **1.0 credits per post**.
+
+## Credit System
+
+Credits power all LLM-based features. They are deducted before the LLM call and automatically refunded if the operation fails.
+
+| Feature | Cost |
+|---|---|
+| Full Analysis | 1 credit per 100 reviews |
+| Review Reply | 0.25 credits |
+| Action Plan | 0.5 credits |
+| Social Media Posts | 0.25 credits per batch |
+| Marketing Copy | 0.25 credits per batch |
+| Blog Post | 1.0 credits |
+| Response Templates | FREE |
+
+## Credit Packages
+
+Credits are purchased through tiered packages:
+
+| Package | Credits | Price | Per Credit |
+|---|---|---|---|
+| **Bronze** | 1 | $5.00 | $5.00 |
+| **Silver** | 5 | $22.00 | $4.40 |
+| **Gold** | 12 | $48.00 | $4.00 |
+| **Platinum** | 30 | $110.00 | $3.67 |
+
+Higher packages offer better per-credit value. Each authenticated user has an isolated data graph — all businesses, reviews, and generated content are scoped to that user.
+
+## Key JAC Concepts
 
 ```jac
+# Nodes = Data entities (auto-persisted when connected to root)
 node Business {
     has place_id: str;
     has name: str;
     has rating: float;
-    # ... auto-persisted when connected to root!
 }
-```
 
-### 2. Edges = Relationships
-
-```jac
-edge HasReview {}
-edge HasAnalysis {}
-
-# Creating relationship:
-business ++> review;  # Simple connection
-business +>:HasReview:+> review;  # Typed connection
-```
-
-### 3. Walkers = Agents
-
-```jac
+# Walkers = Agents that traverse the graph
 walker SentimentAnalyzerAgent {
-    has business_id: str;
-    has results: dict = {};
-
     can start with `root entry {
-        visit [-->(`?Business)];  # Navigate to all businesses
+        visit [-->(`?Business)];
     }
-
     can analyze with Business entry {
-        reviews = [here -->(`?Review)];  # Get connected reviews
-        # ... process reviews
+        reviews = [here -->(`?Review)];
     }
 }
-```
 
-### 4. `by llm` = AI Magic
-
-```jac
-# The compiler extracts semantics to auto-generate prompts!
+# LLM integration — no prompt engineering needed
 def analyze_sentiment(text: str) -> SentimentResult by llm();
 ```
 
-### 5. Automatic Persistence
+## Tech Stack
 
-```jac
-# Connect to root = auto-saved
-business = root ++> Business(name="Hotel", rating=4.5);
+- **Language**: [Jaclang](https://github.com/Jaseci-Labs/jaseci) v0.10.0
+- **LLM**: OpenAI GPT-4o-mini (configurable)
+- **Data Source**: SerpAPI (Google Maps)
+- **Server**: jac-scale v0.1.7
+- **Runtime**: Python 3.12
 
-# Data persists across runs when using `jac serve`
-```
+## License
 
----
-
-## 📈 What's Next?
-
-This POC covers the core pipeline. Easy to extend:
-
-### Add Content Generation Agent
-
-```jac
-walker ContentCreatorAgent {
-    can generate with Analysis entry {
-        blog = self.create_blog_post(here) by llm();
-        social = self.create_social_posts(blog) by llm();
-    }
-}
-```
-
-### Add Competitor Analysis
-
-```jac
-walker CompetitorAnalyzer {
-    has competitor_urls: list;
-
-    can compare with Business entry {
-        # Analyze multiple businesses
-        # Compare metrics
-    }
-}
-```
-
-### Add Response Drafting
-
-```jac
-walker ResponseDrafter {
-    can draft_response with Review entry {
-        if here.sentiment == "negative" {
-            response = self.draft_apology(here.text) by llm();
-        }
-    }
-}
-```
-
----
-
-## 🎯 Summary: Why Jac/OSP for This Use Case?
-
-| Aspect             | Benefit                                               |
-| ------------------ | ----------------------------------------------------- |
-| **Multi-Agent**    | Walkers naturally represent agents traversing data    |
-| **AI Integration** | `by llm` eliminates prompt engineering boilerplate    |
-| **Persistence**    | Auto-save to graph, no database code                  |
-| **Relationships**  | Reviews, themes, analyses linked as first-class edges |
-| **Orchestration**  | Walker spawning replaces job queues                   |
-| **Extensibility**  | Add new agents in ~20 lines each                      |
-
-**Bottom Line**: For AI-powered, relationship-rich applications like review analysis, Jac/OSP provides a dramatically simpler development experience while maintaining full capability.
+Proprietary.

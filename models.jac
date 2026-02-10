@@ -912,15 +912,30 @@ node SocialMediaPostConfig {
     has include_review_quote: bool = True;
     has include_call_to_action: bool = True;
     has call_to_action_text: str = "";
+
+    # Enhanced brand voice config
+    has brand_personality_traits: list[str] = [];
+    has target_audience: str = "";
+    has industry_keywords: list[str] = [];
+    has avoid_words: list[str] = [];
+    has tone_examples: list[str] = [];
+    has language: str = "english";
+
     has created_at: str = "";
     has updated_at: str = "";
 }
 
 sem SocialMediaPostConfig = "User's branding preferences for social media post generation";
-sem SocialMediaPostConfig.brand_voice = "Brand voice: 'professional', 'casual', 'playful', 'authoritative'";
-sem SocialMediaPostConfig.default_hashtags = "Default hashtags to append to posts";
+sem SocialMediaPostConfig.brand_voice = "Brand voice: 'professional', 'casual', 'playful', 'authoritative', or custom descriptive text";
+sem SocialMediaPostConfig.default_hashtags = "Default hashtags to always include in posts";
 sem SocialMediaPostConfig.include_star_rating = "Whether to include star rating emoji/text";
 sem SocialMediaPostConfig.include_call_to_action = "Whether to include a call-to-action at the end";
+sem SocialMediaPostConfig.brand_personality_traits = "Brand personality descriptors e.g. ['warm', 'expert', 'local', 'trustworthy']";
+sem SocialMediaPostConfig.target_audience = "Target audience description e.g. 'young families', 'business professionals'";
+sem SocialMediaPostConfig.industry_keywords = "Industry-specific terms to naturally incorporate";
+sem SocialMediaPostConfig.avoid_words = "Words/phrases to never use in generated posts";
+sem SocialMediaPostConfig.tone_examples = "Example sentences showing the desired brand voice";
+sem SocialMediaPostConfig.language = "Output language: 'english', 'spanish', 'french', 'arabic', etc.";
 
 node SocialMediaPost {
     has post_id: str = "";
@@ -931,15 +946,25 @@ node SocialMediaPost {
     has review_author: str = "";
     has review_rating: int = 0;
     has character_count: int = 0;
+    has post_type: str = "testimonial";
+    has hook_style_used: str = "";
+    has variant_label: str = "";
+    has visual_suggestion: str = "";
+    has graphic_type: str = "";
     has credits_used: float = 0.0;
     has generated_at: str = "";
 }
 
 sem SocialMediaPost = "Generated social media post featuring customer review highlights";
-sem SocialMediaPost.platform = "Target platform: 'twitter' (280 chars), 'facebook' (longer), 'instagram' (visual-ready), 'linkedin' (professional)";
+sem SocialMediaPost.platform = "Target platform: 'twitter', 'facebook', 'instagram', 'linkedin', 'tiktok', 'google_business_profile'";
 sem SocialMediaPost.post_text = "The complete post text ready for publishing";
 sem SocialMediaPost.hashtags = "Relevant hashtags for the post";
 sem SocialMediaPost.review_quote = "Excerpt from the customer review used in the post";
+sem SocialMediaPost.post_type = "Post type: 'testimonial', 'question_engagement', 'tips_based', 'milestone_celebration', 'aggregate_insight', 'story_narrative', 'before_after'";
+sem SocialMediaPost.hook_style_used = "Hook strategy used: 'bold_statement', 'curiosity', 'social_proof', 'question', 'quote_first', 'data_point'";
+sem SocialMediaPost.variant_label = "Variant label for A/B testing: 'A', 'B', 'C'";
+sem SocialMediaPost.visual_suggestion = "Text description of ideal image/visual to pair with this post";
+sem SocialMediaPost.graphic_type = "Recommended visual format: 'photo', 'text_overlay', 'carousel', 'video', 'reel'";
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ACTION PLAN GENERATOR
@@ -1060,6 +1085,33 @@ sem BlogPost.seo_keywords = "Target SEO keywords for the post";
 # CONTENT GENERATION LLM OUTPUT OBJECTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# --- Social Media Config Suggestion ---
+
+obj SuggestedSocialMediaConfig {
+    has brand_voice: str;
+    has brand_personality_traits: list[str];
+    has target_audience: str;
+    has industry_keywords: list[str];
+    has avoid_words: list[str];
+    has tone_examples: list[str];
+    has default_hashtags: list[str];
+    has call_to_action_text: str;
+    has suggested_post_types: list[str];
+    has reasoning: str;
+}
+
+sem SuggestedSocialMediaConfig = "AI-suggested social media branding configuration based on business analysis";
+sem SuggestedSocialMediaConfig.brand_voice = "Suggested voice style that matches the business personality (e.g., 'warm and welcoming', 'professional expert')";
+sem SuggestedSocialMediaConfig.brand_personality_traits = "3-5 personality descriptors derived from what customers praise (e.g., ['friendly', 'reliable', 'local favorite'])";
+sem SuggestedSocialMediaConfig.target_audience = "Target audience description inferred from review demographics and business type";
+sem SuggestedSocialMediaConfig.industry_keywords = "5-8 industry-specific terms that appear naturally in positive reviews";
+sem SuggestedSocialMediaConfig.avoid_words = "3-5 words/phrases to avoid, derived from negative review themes or off-brand language";
+sem SuggestedSocialMediaConfig.tone_examples = "2-3 example social media sentences written in the suggested brand voice";
+sem SuggestedSocialMediaConfig.default_hashtags = "5-8 suggested hashtags mixing branded, industry, and local tags";
+sem SuggestedSocialMediaConfig.call_to_action_text = "A suggested default CTA that fits the business";
+sem SuggestedSocialMediaConfig.suggested_post_types = "2-3 post types that would work best for this business (from: testimonial, question_engagement, tips_based, milestone_celebration, aggregate_insight, story_narrative, before_after)";
+sem SuggestedSocialMediaConfig.reasoning = "Brief explanation of why these suggestions fit this business";
+
 # --- Social Media Post Generation ---
 
 obj SocialMediaPostResult {
@@ -1072,16 +1124,20 @@ obj SingleSocialPost {
     has hashtags: list[str];
     has review_quote: str;
     has character_count: int;
+    has visual_suggestion: str;
+    has graphic_type: str;
 }
 
 sem SocialMediaPostResult = "Batch of generated social media posts for multiple platforms";
 sem SocialMediaPostResult.posts = "List of platform-specific posts";
 sem SingleSocialPost = "A single social media post for a specific platform";
-sem SingleSocialPost.platform = "Target platform: 'twitter', 'facebook', 'instagram', 'linkedin'";
-sem SingleSocialPost.post_text = "Complete post text optimized for the platform's character limits and style";
-sem SingleSocialPost.hashtags = "Relevant hashtags (3-5 for Twitter/Instagram, 1-3 for LinkedIn/Facebook)";
+sem SingleSocialPost.platform = "Target platform: 'twitter', 'facebook', 'instagram', 'linkedin', 'tiktok', 'google_business_profile'";
+sem SingleSocialPost.post_text = "Complete post text optimized for the platform's character limits and style, following Hook-Story-CTA structure";
+sem SingleSocialPost.hashtags = "Platform-optimized hashtags: Instagram 5-10, LinkedIn 3-5, Twitter 1-2, Facebook 1-2, TikTok 3-5";
 sem SingleSocialPost.review_quote = "The exact customer quote excerpt used in the post";
 sem SingleSocialPost.character_count = "Total character count of the post text";
+sem SingleSocialPost.visual_suggestion = "Brief description of ideal image/visual to pair with this post (e.g., 'Photo of restaurant interior with warm lighting')";
+sem SingleSocialPost.graphic_type = "Recommended visual format: 'photo', 'text_overlay', 'carousel', 'video', 'reel'";
 
 # --- Action Plan Generation ---
 

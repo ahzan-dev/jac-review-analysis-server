@@ -1009,6 +1009,174 @@ walker :pub DeleteActionPlan {
 # FEATURE 3: SOCIAL MEDIA POST GENERATOR
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# ── SuggestSocialMediaConfig ─────────────────────────────────────────────────
+# FREE endpoint - analyzes business data and suggests optimal config values
+
+walker :pub SuggestSocialMediaConfig {
+    has business_id: str;
+
+    can start with Root entry {
+        # 1. Find business
+        businesses = [here -->(?:Business)];
+        target_biz = None;
+        for biz in businesses {
+            if biz.place_id == self.business_id {
+                target_biz = biz;
+                break;
+            }
+        }
+
+        if target_biz is None {
+            report not_found_error("business", self.business_id);
+            disengage;
+        }
+
+        # 2. Gather analysis context
+        analyses = [target_biz -->(?:Analysis)];
+        analysis = analyses[0] if analyses else None;
+
+        # 3. Gather theme data
+        themes = [target_biz -->(?:Theme)];
+        theme_summaries = [];
+        for t in themes {
+            theme_summaries.append({
+                "name": t.name,
+                "sentiment": "positive" if t.avg_sentiment > 0.3 else ("negative" if t.avg_sentiment < -0.3 else "mixed"),
+                "mentions": t.mention_count,
+                "keywords": t.keywords[:5]
+            });
+        }
+
+        # 4. Sample positive review snippets for tone reference
+        reviews = [target_biz -->(?:Review)];
+        positive_snippets = [];
+        for r in reviews {
+            if r.rating >= 4 and r.sentiment == "positive" and len(r.text) > 30 {
+                positive_snippets.append(r.text[:150]);
+                if len(positive_snippets) >= 5 {
+                    break;
+                }
+            }
+        }
+
+        # 5. Get report for executive context
+        reports = [target_biz -->(?:Report)];
+        report_context = {};
+        if reports {
+            rep = reports[0];
+            report_context = {
+                "headline": rep.headline,
+                "one_liner": rep.one_liner,
+                "key_findings": rep.key_findings[:3]
+            };
+        }
+
+        # 6. Call LLM to generate suggestions (FREE - no credit charge)
+        try {
+            suggestion = self.suggest_config(
+                business_name=target_biz.name,
+                business_type=target_biz.business_type,
+                business_type_normalized=target_biz.business_type_normalized,
+                google_rating=target_biz.rating,
+                total_reviews=target_biz.total_reviews,
+                address=target_biz.address,
+                delighters=analysis.delighters if analysis else [],
+                pain_points=analysis.pain_points if analysis else [],
+                health_score=analysis.health_score if analysis else 0,
+                positive_percentage=analysis.positive_percentage if analysis else 0,
+                themes=theme_summaries,
+                positive_review_snippets=positive_snippets,
+                report_context=report_context
+            );
+
+            report {
+                "success": True,
+                "business": {"place_id": target_biz.place_id, "name": target_biz.name},
+                "suggested_config": {
+                    "brand_name": target_biz.name,
+                    "brand_voice": suggestion.brand_voice,
+                    "brand_personality_traits": suggestion.brand_personality_traits,
+                    "target_audience": suggestion.target_audience,
+                    "industry_keywords": suggestion.industry_keywords,
+                    "avoid_words": suggestion.avoid_words,
+                    "tone_examples": suggestion.tone_examples,
+                    "default_hashtags": suggestion.default_hashtags,
+                    "call_to_action_text": suggestion.call_to_action_text,
+                    "include_star_rating": True,
+                    "include_review_quote": True,
+                    "include_call_to_action": True,
+                    "language": "english"
+                },
+                "suggested_post_types": suggestion.suggested_post_types,
+                "reasoning": suggestion.reasoning
+            };
+        } except Exception as e {
+            report {"success": False, "error": f"Config suggestion failed: {str(e)}"};
+            disengage;
+        }
+    }
+
+    """Analyze a business's review data and generate smart social media branding suggestions.
+
+    Based on the business data, review analysis, themes, and customer sentiment, suggest:
+    - brand_voice: A natural voice description that matches what customers love about this business
+    - brand_personality_traits: 3-5 personality words derived from positive review themes and delighters
+    - target_audience: Infer the likely audience from business type, location, and review language
+    - industry_keywords: 5-8 terms that appear naturally in the business's positive reviews
+    - avoid_words: 3-5 words/phrases to avoid (from pain points or off-brand language)
+    - tone_examples: 2-3 example social media sentences that sound right for this brand
+    - default_hashtags: 5-8 hashtags mixing #BrandName, industry tags, and local/niche tags
+    - call_to_action_text: A natural CTA that fits the business type
+    - suggested_post_types: 2-3 post types that would work best for this business's review data
+    - reasoning: Brief explanation of why these choices fit
+
+    IMPORTANT:
+    - Make suggestions feel specific to THIS business, not generic.
+    - tone_examples should sound like a real social media post from this business.
+    - Hashtags should be lowercase, no spaces, realistic (not made up).
+    - If the business has many story-worthy reviews, suggest story_narrative.
+    - If the business has high ratings/count, suggest milestone_celebration.
+    - If reviews mention tips/advice, suggest tips_based.
+    """
+    def suggest_config(
+        business_name: str,
+        business_type: str,
+        business_type_normalized: str,
+        google_rating: float,
+        total_reviews: int,
+        address: str,
+        delighters: list,
+        pain_points: list,
+        health_score: int,
+        positive_percentage: float,
+        themes: list,
+        positive_review_snippets: list,
+        report_context: dict
+    ) -> SuggestedSocialMediaConfig by llm(
+        temperature=0.7,
+        incl_info={
+            "business": {
+                "name": business_name,
+                "type": business_type,
+                "type_normalized": business_type_normalized,
+                "google_rating": google_rating,
+                "total_reviews": total_reviews,
+                "address": address
+            },
+            "analysis": {
+                "delighters": delighters,
+                "pain_points": pain_points,
+                "health_score": health_score,
+                "positive_percentage": positive_percentage
+            },
+            "themes": themes,
+            "sample_positive_reviews": positive_review_snippets,
+            "report_highlights": report_context,
+            "instructions": "Generate specific, personalized suggestions for this exact business. Not generic. The tone_examples should sound like actual social posts this business would write. Hashtags should be realistic and lowercase."
+        }
+    );
+}
+
 # ── SaveSocialMediaPostConfig ────────────────────────────────────────────────
 
 walker :pub SaveSocialMediaPostConfig {
@@ -1019,6 +1187,13 @@ walker :pub SaveSocialMediaPostConfig {
     has include_review_quote: bool = True;
     has include_call_to_action: bool = True;
     has call_to_action_text: str = "";
+    # Enhanced brand voice fields
+    has brand_personality_traits: list[str] = [];
+    has target_audience: str = "";
+    has industry_keywords: list[str] = [];
+    has avoid_words: list[str] = [];
+    has tone_examples: list[str] = [];
+    has language: str = "english";
 
     can start with Root entry {
         configs = [here -->(?:SocialMediaPostConfig)];
@@ -1033,6 +1208,12 @@ walker :pub SaveSocialMediaPostConfig {
             config.include_review_quote = self.include_review_quote;
             config.include_call_to_action = self.include_call_to_action;
             config.call_to_action_text = self.call_to_action_text;
+            config.brand_personality_traits = self.brand_personality_traits;
+            config.target_audience = self.target_audience;
+            config.industry_keywords = self.industry_keywords;
+            config.avoid_words = self.avoid_words;
+            config.tone_examples = self.tone_examples;
+            config.language = self.language;
             config.updated_at = datetime.now().isoformat();
         } else {
             # Create new config
@@ -1044,6 +1225,12 @@ walker :pub SaveSocialMediaPostConfig {
                 include_review_quote=self.include_review_quote,
                 include_call_to_action=self.include_call_to_action,
                 call_to_action_text=self.call_to_action_text,
+                brand_personality_traits=self.brand_personality_traits,
+                target_audience=self.target_audience,
+                industry_keywords=self.industry_keywords,
+                avoid_words=self.avoid_words,
+                tone_examples=self.tone_examples,
+                language=self.language,
                 created_at=datetime.now().isoformat(),
                 updated_at=datetime.now().isoformat()
             );
@@ -1060,7 +1247,13 @@ walker :pub SaveSocialMediaPostConfig {
                 "include_star_rating": config.include_star_rating,
                 "include_review_quote": config.include_review_quote,
                 "include_call_to_action": config.include_call_to_action,
-                "call_to_action_text": config.call_to_action_text
+                "call_to_action_text": config.call_to_action_text,
+                "brand_personality_traits": config.brand_personality_traits,
+                "target_audience": config.target_audience,
+                "industry_keywords": config.industry_keywords,
+                "avoid_words": config.avoid_words,
+                "tone_examples": config.tone_examples,
+                "language": config.language
             }
         };
     }
@@ -1092,7 +1285,13 @@ walker :pub GetSocialMediaPostConfig {
                 "include_star_rating": config.include_star_rating,
                 "include_review_quote": config.include_review_quote,
                 "include_call_to_action": config.include_call_to_action,
-                "call_to_action_text": config.call_to_action_text
+                "call_to_action_text": config.call_to_action_text,
+                "brand_personality_traits": config.brand_personality_traits,
+                "target_audience": config.target_audience,
+                "industry_keywords": config.industry_keywords,
+                "avoid_words": config.avoid_words,
+                "tone_examples": config.tone_examples,
+                "language": config.language
             }
         };
     }
@@ -1105,15 +1304,37 @@ walker :pub GenerateSocialMediaPosts {
     has review_id: str = "";
     has platforms: list[str] = ["twitter", "facebook", "instagram", "linkedin"];
     has count: int = 1;
+    has post_type: str = "testimonial";
+    has hook_style: str = "auto";
+    has variants_count: int = 1;
 
     can start with Root entry {
         # Validate platforms
+        valid_platforms = ["twitter", "facebook", "instagram", "linkedin", "tiktok", "google_business_profile"];
         for p in self.platforms {
-            if not validate_platform(p) {
-                report validation_error("platforms", f"Invalid platform: {p}. Must be twitter, facebook, instagram, or linkedin");
+            if p not in valid_platforms {
+                report validation_error("platforms", f"Invalid platform: {p}. Must be one of: {', '.join(valid_platforms)}");
                 return;
             }
         }
+
+        # Validate post_type
+        valid_post_types = ["testimonial", "question_engagement", "tips_based", "milestone_celebration", "aggregate_insight", "story_narrative", "before_after"];
+        if self.post_type not in valid_post_types {
+            report validation_error("post_type", f"Invalid post_type: {self.post_type}. Must be one of: {', '.join(valid_post_types)}");
+            return;
+        }
+
+        # Validate hook_style
+        valid_hook_styles = ["auto", "bold_statement", "curiosity", "social_proof", "question", "quote_first", "data_point"];
+        if self.hook_style not in valid_hook_styles {
+            report validation_error("hook_style", f"Invalid hook_style: {self.hook_style}. Must be one of: {', '.join(valid_hook_styles)}");
+            return;
+        }
+
+        # Clamp variants_count
+        if self.variants_count < 1 { self.variants_count = 1; }
+        if self.variants_count > 3 { self.variants_count = 3; }
 
         # 1. Validate credits
         profiles = [here -->(?:UserProfile)];
@@ -1155,19 +1376,38 @@ walker :pub GenerateSocialMediaPosts {
                 }
             }
         } else {
-            # Auto-select best positive reviews
-            positive_reviews = [];
-            for r in reviews {
-                if r.rating >= 4 and r.sentiment == "positive" and len(r.text) > 30 {
-                    positive_reviews.append(r);
+            # Auto-select reviews based on post type
+            if self.post_type in ["before_after", "story_narrative"] {
+                # For story posts, prefer longer detailed reviews
+                candidates = [];
+                for r in reviews {
+                    if r.rating >= 4 and len(r.text) > 80 {
+                        candidates.append(r);
+                    }
+                }
+            } elif self.post_type == "aggregate_insight" {
+                # For aggregate, still pick positive reviews with themes
+                candidates = [];
+                for r in reviews {
+                    if r.rating >= 4 and r.sentiment == "positive" and len(r.themes) > 0 {
+                        candidates.append(r);
+                    }
+                }
+            } else {
+                # Default: positive reviews with enough text
+                candidates = [];
+                for r in reviews {
+                    if r.rating >= 4 and r.sentiment == "positive" and len(r.text) > 30 {
+                        candidates.append(r);
+                    }
                 }
             }
             max_count = min(self.count, 5);
-            selected = positive_reviews[:max_count];
+            selected = candidates[:max_count];
         }
 
         if not selected {
-            report {"success": False, "error": "No suitable positive reviews found for social media posts"};
+            report {"success": False, "error": "No suitable reviews found for the requested post type"};
             disengage;
         }
 
@@ -1183,69 +1423,108 @@ walker :pub GenerateSocialMediaPosts {
         profile.credits -= SOCIAL_POST_CREDIT_COST;
         profile.credits_used += SOCIAL_POST_CREDIT_COST;
 
-        # 7. Generate posts for each selected review
-        all_posts = [];
-        for review in selected {
-            try {
-                result = self.generate_posts(
-                    business_name=target_biz.name,
-                    business_type=target_biz.business_type,
-                    review_text=review.text,
-                    review_author=review.author,
-                    review_rating=review.rating,
-                    platforms=self.platforms,
-                    brand_voice=config.brand_voice if config else "professional",
-                    default_hashtags=config.default_hashtags if config else [],
-                    include_star_rating=config.include_star_rating if config else True,
-                    include_cta=config.include_call_to_action if config else True,
-                    cta_text=config.call_to_action_text if config else "",
-                    delighters=analysis.delighters if analysis else [],
-                    google_rating=target_biz.rating
-                );
+        # 7. Build context for milestone/aggregate post types
+        milestone_context = {};
+        if self.post_type in ["milestone_celebration", "aggregate_insight"] {
+            milestone_context = {
+                "total_reviews": target_biz.total_reviews,
+                "google_rating": target_biz.rating,
+                "top_themes": analysis.delighters[:3] if analysis else [],
+                "health_score": analysis.health_score if analysis else 0,
+                "positive_percentage": analysis.positive_percentage if analysis else 0
+            };
+        }
 
-                for post in result.posts {
-                    post_node = SocialMediaPost(
-                        post_id=str(uuid4()),
-                        platform=post.platform,
-                        post_text=post.post_text,
-                        hashtags=post.hashtags,
-                        review_quote=post.review_quote,
+        # 8. Generate posts for each selected review (with variant support)
+        all_posts = [];
+        variant_labels = ["A", "B", "C"];
+        for review in selected {
+            for v_idx in range(self.variants_count) {
+                try {
+                    result = self.generate_posts(
+                        business_name=target_biz.name,
+                        business_type=target_biz.business_type,
+                        review_text=review.text,
                         review_author=review.author,
                         review_rating=review.rating,
-                        character_count=post.character_count,
-                        credits_used=SOCIAL_POST_CREDIT_COST / len(result.posts),
-                        generated_at=datetime.now().isoformat()
+                        review_themes=review.themes,
+                        review_emotion=review.emotion,
+                        platforms=self.platforms,
+                        post_type=self.post_type,
+                        hook_style=self.hook_style,
+                        brand_voice=config.brand_voice if config else "professional",
+                        brand_personality_traits=config.brand_personality_traits if config else [],
+                        target_audience=config.target_audience if config else "",
+                        industry_keywords=config.industry_keywords if config else [],
+                        avoid_words=config.avoid_words if config else [],
+                        tone_examples=config.tone_examples if config else [],
+                        language=config.language if config else "english",
+                        default_hashtags=config.default_hashtags if config else [],
+                        include_star_rating=config.include_star_rating if config else True,
+                        include_cta=config.include_call_to_action if config else True,
+                        cta_text=config.call_to_action_text if config else "",
+                        delighters=analysis.delighters if analysis else [],
+                        pain_points=analysis.pain_points if analysis else [],
+                        google_rating=target_biz.rating,
+                        milestone_context=milestone_context
                     );
-                    target_biz ++> post_node;
 
-                    all_posts.append({
-                        "post_id": post_node.post_id,
-                        "platform": post_node.platform,
-                        "post_text": post_node.post_text,
-                        "hashtags": post_node.hashtags,
-                        "review_quote": post_node.review_quote,
-                        "review_author": post_node.review_author,
-                        "review_rating": post_node.review_rating,
-                        "character_count": post_node.character_count
-                    });
+                    current_variant = variant_labels[v_idx] if self.variants_count > 1 else "";
+
+                    for post in result.posts {
+                        post_node = SocialMediaPost(
+                            post_id=str(uuid4()),
+                            platform=post.platform,
+                            post_text=post.post_text,
+                            hashtags=post.hashtags,
+                            review_quote=post.review_quote,
+                            review_author=review.author,
+                            review_rating=review.rating,
+                            character_count=post.character_count,
+                            post_type=self.post_type,
+                            hook_style_used=self.hook_style,
+                            variant_label=current_variant,
+                            visual_suggestion=post.visual_suggestion,
+                            graphic_type=post.graphic_type,
+                            credits_used=SOCIAL_POST_CREDIT_COST / (len(result.posts) * self.variants_count),
+                            generated_at=datetime.now().isoformat()
+                        );
+                        target_biz ++> post_node;
+
+                        all_posts.append({
+                            "post_id": post_node.post_id,
+                            "platform": post_node.platform,
+                            "post_text": post_node.post_text,
+                            "hashtags": post_node.hashtags,
+                            "review_quote": post_node.review_quote,
+                            "review_author": post_node.review_author,
+                            "review_rating": post_node.review_rating,
+                            "character_count": post_node.character_count,
+                            "post_type": post_node.post_type,
+                            "hook_style_used": post_node.hook_style_used,
+                            "variant_label": post_node.variant_label,
+                            "visual_suggestion": post_node.visual_suggestion,
+                            "graphic_type": post_node.graphic_type
+                        });
+                    }
+                } except Exception as e {
+                    # Refund credits on failure
+                    profile.credits += SOCIAL_POST_CREDIT_COST;
+                    profile.credits_used -= SOCIAL_POST_CREDIT_COST;
+                    report {"success": False, "error": f"Social media post generation failed: {str(e)}"};
+                    disengage;
                 }
-            } except Exception as e {
-                # Refund credits on failure
-                profile.credits += SOCIAL_POST_CREDIT_COST;
-                profile.credits_used -= SOCIAL_POST_CREDIT_COST;
-                report {"success": False, "error": f"Social media post generation failed: {str(e)}"};
-                disengage;
             }
         }
 
-        # 8. CreditTransaction
+        # 9. CreditTransaction
         txn = CreditTransaction(
             transaction_id=str(uuid4()),
             user_id=profile.username,
             transaction_type="content_generation",
             amount=-SOCIAL_POST_CREDIT_COST,
             balance_after=profile.credits,
-            description=f"Social media posts for {target_biz.name} ({len(all_posts)} posts)",
+            description=f"Social media posts for {target_biz.name} ({len(all_posts)} posts, type={self.post_type})",
             related_business_id=target_biz.place_id,
             created_at=datetime.now().isoformat()
         );
@@ -1254,45 +1533,67 @@ walker :pub GenerateSocialMediaPosts {
         report {
             "success": True,
             "business": {"place_id": target_biz.place_id, "name": target_biz.name},
+            "post_type": self.post_type,
+            "hook_style": self.hook_style,
+            "variants_count": self.variants_count,
             "posts_generated": len(all_posts),
             "posts": all_posts,
             "credits": {"used": SOCIAL_POST_CREDIT_COST, "remaining": profile.credits}
         };
     }
 
-    """Generate social media posts featuring a customer review across multiple platforms.
+    """Generate social media posts from a customer review using the Hook-Story-CTA framework.
 
-    Create platform-optimized posts that showcase a positive customer review:
-    - Twitter/X: Max 280 characters, concise, punchy, with hashtags
-    - Facebook: Longer narrative, can include more context, 1-3 hashtags
-    - Instagram: Visual-ready caption, emoji-friendly, 5-10 hashtags
-    - LinkedIn: Professional tone, business insights angle, 1-3 hashtags
+    Every post MUST follow this 3-part structure:
+    1. HOOK (first 1-2 lines) - Stop the scroll. Use the specified hook_style.
+    2. STORY/VALUE (middle) - Deliver the review content, quote, or insight.
+    3. CTA (final line) - One clear call-to-action.
 
-    Each post should:
-    - Include a compelling excerpt from the customer review (quoted)
-    - Attribute to the reviewer (first name only for privacy)
-    - Incorporate star rating if configured
-    - End with call-to-action if configured
-    - Match the brand voice setting
-    - Feel authentic and not overly promotional
+    POST TYPES:
+    - "testimonial": Directly quote the customer review with attribution.
+    - "question_engagement": Frame the review around an audience question to drive comments.
+    - "tips_based": Extract a tip or insight from the review, frame as advice.
+    - "milestone_celebration": Frame around review count, rating milestone, or business achievement.
+    - "aggregate_insight": "Our customers love X - here's why..." using review themes.
+    - "story_narrative": Turn the review into a mini customer journey story (problem -> discovery -> outcome).
+    - "before_after": Frame as a transformation story based on what the review implies.
 
-    Args:
-        business_name: Name of the business
-        business_type: Type of business
-        review_text: Full review text to excerpt from
-        review_author: Reviewer's name
-        review_rating: Star rating (1-5)
-        platforms: List of platforms to generate for
-        brand_voice: Voice style (professional, casual, playful, authoritative)
-        default_hashtags: Hashtags to always include
-        include_star_rating: Whether to show star rating
-        include_cta: Whether to include call-to-action
-        cta_text: Custom CTA text (empty = auto-generate)
-        delighters: Known business strengths to highlight
-        google_rating: Overall Google rating
+    HOOK STYLES:
+    - "auto": Choose the best hook style for the post type and platform.
+    - "bold_statement": Contrarian or surprising opening ("This is why we do what we do.").
+    - "curiosity": Information gap ("Here's what nobody tells you about...").
+    - "social_proof": Lead with authority/numbers ("Rated 4.8 by 500+ customers.").
+    - "question": Rhetorical question ("What makes the perfect dining experience?").
+    - "quote_first": Start directly with the customer's words.
+    - "data_point": Lead with a statistic from the business data.
 
-    Returns:
-        SocialMediaPostResult with posts for each requested platform
+    PLATFORM-SPECIFIC RULES:
+    - Twitter/X: Max 280 chars. Hook in first 70 chars. 1-2 hashtags. 1-2 emojis. Punchy, conversational.
+    - Facebook: Keep under 100 chars for best engagement. 1-2 hashtags. 2-3 emojis. Community-focused.
+    - Instagram: First 125 chars are the preview - make them count. 5-10 hashtags. 2-4 emojis. Visual, aspirational.
+    - LinkedIn: First 210 chars show before "see more". 3-5 hashtags. 0-2 emojis. Professional but personal.
+    - TikTok: Script format with on-screen text hook (2 seconds), narrative, CTA. 3-5 hashtags. 2-4 emojis.
+    - Google Business Profile: 150-300 chars. No hashtags. Include location keywords. Strong CTA.
+
+    VISUAL SUGGESTION RULES:
+    For each post, suggest a visual pairing:
+    - "photo": Business/product photo matching the review topic
+    - "text_overlay": Branded graphic with review quote overlaid
+    - "carousel": Multi-slide format (best for Instagram/LinkedIn)
+    - "video": Short video concept (best for TikTok/Reels)
+    - "reel": Short-form video script with timing cues
+
+    BRAND VOICE:
+    Match the brand_voice and brand_personality_traits. Use industry_keywords naturally.
+    NEVER use any word from the avoid_words list.
+    If tone_examples are provided, match that style closely.
+    If language is not english, transcreate (culturally adapt, don't just translate).
+
+    IMPORTANT:
+    - Use reviewer's FIRST NAME only for privacy.
+    - Always include the default_hashtags if provided.
+    - Each platform's post must be uniquely crafted, not just shortened/lengthened versions.
+    - Feel authentic, not promotional. Sound like a real person, not an ad.
     """
     def generate_posts(
         business_name: str,
@@ -1300,29 +1601,73 @@ walker :pub GenerateSocialMediaPosts {
         review_text: str,
         review_author: str,
         review_rating: int,
+        review_themes: list,
+        review_emotion: str,
         platforms: list,
+        post_type: str,
+        hook_style: str,
         brand_voice: str,
+        brand_personality_traits: list,
+        target_audience: str,
+        industry_keywords: list,
+        avoid_words: list,
+        tone_examples: list,
+        language: str,
         default_hashtags: list,
         include_star_rating: bool,
         include_cta: bool,
         cta_text: str,
         delighters: list,
-        google_rating: float
+        pain_points: list,
+        google_rating: float,
+        milestone_context: dict
     ) -> SocialMediaPostResult by llm(
         temperature=0.8,
         incl_info={
-            "business": {"name": business_name, "type": business_type, "google_rating": google_rating},
-            "review": {"text": review_text, "author": review_author, "rating": review_rating},
-            "platforms": platforms,
-            "config": {
+            "business": {
+                "name": business_name,
+                "type": business_type,
+                "google_rating": google_rating
+            },
+            "review": {
+                "text": review_text,
+                "author": review_author,
+                "rating": review_rating,
+                "themes": review_themes,
+                "emotion": review_emotion
+            },
+            "generation_settings": {
+                "post_type": post_type,
+                "hook_style": hook_style,
+                "platforms": platforms,
+                "language": language
+            },
+            "brand_config": {
                 "brand_voice": brand_voice,
+                "brand_personality_traits": brand_personality_traits,
+                "target_audience": target_audience,
+                "industry_keywords": industry_keywords,
+                "avoid_words": avoid_words,
+                "tone_examples": tone_examples,
                 "default_hashtags": default_hashtags,
                 "include_star_rating": include_star_rating,
                 "include_cta": include_cta,
                 "cta_text": cta_text
             },
-            "delighters": delighters,
-            "instructions": "Create engaging, authentic social media posts. Quote the review directly (use quotation marks). Keep Twitter under 280 chars. Make each platform's post unique in style, not just length."
+            "business_context": {
+                "delighters": delighters,
+                "pain_points": pain_points,
+                "milestone_data": milestone_context
+            },
+            "platform_guidelines": {
+                "twitter": {"max_chars": 280, "hook_window": "70 chars", "emoji_count": "1-2", "hashtag_count": "1-2", "style": "punchy, conversational, direct"},
+                "facebook": {"max_chars": 500, "hook_window": "80 chars", "emoji_count": "2-3", "hashtag_count": "1-2", "style": "community-focused, warm, question-driven"},
+                "instagram": {"max_chars": 2200, "hook_window": "125 chars", "emoji_count": "2-4", "hashtag_count": "5-10", "style": "visual, aspirational, emoji-friendly"},
+                "linkedin": {"max_chars": 3000, "hook_window": "210 chars", "emoji_count": "0-2", "hashtag_count": "3-5", "style": "professional but personal, storytelling, expertise-signaling"},
+                "tiktok": {"max_chars": 4000, "hook_window": "first line", "emoji_count": "2-4", "hashtag_count": "3-5", "style": "script format: hook text (2s) + narrative + CTA, casual and trend-aware"},
+                "google_business_profile": {"max_chars": 1500, "hook_window": "100 chars", "emoji_count": "0-1", "hashtag_count": "0", "style": "local SEO keywords, concise, strong CTA with location context"}
+            },
+            "structure": "Every post MUST follow: HOOK (stop the scroll) -> STORY/VALUE (review content) -> CTA (one clear action). Make each platform genuinely different in approach, not just length."
         }
     );
 }
@@ -1332,6 +1677,7 @@ walker :pub GenerateSocialMediaPosts {
 walker :pub GetSocialMediaPosts {
     has business_id: str;
     has platform: str = "";
+    has post_type: str = "";
 
     can start with Root entry {
         businesses = [here -->(?:Business)];
@@ -1354,6 +1700,9 @@ walker :pub GetSocialMediaPosts {
             if self.platform and post.platform != self.platform {
                 continue;
             }
+            if self.post_type and post.post_type != self.post_type {
+                continue;
+            }
             results.append({
                 "post_id": post.post_id,
                 "platform": post.platform,
@@ -1363,6 +1712,11 @@ walker :pub GetSocialMediaPosts {
                 "review_author": post.review_author,
                 "review_rating": post.review_rating,
                 "character_count": post.character_count,
+                "post_type": post.post_type,
+                "hook_style_used": post.hook_style_used,
+                "variant_label": post.variant_label,
+                "visual_suggestion": post.visual_suggestion,
+                "graphic_type": post.graphic_type,
                 "generated_at": post.generated_at
             });
         }

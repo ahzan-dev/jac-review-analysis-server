@@ -154,5 +154,5 @@ def validate_content_type(ctype: str) -> bool {
 }
 
 def validate_platform(platform: str) -> bool {
-    return platform in ["twitter", "facebook", "instagram", "linkedin"];
+    return platform in ["twitter", "facebook", "instagram", "linkedin", "tiktok", "google_business_profile"];
 }

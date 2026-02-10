@@ -226,10 +226,11 @@ When running `jac start main.jac`, the API is available at `http://localhost:800
 - `POST /walker/GenerateActionPlan` - Generate improvement roadmap (0.5 credits)
 - `POST /walker/GetActionPlans` - Get action plans for a business
 - `POST /walker/DeleteActionPlan` - Delete an action plan
-- `POST /walker/SaveSocialMediaPostConfig` - Save social media branding preferences
+- `POST /walker/SuggestSocialMediaConfig` - FREE: Auto-generate smart config suggestions from business analysis data (brand voice, personality traits, hashtags, audience, keywords, tone examples, CTA, recommended post types)
+- `POST /walker/SaveSocialMediaPostConfig` - Save social media branding preferences (enhanced: brand_personality_traits, target_audience, industry_keywords, avoid_words, tone_examples, language)
 - `POST /walker/GetSocialMediaPostConfig` - Get current social media config
-- `POST /walker/GenerateSocialMediaPosts` - Generate social posts from reviews (0.25 credits/batch)
-- `POST /walker/GetSocialMediaPosts` - Get generated posts for business
+- `POST /walker/GenerateSocialMediaPosts` - Generate social posts from reviews (0.25 credits/batch). Supports post_type (testimonial, question_engagement, tips_based, milestone_celebration, aggregate_insight, story_narrative, before_after), hook_style (auto, bold_statement, curiosity, social_proof, question, quote_first, data_point), variants_count (1-3 A/B variants), 6 platforms (twitter, facebook, instagram, linkedin, tiktok, google_business_profile)
+- `POST /walker/GetSocialMediaPosts` - Get generated posts for business (filter by platform, post_type)
 - `POST /walker/DeleteSocialMediaPost` - Delete a generated post
 - `POST /walker/SaveMarketingCopyConfig` - Save brand/ad preferences
 - `POST /walker/GetMarketingCopyConfig` - Get current marketing config
@@ -303,12 +304,12 @@ Replies are generated using:
 
 ## Content Generation System
 
-The system includes 5 content generation features in `services/content_walkers.jac`:
+The system includes 5 content generation features in `content_walkers.jac`:
 
 ### Credit Costs
 - **Response Template Library**: FREE (browse/create/apply with rule-based placeholder filling)
 - **Action Plan Generator**: 0.5 credits per plan
-- **Social Media Post Generator**: 0.25 credits per batch (up to 5 posts)
+- **Social Media Post Generator**: 0.25 credits per batch (up to 5 posts, with A/B variants)
 - **Marketing Copy Generator**: 0.25 credits per batch (up to 3 A/B variants)
 - **Blog Post Generator**: 1.0 credits per post
 
@@ -319,8 +320,31 @@ root ──> SocialMediaPostConfig / MarketingCopyConfig / BlogPostConfig
 Business ──> ActionPlan / SocialMediaPost / MarketingCopy / BlogPost
 ```
 
+### Social Media Post Generator (Enhanced)
+
+**Post Types**: `testimonial`, `question_engagement`, `tips_based`, `milestone_celebration`, `aggregate_insight`, `story_narrative`, `before_after`
+
+**Hook Styles**: `auto`, `bold_statement`, `curiosity`, `social_proof`, `question`, `quote_first`, `data_point`
+
+**Platforms**: `twitter`, `facebook`, `instagram`, `linkedin`, `tiktok`, `google_business_profile`
+
+**A/B Variants**: `variants_count` (1-3) generates multiple versions with different hooks/angles
+
+**Enhanced Config** (`SocialMediaPostConfig`):
+- `brand_voice`: Base voice preset or custom descriptive text
+- `brand_personality_traits`: e.g. `["warm", "expert", "local"]`
+- `target_audience`: e.g. `"young families in urban areas"`
+- `industry_keywords`: Terms to naturally incorporate
+- `avoid_words`: Words/phrases to never use
+- `tone_examples`: Example sentences showing desired voice
+- `language`: Output language (supports transcreation, not just translation)
+
+**Post Output** includes `visual_suggestion` (image description) and `graphic_type` (photo/text_overlay/carousel/video/reel)
+
+**LLM Framework**: Every post follows Hook-Story-CTA structure with platform-specific emoji counts, hashtag targets, and character windows.
+
 ### File
-- `services/content_walkers.jac` - All 22 content generation walker definitions
+- `content_walkers.jac` - All 22 content generation walker definitions
 
 ## Important Notes
 
